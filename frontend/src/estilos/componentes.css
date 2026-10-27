@@ -194,50 +194,6 @@
   }
 }
 
-/* Interruptor liga/desliga */
-.alternador {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--e-3);
-  min-height: var(--toque-minimo);
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.alternador input {
-  position: relative;
-  flex-shrink: 0;
-  width: 2.75rem;
-  height: 1.6rem;
-  margin: 0;
-  border-radius: 999px;
-  background: var(--linha-forte);
-  appearance: none;
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-
-.alternador input::after {
-  content: '';
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: calc(1.6rem - 6px);
-  height: calc(1.6rem - 6px);
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
-  transition: transform 0.15s;
-}
-
-.alternador input:checked {
-  background: var(--marca);
-}
-
-.alternador input:checked::after {
-  transform: translateX(1.15rem);
-}
-
 /* Opções em cartão (rádio): usadas para escolher quem pode ver um documento */
 .opcoes {
   display: grid;
@@ -596,33 +552,26 @@ a.etiqueta-codigo:hover {
   font-size: var(--texto-sm);
 }
 
+/* Minimalista: cabeçalho pequeno em cinza, sem fundo, e linhas finas */
 .tabela th {
-  padding: var(--e-3) var(--e-4);
+  padding: var(--e-3);
   border-bottom: 1px solid var(--linha);
-  background: var(--nevoa);
   color: var(--texto-suave);
-  font-weight: 700;
+  font-size: var(--texto-xs);
+  font-weight: 500;
   text-align: left;
   white-space: nowrap;
 }
 
 .tabela td {
-  padding: var(--e-3) var(--e-4);
+  padding: var(--e-3);
   border-bottom: 1px solid var(--linha);
   vertical-align: middle;
 }
 
-.tabela tbody tr:last-child td {
-  border-bottom: 0;
-}
-
-.tabela tbody tr:hover {
-  background: #f8fafb;
-}
-
 .tabela .celula-principal a {
   color: var(--tinta);
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
 }
 
@@ -639,7 +588,8 @@ a.etiqueta-codigo:hover {
   color: var(--texto-suave);
 }
 
-@media (max-width: 48rem) {
+/* Tabelas só existem na administração: viram cartões quando falta espaço ao lado do menu. */
+@container conteudo-admin (max-width: 46rem) {
   .tabela thead {
     display: none;
   }

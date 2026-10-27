@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, exists, inArray, notInArray, or, sql, type SQL } from 'drizzle-orm';
+import { and, asc, count, desc, eq, exists, inArray, isNotNull, isNull, notInArray, or, sql, type SQL } from 'drizzle-orm';
 import { db, type Transacao } from '../db/index.js';
 import { escaparLike, somenteLetrasENumeros, termosDaBusca } from '../lib/validacao.js';
 import {
@@ -39,6 +39,10 @@ const colunasDoDocumento = {
   arquivoMime: documentos.arquivoMime,
   arquivoTamanho: documentos.arquivoTamanho,
   urlExterna: documentos.urlExterna,
+  capaChave: documentos.capaChave,
+  capaPersonalizada: documentos.capaPersonalizada,
+  indexadoEm: documentos.indexadoEm,
+  indexacaoErro: documentos.indexacaoErro,
   criadoPor: documentos.criadoPor,
   criadoEm: documentos.criadoEm,
   atualizadoEm: documentos.atualizadoEm,
@@ -292,13 +296,87 @@ export async function atualizar(id: string, valores: Partial<NovoDocumento>, tx:
     .where(eq(documentos.id, id));
 }
 
-/** Exclui o documento e devolve a chave do arquivo (para apagá-lo do disco), ou undefined se não existia. */
-export async function excluir(id: string): Promise<{ arquivoChave: string | null } | undefined> {
+// ─── Indexação para o assistente (uso interno, sem regra de visibilidade) ──────
+// Nada daqui chega a um usuário: a busca do assistente aplica a regra em trechos.repository.
+
+/** O que a indexação precisa do documento: arquivo, título, descrição e códigos das peças. */
+export async function dadosParaIndexar(id: string) {
+  const [documento] = await db
+    .select({
+      id: documentos.id,
+      titulo: documentos.titulo,
+      tipo: documentos.tipo,
+      descricao: documentos.descricao,
+      arquivoChave: documentos.arquivoChave,
+      arquivoNome: documentos.arquivoNome,
+    })
+    .from(documentos)
+    .where(eq(documentos.id, id))
+    .limit(1);
+  if (!documento) return undefined;
+  const pecas = await db
+    .select({ codigo: produtos.codigo })
+    .from(documentoProdutos)
+    .innerJoin(produtos, eq(produtos.id, documentoProdutos.produtoId))
+    .where(eq(documentoProdutos.documentoId, id))
+    .orderBy(asc(produtos.codigo));
+  return { ...documento, codigosDasPecas: pecas.map((peca) => peca.codigo) };
+}
+
+/** Documentos a indexar: os nunca indexados, os editados depois da última indexação e os que falharam. */
+export async function listarParaIndexar(todos: boolean): Promise<string[]> {
+  const linhas = await db
+    .select({ id: documentos.id })
+    .from(documentos)
+    .where(
+      todos
+        ? undefined
+        : or(
+            isNull(documentos.indexadoEm),
+            sql`${documentos.indexadoEm} < ${documentos.atualizadoEm}`,
+            isNotNull(documentos.indexacaoErro),
+          ),
+    )
+    .orderBy(asc(documentos.criadoEm));
+  return linhas.map((linha) => linha.id);
+}
+
+/** Registra o fim da indexação. Não mexe em atualizadoEm (o conteúdo não mudou). */
+export async function marcarIndexacao(id: string, erro: string | null, tx?: Transacao) {
+  await (tx ?? db)
+    .update(documentos)
+    .set(erro ? { indexacaoErro: erro } : { indexadoEm: new Date(), indexacaoErro: null })
+    .where(eq(documentos.id, id));
+}
+
+/** Exclui o documento e devolve as chaves do arquivo e da capa (para apagá-los), ou undefined se não existia. */
+export async function excluir(
+  id: string,
+): Promise<{ arquivoChave: string | null; capaChave: string | null } | undefined> {
   const [removido] = await db
     .delete(documentos)
     .where(eq(documentos.id, id))
-    .returning({ arquivoChave: documentos.arquivoChave });
+    .returning({ arquivoChave: documentos.arquivoChave, capaChave: documentos.capaChave });
   return removido;
+}
+
+/**
+ * Documentos com arquivo e ainda sem capa. Uso interno (comando de manutenção):
+ * nada daqui chega a um usuário, por isso não passa pela regra de visibilidade.
+ */
+export function listarSemCapa() {
+  return db
+    .select({ id: documentos.id, arquivoChave: documentos.arquivoChave, arquivoNome: documentos.arquivoNome })
+    .from(documentos)
+    .where(and(isNull(documentos.capaChave), isNotNull(documentos.arquivoChave)));
+}
+
+/**
+ * Grava a capa gerada para um documento antigo. Não mexe em `atualizadoEm`:
+ * o conteúdo não mudou, e a lista de "atualizados recentemente" não deve mudar.
+ */
+export async function definirCapa(id: string, capaChave: string) {
+  await db.update(documentos).set({ capaChave }).where(eq(documentos.id, id));
 }
 
 /** Troca a lista de produtos relacionados ao documento. */

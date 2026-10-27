@@ -57,7 +57,7 @@ function SeletorComBusca<T extends { id: string }>({
         </div>
       )}
 
-      <div className="busca-caixa">
+      <div className="busca">
         <Search className="busca-icone" aria-hidden />
         <input
           className="busca-entrada"
@@ -107,7 +107,7 @@ export function SeletorProdutos({
       aoMudar={aoMudar}
       resultados={consulta.data?.itens}
       carregando={consulta.isFetching}
-      textoVazio="Nenhuma peça encontrada. Cadastre em Administração > Produtos."
+      textoVazio="Nenhuma peça encontrada. Cadastre em Catálogo > Peças."
       rotuloFicha={(produto) => produto.codigo}
       busca={busca}
       aoBuscar={setBusca}

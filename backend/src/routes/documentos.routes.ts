@@ -8,3 +8,4 @@ documentosRotas.get('/', documentosController.listar);
 documentosRotas.get('/resumo', documentosController.resumo);
 documentosRotas.get('/:id', documentosController.detalhar);
 documentosRotas.get('/:id/arquivo', documentosController.baixarArquivo);
+documentosRotas.get('/:id/capa', documentosController.capa);

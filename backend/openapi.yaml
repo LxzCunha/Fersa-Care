@@ -29,6 +29,9 @@ tags:
   - name: Admin - Usuários
   - name: Admin - Produtos
   - name: Admin - Categorias
+  - name: Assistente
+    description: Assistente técnico (bolinha de chat) com RAG; responde só sobre peças e produtos FERSA
+  - name: Admin - Chamados
 security:
   - cookieSessao: []
   - bearer: []
@@ -222,6 +225,23 @@ paths:
         '401': { $ref: '#/components/responses/Erro' }
         '404': { $ref: '#/components/responses/Erro' }
 
+  /api/documentos/{id}/capa:
+    get:
+      tags: [Documentos]
+      summary: Capa do documento (miniatura WebP de 480 px de largura)
+      description: >-
+        Use a `capaUrl` devolvida pela API (o `?v=` muda a cada edição). Mesma permissão do documento:
+        401 para visitante em documento que exige login, 404 sem permissão ou sem capa.
+        Capas de documentos públicos podem ficar em cache compartilhado; as demais, só no navegador.
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200':
+          description: Imagem WebP
+          content:
+            image/webp: { schema: { type: string, format: binary } }
+        '401': { $ref: '#/components/responses/Erro' }
+        '404': { $ref: '#/components/responses/Erro' }
+
   /api/produtos:
     get:
       tags: [Produtos]
@@ -299,7 +319,10 @@ paths:
         '200': { description: Página de documentos }
     post:
       tags: [Admin - Documentos]
-      summary: Cadastra documento (arquivo via multipart ou link via JSON)
+      summary: Cadastra documento (arquivo e/ou capa via multipart, ou link via JSON)
+      description: >-
+        Sem `capa`, a capa é gerada da 1ª página do PDF ou da própria imagem (outros formatos ficam sem capa).
+        Uma capa enviada vale até `removerCapa`, mesmo que o arquivo seja trocado.
       requestBody:
         required: true
         content:
@@ -315,6 +338,10 @@ paths:
                 arquivo:
                   type: string
                   format: binary
+                capa:
+                  type: string
+                  format: binary
+                  description: Capa própria (PNG, JPG ou WebP, até 5 MB). É guardada reduzida, em WebP.
           application/json:
             schema: { $ref: '#/components/schemas/DadosDocumento' }
       responses:
@@ -340,6 +367,9 @@ paths:
     put:
       tags: [Admin - Documentos]
       summary: Edita documento (envie novo arquivo para substituir; sem arquivo mantém o atual)
+      description: >-
+        Trocar o arquivo refaz a capa automática, mas não substitui uma capa enviada pelo admin.
+        `removerCapa` apaga a capa enviada e volta para a automática.
       requestBody:
         required: true
         content:
@@ -350,6 +380,7 @@ paths:
               properties:
                 dados: { type: string }
                 arquivo: { type: string, format: binary }
+                capa: { type: string, format: binary }
           application/json:
             schema: { $ref: '#/components/schemas/DadosDocumento' }
       responses:
@@ -569,6 +600,165 @@ paths:
       responses:
         '204': { description: Excluída }
 
+  /api/assistente/perguntas:
+    post:
+      tags: [Assistente]
+      summary: Pergunta ao assistente técnico (resposta em Server-Sent Events)
+      description: >-
+        A resposta chega aos pedaços como `text/event-stream`. Eventos: `conversa` ({ conversaId }, guarde para continuar),
+        `texto` ({ texto }, um pedaço), `fim` ({ mensagemId, fontes, encaminhamento, chamado }) e `erro` ({ mensagem }).
+        A busca usa só documentos que quem pergunta pode abrir (mesma regra da biblioteca) e a ficha das peças citadas pelo código.
+        `encaminhamento`: NENHUM; SUGERIR_CHAMADO (1ª reclamação ou IA fora do ar); PEDIR_CONTATO (visitante insistiu ou pediu atendente:
+        envie o contato em /api/assistente/chamados); CHAMADO_ABERTO (cliente com login: o chamado já foi aberto).
+        Pergunta inválida, conversa inexistente e limite de perguntas respondem antes do streaming, em JSON.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pergunta]
+              properties:
+                pergunta: { type: string, minLength: 2, maxLength: 1000, example: Como medir a folga axial do cubo de roda? }
+                conversaId: { type: string, format: uuid, description: Continua uma conversa já começada }
+      responses:
+        '200':
+          description: Eventos da resposta
+          content:
+            text/event-stream:
+              schema: { type: string }
+              example: |
+                event: conversa
+                data: {"tipo":"conversa","conversaId":"..."}
+
+                event: texto
+                data: {"tipo":"texto","texto":"Meça com relógio comparador [1]."}
+
+                event: fim
+                data: {"tipo":"fim","mensagemId":"...","fontes":[{"tipo":"DOCUMENTO","id":"...","titulo":"Guia","numero":1}],"encaminhamento":"NENHUM","chamado":null}
+        '400': { $ref: '#/components/responses/Erro' }
+        '404': { $ref: '#/components/responses/Erro' }
+        '429': { $ref: '#/components/responses/Erro' }
+
+  /api/assistente/conversas/{id}:
+    get:
+      tags: [Assistente]
+      summary: Conversa com as mensagens (para retomar depois de recarregar a página)
+      description: Só quem começou a conversa (ou qualquer um com o id, se foi um visitante).
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string, format: uuid }
+                  mensagens: { type: array, items: { $ref: '#/components/schemas/MensagemDoAssistente' } }
+                  chamado: { type: object, nullable: true, properties: { numero: { type: integer } } }
+        '404': { $ref: '#/components/responses/Erro' }
+
+  /api/assistente/chamados:
+    post:
+      tags: [Assistente]
+      summary: Abre o chamado de suporte técnico com a conversa
+      description: >-
+        Com login, usa nome, e-mail e telefone da conta. Visitante informa nome e e-mail ou telefone.
+        Cada conversa vira no máximo um chamado (repetir devolve o mesmo número).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [conversaId]
+              properties:
+                conversaId: { type: string, format: uuid }
+                nome: { type: string }
+                email: { type: string, format: email }
+                telefone: { type: string }
+      responses:
+        '201':
+          description: Chamado aberto
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  numero: { type: integer, example: 12 }
+                  mensagem: { type: string }
+        '400': { $ref: '#/components/responses/Erro' }
+        '404': { $ref: '#/components/responses/Erro' }
+
+  /api/admin/documentos/{id}/indexar:
+    post:
+      tags: [Admin - Documentos]
+      summary: O assistente lê o documento de novo (em segundo plano)
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '202': { description: Indexação agendada }
+        '404': { $ref: '#/components/responses/Erro' }
+
+  /api/admin/chamados:
+    get:
+      tags: [Admin - Chamados]
+      summary: Chamados de suporte, mais novos primeiro, com a contagem por situação
+      parameters:
+        - $ref: '#/components/parameters/Busca'
+        - { name: status, in: query, schema: { type: string, enum: [ABERTO, EM_ATENDIMENTO, RESOLVIDO] } }
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/PorPagina'
+      responses:
+        '200':
+          description: Página de chamados, com `porStatus`
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  itens: { type: array, items: { $ref: '#/components/schemas/Chamado' } }
+                  total: { type: integer }
+                  pagina: { type: integer }
+                  porPagina: { type: integer }
+                  totalPaginas: { type: integer }
+                  porStatus: { type: object, additionalProperties: { type: integer } }
+
+  /api/admin/chamados/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      tags: [Admin - Chamados]
+      summary: Chamado com a conversa inteira
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Chamado'
+                  - type: object
+                    properties:
+                      conversa: { type: array, items: { $ref: '#/components/schemas/MensagemDoAssistente' } }
+        '404': { $ref: '#/components/responses/Erro' }
+    patch:
+      tags: [Admin - Chamados]
+      summary: Muda a situação e a anotação interna
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [ABERTO, EM_ATENDIMENTO, RESOLVIDO] }
+                observacao: { type: string, nullable: true }
+      responses:
+        '200': { description: Atualizado }
+        '400': { $ref: '#/components/responses/Erro' }
+        '404': { $ref: '#/components/responses/Erro' }
+
 components:
   securitySchemes:
     cookieSessao:
@@ -608,6 +798,37 @@ components:
           schema: { $ref: '#/components/schemas/Erro' }
 
   schemas:
+    MensagemDoAssistente:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        papel: { type: string, enum: [USUARIO, ASSISTENTE] }
+        conteudo: { type: string }
+        fontes:
+          type: array
+          items:
+            type: object
+            properties:
+              tipo: { type: string, enum: [DOCUMENTO, PRODUTO] }
+              id: { type: string, format: uuid }
+              titulo: { type: string }
+              numero: { type: integer, description: 'Número citado no texto, como [1]' }
+        insatisfacao: { type: boolean, description: A pessoa reclamou que a resposta não ajudou }
+        criadoEm: { type: string, format: date-time }
+    Chamado:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        numero: { type: integer }
+        nome: { type: string }
+        email: { type: string, nullable: true }
+        telefone: { type: string, nullable: true }
+        resumo: { type: string, description: As perguntas da conversa }
+        status: { type: string, enum: [ABERTO, EM_ATENDIMENTO, RESOLVIDO] }
+        observacao: { type: string, nullable: true }
+        clienteCadastrado: { type: boolean }
+        criadoEm: { type: string, format: date-time }
+        atualizadoEm: { type: string, format: date-time }
     Erro:
       type: object
       properties:
@@ -741,6 +962,12 @@ components:
             mime: { type: string }
             tamanho: { type: integer }
         urlExterna: { type: string, nullable: true }
+        capaUrl:
+          type: string
+          nullable: true
+          description: Endereço da capa (GET /api/documentos/{id}/capa?v=...), ou null se não houver
+          example: /api/documentos/3f1c2a9e-8b7d-4c6e-9f00-123456789abc/capa?v=1793117449838
+        capaPersonalizada: { type: boolean, description: A capa foi enviada pelo admin (e não gerada do arquivo) }
         produtos:
           type: array
           items: { $ref: '#/components/schemas/ProdutoResumo' }
@@ -790,3 +1017,4 @@ components:
           type: array
           description: Usuários com acesso (só vale quando visibilidade = RESTRITO)
           items: { type: string, format: uuid }
+        removerCapa: { type: boolean, default: false, description: Apaga a capa enviada pelo admin e volta para a automática }

@@ -15,6 +15,7 @@ import type {
   Idioma,
   Perfil,
   Segmento,
+  StatusChamado,
   StatusUsuario,
   TipoDocumento,
   Visibilidade,
@@ -70,6 +71,12 @@ export const STATUS_USUARIO: Record<StatusUsuario, { rotulo: string; classe: str
   PENDENTE: { rotulo: 'Aguardando aprovação', classe: 'selo-pendente' },
   ATIVO: { rotulo: 'Ativo', classe: 'selo-ativo' },
   INATIVO: { rotulo: 'Inativo', classe: 'selo-inativo' },
+};
+
+export const STATUS_CHAMADO: Record<StatusChamado, { rotulo: string; classe: string }> = {
+  ABERTO: { rotulo: 'Aberto', classe: 'selo-pendente' },
+  EM_ATENDIMENTO: { rotulo: 'Em atendimento', classe: 'selo-clientes' },
+  RESOLVIDO: { rotulo: 'Resolvido', classe: 'selo-ativo' },
 };
 
 export const PERFIS: Record<Perfil, string> = {

@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Eye, Save, Trash } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { useId, useState, type FormEvent } from 'react';
+import { Link, useParams } from 'react-router';
 import {
   atualizarProduto,
   criarProduto,
@@ -21,6 +20,7 @@ import { escreverMedida, lerMedida } from '../../lib/medidas';
 import { SEGMENTOS } from '../../lib/rotulos';
 import { useRecarregarTudo } from './acoes';
 import { CampoImagem } from './CampoImagem';
+import { Janela, rolarJanelaParaTopo, useVoltarParaLista } from './Cadastro';
 
 /** Campos de medida: digitados como texto ("16,25") e enviados como número. */
 const MEDIDAS = [
@@ -33,22 +33,29 @@ const MEDIDAS = [
 type CampoDeMedida = (typeof MEDIDAS)[number]['campo'];
 type DadosDoFormulario = Omit<DadosProduto, CampoDeMedida | 'removerImagem'> & Record<CampoDeMedida, string>;
 
+/** Cadastro (/admin/produtos/novo) e edição (/admin/produtos/:id) de peças, numa janela sobre a lista. */
 export function FormProduto() {
   const { id } = useParams();
+  const fechar = useVoltarParaLista('/admin/produtos');
   const consulta = useQuery({
     queryKey: ['admin', 'produto', id],
     queryFn: () => detalharProdutoAdmin(id!),
     enabled: Boolean(id),
   });
 
-  if (id && consulta.isPending) return <Carregando />;
-  if (id && consulta.isError) return <AvisoErro erro={consulta.error} />;
-  return <FormularioProduto key={id ?? 'novo'} produto={consulta.data} />;
+  if (id && !consulta.data) {
+    return (
+      <Janela titulo="Peça" aoFechar={fechar}>
+        {consulta.isError ? <AvisoErro erro={consulta.error} /> : <Carregando />}
+      </Janela>
+    );
+  }
+  return <FormularioProduto key={id ?? 'novo'} produto={consulta.data} aoFechar={fechar} />;
 }
 
-function FormularioProduto({ produto }: { produto?: ProdutoAdmin }) {
+function FormularioProduto({ produto, aoFechar }: { produto?: ProdutoAdmin; aoFechar: () => void }) {
   const editando = Boolean(produto);
-  const navegar = useNavigate();
+  const idFormulario = useId();
   const notificar = useNotificar();
   const recarregar = useRecarregarTudo();
   const categorias = useQuery({ queryKey: ['admin', 'categorias', ''], queryFn: () => listarCategoriasAdmin() });
@@ -68,6 +75,7 @@ function FormularioProduto({ produto }: { produto?: ProdutoAdmin }) {
   });
   const [imagem, setImagem] = useState<File | null>(null);
   const [removerImagem, setRemoverImagem] = useState(false);
+  const [alterado, setAlterado] = useState(false);
   const [erro, setErro] = useState<ErroApi | null>(null);
   const [errosDeMedida, setErrosDeMedida] = useState<Partial<Record<CampoDeMedida, string>>>({});
   const [salvando, setSalvando] = useState(false);
@@ -106,10 +114,10 @@ function FormularioProduto({ produto }: { produto?: ProdutoAdmin }) {
       else await criarProduto(envio, imagem);
       await recarregar();
       notificar(editando ? 'Peça atualizada.' : 'Peça cadastrada.');
-      navegar('/admin/produtos');
+      aoFechar();
     } catch (falha) {
       setErro(falha instanceof ErroApi ? falha : new ErroApi(0, 'ERRO', mensagemDeErro(falha)));
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      rolarJanelaParaTopo();
     } finally {
       setSalvando(false);
     }
@@ -122,7 +130,7 @@ function FormularioProduto({ produto }: { produto?: ProdutoAdmin }) {
       await excluirProduto(produto.id);
       await recarregar();
       notificar('Peça excluída.');
-      navegar('/admin/produtos');
+      aoFechar();
     } catch (falha) {
       notificar(mensagemDeErro(falha), 'erro');
       setExcluindo(false);
@@ -133,60 +141,58 @@ function FormularioProduto({ produto }: { produto?: ProdutoAdmin }) {
   const mostrarAvisoGeral = erro && (erro.detalhes.length === 0 || erro.status === 409);
 
   return (
-    <>
-      <title>{`${editando ? 'Editar' : 'Cadastrar'} peça | Administração FERSA Care`}</title>
-
-      <Link to="/admin/produtos" className="voltar">
-        <ArrowLeft aria-hidden /> Peças
-      </Link>
-
-      <header className="admin-cabecalho">
-        <div>
-          <h1>{editando ? <span className="codigo">{produto?.codigo}</span> : 'Cadastrar peça'}</h1>
-          {produto && <p>{plural(produto.totalDocumentos, 'documento ligado', 'documentos ligados')} a esta peça.</p>}
-        </div>
-        {produto?.ativo && (
-          <Link to={`/produtos/${produto.id}`} className="botao botao-secundario">
-            <Eye aria-hidden /> Ver no portal
-          </Link>
-        )}
-      </header>
-
-      <form className="form-admin" onSubmit={salvar} noValidate>
+    <Janela
+      titulo={editando ? 'Peça' : 'Nova peça'}
+      idFormulario={idFormulario}
+      salvando={salvando}
+      alterado={alterado}
+      aoFechar={aoFechar}
+      links={
+        produto && (
+          <>
+            <span className="janela-nota">
+              {plural(produto.totalDocumentos, 'documento ligado', 'documentos ligados')} a esta peça
+            </span>
+            {produto.ativo && <Link to={`/produtos/${produto.id}`}>Ver no portal</Link>}
+            <button type="button" className="janela-link-perigo" onClick={() => setConfirmandoExclusao(true)}>
+              Excluir peça
+            </button>
+          </>
+        )
+      }
+    >
+      <form id={idFormulario} className="cadastro" onSubmit={salvar} onChange={() => setAlterado(true)} noValidate>
         {mostrarAvisoGeral && <AvisoErro erro={erro} />}
 
-        <section className="form-bloco" aria-labelledby="bloco-produto">
-          <div className="form-bloco-titulo">
-            <h2 id="bloco-produto">Identificação da peça</h2>
-            <p>O código é o que vem impresso na caixa; a busca ignora espaços e hífens.</p>
-          </div>
-          <div className="linha-campos">
-            <CampoTexto
-              id="codigo"
-              rotulo="Código (referência)"
-              value={dados.codigo}
-              onChange={(e) => atualizar('codigo', e.target.value)}
-              erro={erroDe('codigo')}
-              autoCapitalize="characters"
-              maxLength={40}
-            />
-            <Campo id="segmento" rotulo="Linha" erro={erroDe('segmento')}>
-              {(atributos) => (
-                <select
-                  className="selecao"
-                  value={dados.segmento}
-                  onChange={(e) => atualizar('segmento', e.target.value as Segmento)}
-                  {...atributos}
-                >
-                  {(Object.keys(SEGMENTOS) as Segmento[]).map((opcao) => (
-                    <option key={opcao} value={opcao}>
-                      {SEGMENTOS[opcao]}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </Campo>
-          </div>
+        <div className="cadastro-linha">
+          <CampoTexto
+            id="codigo"
+            rotulo="Código"
+            value={dados.codigo}
+            onChange={(e) => atualizar('codigo', e.target.value)}
+            erro={erroDe('codigo')}
+            ajuda="Como vem impresso na caixa. A busca ignora espaços e hífens."
+            autoCapitalize="characters"
+            maxLength={40}
+          />
+          <Campo id="segmento" rotulo="Linha" erro={erroDe('segmento')}>
+            {(atributos) => (
+              <select
+                className="selecao"
+                value={dados.segmento}
+                onChange={(e) => atualizar('segmento', e.target.value as Segmento)}
+                {...atributos}
+              >
+                {(Object.keys(SEGMENTOS) as Segmento[]).map((opcao) => (
+                  <option key={opcao} value={opcao}>
+                    {SEGMENTOS[opcao]}
+                  </option>
+                ))}
+              </select>
+            )}
+          </Campo>
+        </div>
+        <div className="cadastro-linha">
           <CampoTexto
             id="nome"
             rotulo="Nome"
@@ -195,17 +201,7 @@ function FormularioProduto({ produto }: { produto?: ProdutoAdmin }) {
             onChange={(e) => atualizar('nome', e.target.value)}
             erro={erroDe('nome')}
           />
-          <Campo
-            id="categoriaId"
-            rotulo="Categoria"
-            opcional
-            erro={erroDe('categoriaId')}
-            ajuda={
-              <>
-                Agrupa a peça no catálogo. <Link to="/admin/categorias">Gerenciar categorias</Link>
-              </>
-            }
-          >
+          <Campo id="categoriaId" rotulo="Categoria" opcional erro={erroDe('categoriaId')}>
             {(atributos) => (
               <select
                 className="selecao"
@@ -222,31 +218,11 @@ function FormularioProduto({ produto }: { produto?: ProdutoAdmin }) {
               </select>
             )}
           </Campo>
-        </section>
+        </div>
 
-        <section className="form-bloco" aria-labelledby="bloco-foto">
-          <div className="form-bloco-titulo">
-            <h2 id="bloco-foto">Foto</h2>
-            <p>Aparece nos cartões do catálogo e na página da peça. Sem foto, o portal mostra um desenho de rolamento.</p>
-          </div>
-          <CampoImagem
-            urlAtual={produto?.imagemUrl ?? null}
-            arquivo={imagem}
-            removerAtual={removerImagem}
-            aoEscolher={(arquivo) => {
-              setImagem(arquivo);
-              if (arquivo) setRemoverImagem(false);
-            }}
-            aoRemoverAtual={setRemoverImagem}
-          />
-        </section>
-
-        <section className="form-bloco" aria-labelledby="bloco-medidas">
-          <div className="form-bloco-titulo">
-            <h2 id="bloco-medidas">Medidas principais</h2>
-            <p>Aparecem na ficha da peça e nos filtros do catálogo. Deixe em branco o que não se aplica (kits, ferramentas).</p>
-          </div>
-          <div className="linha-campos linha-medidas">
+        <section className="cadastro-secao" aria-labelledby={`${idFormulario}-medidas`}>
+          <h2 id={`${idFormulario}-medidas`}>Medidas</h2>
+          <div className="cadastro-linha cadastro-linha-medidas">
             {MEDIDAS.map(({ campo, rotulo, unidade, exemplo }) => (
               <Campo key={campo} id={campo} rotulo={`${rotulo} (${unidade})`} erro={errosDeMedida[campo] ?? erroDe(campo)}>
                 {(atributos) => (
@@ -262,14 +238,40 @@ function FormularioProduto({ produto }: { produto?: ProdutoAdmin }) {
               </Campo>
             ))}
           </div>
+          <p className="cadastro-dica">Deixe em branco o que não se aplica (kits, ferramentas).</p>
         </section>
 
-        <section className="form-bloco" aria-labelledby="bloco-aplicacao">
-          <div className="form-bloco-titulo">
-            <h2 id="bloco-aplicacao">Aplicação e descrição</h2>
-            <p>Veículos e máquinas citados aqui também são encontrados pela busca.</p>
-          </div>
-          <Campo id="aplicacoes" rotulo="Aplicações" opcional erro={erroDe('aplicacoes')}>
+        <section className="cadastro-secao" aria-labelledby={`${idFormulario}-foto`}>
+          <h2 id={`${idFormulario}-foto`}>Foto</h2>
+          <CampoImagem
+            objeto="foto"
+            rotulo="Foto da peça"
+            dica="Fundo branco ou transparente fica melhor no catálogo."
+            urlAtual={produto?.imagemUrl ?? null}
+            arquivo={imagem}
+            removerAtual={removerImagem}
+            aoEscolher={(arquivo) => {
+              setImagem(arquivo);
+              setAlterado(true);
+              if (arquivo) setRemoverImagem(false);
+            }}
+            aoRemoverAtual={(remover) => {
+              setRemoverImagem(remover);
+              setAlterado(true);
+            }}
+            erro={erroDe('imagem')}
+          />
+        </section>
+
+        <section className="cadastro-secao" aria-labelledby={`${idFormulario}-aplicacao`}>
+          <h2 id={`${idFormulario}-aplicacao`}>Aplicação e descrição</h2>
+          <Campo
+            id="aplicacoes"
+            rotulo="Aplicações"
+            opcional
+            erro={erroDe('aplicacoes')}
+            ajuda="Veículos e máquinas citados aqui também são encontrados pela busca."
+          >
             {(atributos) => (
               <textarea
                 className="area-texto"
@@ -285,34 +287,19 @@ function FormularioProduto({ produto }: { produto?: ProdutoAdmin }) {
             {(atributos) => (
               <textarea
                 className="area-texto"
-                rows={3}
+                rows={4}
                 value={dados.descricao}
                 onChange={(e) => atualizar('descricao', e.target.value)}
                 {...atributos}
               />
             )}
           </Campo>
-          <label className="alternador">
-            <input type="checkbox" checked={dados.ativo} onChange={(e) => atualizar('ativo', e.target.checked)} />
-            {dados.ativo ? 'Aparece no catálogo do portal' : 'Fora do catálogo (oculta no portal)'}
-          </label>
         </section>
 
-        <div className="form-rodape">
-          <div className="grupo-botoes">
-            <button type="submit" className="botao botao-principal" disabled={salvando}>
-              <Save aria-hidden /> {salvando ? 'Salvando...' : 'Salvar peça'}
-            </button>
-            <Link to="/admin/produtos" className="botao botao-fantasma">
-              Cancelar
-            </Link>
-          </div>
-          {produto && (
-            <button type="button" className="botao botao-perigo" onClick={() => setConfirmandoExclusao(true)}>
-              <Trash aria-hidden /> Excluir
-            </button>
-          )}
-        </div>
+        <label className="caixa">
+          <input type="checkbox" checked={dados.ativo} onChange={(e) => atualizar('ativo', e.target.checked)} />
+          Aparece no catálogo do portal
+        </label>
       </form>
 
       <DialogoConfirmacao
@@ -322,13 +309,13 @@ function FormularioProduto({ produto }: { produto?: ProdutoAdmin }) {
           produto?.totalDocumentos
             ? `${plural(produto.totalDocumentos, 'documento continua', 'documentos continuam')} no portal, sem o vínculo com a peça.`
             : ''
-        } Para só esconder do portal, desmarque “Aparece no catálogo”.`}
+        } Para só esconder do portal, desmarque “Aparece no catálogo do portal”.`}
         textoConfirmar="Excluir peça"
         perigoso
         processando={excluindo}
         aoCancelar={() => setConfirmandoExclusao(false)}
         aoConfirmar={excluir}
       />
-    </>
+    </Janela>
   );
 }

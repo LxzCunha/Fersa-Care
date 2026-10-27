@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { count, eq } from 'drizzle-orm';
 import { caminhoDoArquivo, garantirPastaDeUploads, gerarChave, tipoDoArquivo } from '../lib/armazenamento.js';
+import { gerarCapa, temCapaAutomatica } from '../lib/capas.js';
 import { gerarHashSenha } from '../lib/senha.js';
 import { campoEmail, campoSenhaNova } from '../lib/validacao.js';
 import {
@@ -71,6 +72,7 @@ async function copiarArquivoDeExemplo(nome: string) {
     arquivoNome: nome,
     arquivoMime: tipoDoArquivo(nome)?.mime ?? 'application/octet-stream',
     arquivoTamanho: size,
+    capaChave: temCapaAutomatica(nome) ? await gerarCapa(chave, nome) : null,
   };
 }
 

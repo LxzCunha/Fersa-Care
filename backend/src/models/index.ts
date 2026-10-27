@@ -15,3 +15,6 @@ export * from './documento-produto.model.js';
 export * from './documento-acesso.model.js';
 export * from './documento-visualizacao.model.js';
 export * from './documento-trecho.model.js';
+export * from './assistente-conversa.model.js';
+export * from './assistente-mensagem.model.js';
+export * from './chamado.model.js';

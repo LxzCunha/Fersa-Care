@@ -8,7 +8,7 @@ import { CartaoPeca } from '../componentes/CartaoPeca';
 import { AvisoErro, Carregando, EstadoVazio } from '../componentes/Estados';
 import { Paginacao } from '../componentes/Paginacao';
 import { Trilha } from '../componentes/Trilha';
-import { SUPORTE } from '../config';
+import { useAssistente } from '../contexto/Assistente';
 import { plural } from '../lib/formatar';
 import { escreverMedida, lerMedida, milimetros } from '../lib/medidas';
 import { SEGMENTOS } from '../lib/rotulos';
@@ -33,6 +33,7 @@ type ChaveDeMedida = (typeof MEDIDAS)[number]['minimo' | 'maximo'];
 export function Produtos() {
   const [parametros, setParametros] = useSearchParams();
   const gaveta = useRef<HTMLDialogElement>(null);
+  const assistente = useAssistente();
 
   const busca = parametros.get('busca') ?? '';
   const segmento = (parametros.get('segmento') as Segmento | null) ?? undefined;
@@ -104,10 +105,10 @@ export function Produtos() {
           {painel}
           <div className="cartao-marca catalogo-ajuda">
             <h2>Não encontrou a peça?</h2>
-            <p>O suporte técnico Fersa Care ajuda a identificar pela aplicação ou pelas medidas.</p>
-            <a className="botao botao-principal" href={SUPORTE.linkWhatsapp('Olá! Preciso de ajuda para identificar uma peça FERSA.')} target="_blank" rel="noreferrer">
-              <MessageCircle aria-hidden /> Falar com o suporte
-            </a>
+            <p>O assistente técnico ajuda a identificar pela aplicação ou pelas medidas.</p>
+            <button type="button" className="botao botao-principal" onClick={() => assistente.abrir()}>
+              <MessageCircle aria-hidden /> Perguntar ao assistente
+            </button>
           </div>
         </aside>
 

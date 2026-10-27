@@ -4,9 +4,9 @@ import { Link, useNavigate, useSearchParams } from 'react-router';
 import { listarCategorias, listarDocumentos, listarProdutos } from '../api/portal';
 import { BlocoSuporte } from '../componentes/BlocoSuporte';
 import { CampoBusca } from '../componentes/CampoBusca';
+import { GradeDocumentos } from '../componentes/CartaoDocumento';
 import { CartaoPeca } from '../componentes/CartaoPeca';
 import { AvisoErro, Carregando, EstadoVazio } from '../componentes/Estados';
-import { ListaDocumentos } from '../componentes/ListaDocumentos';
 import { EXEMPLOS_DE_BUSCA } from '../config';
 import { numero, plural } from '../lib/formatar';
 import { ListaCategorias } from './Categorias';
@@ -124,7 +124,7 @@ export function Busca() {
               </Link>
             )}
           </div>
-          <ListaDocumentos documentos={materiais.data.itens} rotulo={`Materiais encontrados para ${termo}`} />
+          <GradeDocumentos documentos={materiais.data.itens} rotulo={`Materiais encontrados para ${termo}`} />
         </section>
       )}
 

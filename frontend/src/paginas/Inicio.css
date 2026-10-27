@@ -303,3 +303,11 @@
     grid-row: 1 / span 2;
   }
 }
+
+/* O atalho "Suporte técnico" é um botão (abre o assistente), com a aparência dos outros. */
+button.atalho {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}

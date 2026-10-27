@@ -38,8 +38,16 @@ export const segmentoProduto = pgEnum('segmento_produto', [
   'INDUSTRIAL',
 ]);
 
+/** Quem escreveu cada mensagem da conversa com o assistente. */
+export const papelMensagem = pgEnum('papel_mensagem', ['USUARIO', 'ASSISTENTE']);
+
+/** Andamento do chamado de suporte técnico aberto pelo assistente. */
+export const statusChamado = pgEnum('status_chamado', ['ABERTO', 'EM_ATENDIMENTO', 'RESOLVIDO']);
+
 export type Perfil = (typeof perfilUsuario.enumValues)[number];
 export type StatusUsuario = (typeof statusUsuario.enumValues)[number];
 export type Visibilidade = (typeof visibilidadeDocumento.enumValues)[number];
 export type TipoDocumento = (typeof tipoDocumento.enumValues)[number];
 export type Segmento = (typeof segmentoProduto.enumValues)[number];
+export type PapelMensagem = (typeof papelMensagem.enumValues)[number];
+export type StatusChamado = (typeof statusChamado.enumValues)[number];

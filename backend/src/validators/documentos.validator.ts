@@ -45,6 +45,8 @@ export const esquemaDocumento = z
     produtoIds: z.array(z.uuid('Produto inválido.')).max(100).default([]),
     /** Usuários com acesso — usado apenas quando a visibilidade é RESTRITO. */
     usuarioIds: z.array(z.uuid('Usuário inválido.')).max(2000).default([]),
+    /** Apaga a capa enviada pelo admin e volta para a automática (1ª página do PDF). */
+    removerCapa: z.boolean().default(false),
   })
   .superRefine((dados, contexto) => {
     if (dados.origem === 'LINK' && !dados.urlExterna) {

@@ -1,15 +1,20 @@
-import { ImagePlus, RefreshCw, Trash } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { ChevronRight } from 'lucide-react';
+import { useEffect, useId, useMemo, useState } from 'react';
 
 const EXTENSOES = '.png,.jpg,.jpeg,.webp';
 /** Mesmo limite da API (IMAGEM_LIMITE_MB). */
 const LIMITE_MB = 5;
 
 /**
- * Foto da peça com pré-visualização: escolher (clique ou arrastar), trocar ou
- * remover. O tipo e o tamanho são conferidos antes de enviar.
+ * Imagem opcional (foto da peça, capa do documento) numa linha com o nome do
+ * arquivo e ›, como num cadastro de celular: clicar (ou arrastar a imagem até
+ * a linha) escolhe outra; a prévia fica embaixo. O tipo e o tamanho são
+ * conferidos antes de enviar.
  */
 export function CampoImagem({
+  objeto,
+  rotulo,
+  dica,
   urlAtual,
   arquivo,
   removerAtual,
@@ -17,15 +22,22 @@ export function CampoImagem({
   aoRemoverAtual,
   erro,
 }: {
-  /** Foto já salva (edição), ou null. */
+  /** Nome da imagem nos textos: "Escolher foto", "Remover capa"... (os dois são femininos). */
+  objeto: 'foto' | 'capa';
+  /** Nome do campo para leitores de tela, ex.: "Foto da peça". */
+  rotulo: string;
+  /** Orientação depois dos formatos aceitos. */
+  dica: string;
+  /** Imagem já salva (edição), ou null. */
   urlAtual: string | null;
   arquivo: File | null;
-  /** A foto atual será apagada ao salvar. */
+  /** A imagem atual será apagada ao salvar. */
   removerAtual: boolean;
   aoEscolher: (arquivo: File | null) => void;
   aoRemoverAtual: (remover: boolean) => void;
   erro?: string;
 }) {
+  const idAjuda = useId();
   const [arrastando, setArrastando] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
 
@@ -51,61 +63,63 @@ export function CampoImagem({
     aoEscolher(escolhido);
   }
 
-  const entrada = (
-    <input
-      type="file"
-      accept={EXTENSOES}
-      aria-label="Foto da peça"
-      aria-describedby={mostrando ? undefined : 'ajuda-imagem'}
-      aria-invalid={Boolean(erro || aviso)}
-      onChange={(evento) => {
-        escolher(evento.target.files?.[0] ?? null);
-        evento.target.value = '';
-      }}
-    />
-  );
+  const Objeto = objeto === 'foto' ? 'Foto' : 'Capa';
+  const valor = arquivo
+    ? arquivo.name
+    : removerAtual && urlAtual
+      ? `${Objeto} será removida ao salvar`
+      : urlAtual
+        ? `${Objeto} atual`
+        : `Escolher ${objeto}`;
 
   return (
     <div className="campo">
-      {mostrando ? (
-        <div className="imagem-escolhida">
-          <img src={mostrando} alt="Pré-visualização da foto da peça" />
-          <div className="grupo-botoes">
-            <label className="botao botao-secundario botao-pequeno botao-arquivo">
-              <RefreshCw aria-hidden /> Trocar foto
-              {entrada}
-            </label>
-            <button
-              type="button"
-              className="botao botao-fantasma botao-pequeno"
-              onClick={() => {
-                if (arquivo) aoEscolher(null);
-                else aoRemoverAtual(true);
-              }}
-            >
-              <Trash aria-hidden /> {arquivo && urlAtual && !removerAtual ? 'Manter a foto anterior' : 'Remover foto'}
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div
-          className={`zona-arquivo ${arrastando ? 'arrastando' : ''}`}
-          onDragEnter={() => setArrastando(true)}
-          onDragLeave={() => setArrastando(false)}
-          onDrop={() => setArrastando(false)}
-        >
-          <ImagePlus className="zona-arquivo-icone" aria-hidden />
-          <span className="zona-arquivo-titulo">Clique para escolher ou arraste a foto até aqui</span>
-          <span className="zona-arquivo-ajuda" id="ajuda-imagem">
-            PNG, JPG ou WebP, até {LIMITE_MB} MB. Fundo branco ou transparente fica melhor no catálogo.
-          </span>
-          {entrada}
+      <div
+        className={`linha-arquivo ${arrastando ? 'arrastando' : ''} ${arquivo || (urlAtual && !removerAtual) ? '' : 'vazia'}`}
+        onDragEnter={() => setArrastando(true)}
+        onDragLeave={() => setArrastando(false)}
+        onDrop={() => setArrastando(false)}
+      >
+        <span className="linha-arquivo-texto">
+          <span className="campo-rotulo">{rotulo}</span>
+          <span className="linha-arquivo-valor">{valor}</span>
+        </span>
+        <ChevronRight className="linha-arquivo-seta" aria-hidden />
+        <input
+          type="file"
+          accept={EXTENSOES}
+          aria-label={rotulo}
+          aria-describedby={idAjuda}
+          aria-invalid={Boolean(erro || aviso)}
+          onChange={(evento) => {
+            escolher(evento.target.files?.[0] ?? null);
+            evento.target.value = '';
+          }}
+        />
+      </div>
+      <span className="campo-ajuda" id={idAjuda}>
+        PNG, JPG ou WebP, até {LIMITE_MB} MB. {dica}
+      </span>
+      {(erro || aviso) && <span className="campo-erro">{erro ?? aviso}</span>}
+
+      {mostrando && (
+        <div className="previa-imagem">
+          <img src={mostrando} alt={`Pré-visualização: ${rotulo.toLowerCase()}`} />
+          <button
+            type="button"
+            className="link-acao"
+            onClick={() => {
+              if (arquivo) aoEscolher(null);
+              else aoRemoverAtual(true);
+            }}
+          >
+            {arquivo && urlAtual && !removerAtual ? `Manter a ${objeto} anterior` : `Remover ${objeto}`}
+          </button>
         </div>
       )}
-      {(erro || aviso) && <span className="campo-erro">{erro ?? aviso}</span>}
       {removerAtual && !arquivo && urlAtual && (
-        <button type="button" className="botao botao-fantasma botao-pequeno" onClick={() => aoRemoverAtual(false)}>
-          Desfazer: manter a foto atual
+        <button type="button" className="link-acao" onClick={() => aoRemoverAtual(false)}>
+          Desfazer: manter a {objeto} atual
         </button>
       )}
     </div>

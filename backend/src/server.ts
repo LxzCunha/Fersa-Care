@@ -2,6 +2,8 @@ import { criarApp } from './app.js';
 import { env } from './config/env.js';
 import { pool } from './db/index.js';
 import { garantirPastaDeUploads } from './lib/armazenamento.js';
+import { iaDisponivel } from './lib/ia.js';
+import { indexarPendentes } from './services/indexacao.service.js';
 
 /** Ponto de entrada: confere o banco, prepara a pasta de uploads e abre a porta. */
 
@@ -34,7 +36,23 @@ const servidor = criarApp().listen(env.PORTA, () => {
   console.log(`✅ API FERSA CARE rodando em http://localhost:${env.PORTA}`);
   console.log(`   Documentação da API: http://localhost:${env.PORTA}/api/docs`);
   if (env.FRONTEND_DIST) console.log(`   Site: http://localhost:${env.PORTA}`);
+  void prepararAssistente();
 });
+
+/**
+ * Em segundo plano, indexa para o assistente os documentos que ficaram
+ * pendentes (cadastrados com o Ollama desligado, editados, com falha...).
+ */
+async function prepararAssistente() {
+  if (!env.IA_INDEXAR_AO_SALVAR) return;
+  if (!(await iaDisponivel())) {
+    console.warn(`⚠️  Ollama fora do ar em ${env.OLLAMA_URL}: o assistente responde só com o encaminhamento ao suporte.`);
+    return;
+  }
+  const { documentos, trechos, falhas } = await indexarPendentes();
+  if (documentos > 0) console.log(`   Assistente: ${documentos} documento(s) indexado(s), ${trechos} trecho(s).`);
+  for (const falha of falhas) console.warn(`   ⚠️  Indexação: ${falha}`);
+}
 
 // Encerramento gracioso: termina as requisições em andamento e fecha o banco.
 function encerrar(sinal: string) {

@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { esquemaParametroId, lerDadosDoFormulario } from '../lib/validacao.js';
+import { arquivoEnviado } from '../middlewares/upload.js';
 import * as produtosService from '../services/produtos.service.js';
 import {
   esquemaFiltrosProdutos,
@@ -46,13 +47,13 @@ export async function detalharParaAdmin(req: Request, res: Response) {
 
 export async function criar(req: Request, res: Response) {
   const dados = esquemaProduto.parse(lerDadosDoFormulario(req));
-  res.status(201).json(await produtosService.criarProduto(dados, req.file));
+  res.status(201).json(await produtosService.criarProduto(dados, arquivoEnviado(req, 'imagem')));
 }
 
 export async function atualizar(req: Request, res: Response) {
   const { id } = esquemaParametroId.parse(req.params);
   const dados = esquemaProduto.parse(lerDadosDoFormulario(req));
-  res.json(await produtosService.atualizarProduto(id, dados, req.file));
+  res.json(await produtosService.atualizarProduto(id, dados, arquivoEnviado(req, 'imagem')));
 }
 
 export async function excluir(req: Request, res: Response) {

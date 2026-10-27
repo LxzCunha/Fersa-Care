@@ -1,11 +1,12 @@
-import { FileText, RefreshCw, CloudUpload, X } from 'lucide-react';
-import { useState } from 'react';
+import { ChevronRight } from 'lucide-react';
+import { useId, useState } from 'react';
 import { EXTENSOES_ACEITAS, LIMITE_UPLOAD_MB } from '../../config';
 import { tamanhoDeArquivo } from '../../lib/formatar';
 
 /**
- * Escolha do arquivo do documento: clicar ou arrastar e soltar.
- * Na edição, mostra o arquivo atual e permite substituí-lo.
+ * Arquivo do documento numa linha com o nome e ›: clicar (ou arrastar o
+ * arquivo até a linha) escolhe outro. Na edição, mostra o arquivo atual;
+ * o novo só substitui o atual ao salvar.
  */
 export function CampoArquivo({
   arquivo,
@@ -18,74 +19,49 @@ export function CampoArquivo({
   aoEscolher: (arquivo: File | null) => void;
   erro?: string;
 }) {
+  const idAjuda = useId();
   const [arrastando, setArrastando] = useState(false);
-  const [substituindo, setSubstituindo] = useState(false);
 
-  if (arquivo) {
-    return (
-      <div className="campo">
-        <div className="arquivo-escolhido">
-          <span className="arquivo-escolhido-nome">
-            <FileText aria-hidden />
-            <span>
-              {arquivo.name} <small>({tamanhoDeArquivo(arquivo.size)})</small>
-            </span>
-          </span>
-          <button type="button" className="botao botao-fantasma botao-pequeno" onClick={() => aoEscolher(null)}>
-            <X aria-hidden /> Remover
-          </button>
-        </div>
-        {erro && <span className="campo-erro">{erro}</span>}
-      </div>
-    );
-  }
-
-  if (arquivoAtual && !substituindo) {
-    return (
-      <div className="arquivo-escolhido">
-        <span className="arquivo-escolhido-nome">
-          <FileText aria-hidden />
-          <span>
-            {arquivoAtual.nome} <small>({tamanhoDeArquivo(arquivoAtual.tamanho)}, arquivo atual)</small>
-          </span>
-        </span>
-        <button type="button" className="botao botao-secundario botao-pequeno" onClick={() => setSubstituindo(true)}>
-          <RefreshCw aria-hidden /> Substituir arquivo
-        </button>
-      </div>
-    );
-  }
+  const valor = arquivo
+    ? `${arquivo.name} (${tamanhoDeArquivo(arquivo.size)})`
+    : arquivoAtual
+      ? `${arquivoAtual.nome} (${tamanhoDeArquivo(arquivoAtual.tamanho)})`
+      : 'Escolher arquivo';
 
   return (
     <div className="campo">
       <div
-        className={`zona-arquivo ${arrastando ? 'arrastando' : ''}`}
+        className={`linha-arquivo ${arrastando ? 'arrastando' : ''} ${arquivo || arquivoAtual ? '' : 'vazia'}`}
         onDragEnter={() => setArrastando(true)}
         onDragLeave={() => setArrastando(false)}
         onDrop={() => setArrastando(false)}
       >
-        <CloudUpload className="zona-arquivo-icone" aria-hidden />
-        <span className="zona-arquivo-titulo">Clique para escolher ou arraste o arquivo até aqui</span>
-        <span className="zona-arquivo-ajuda" id="ajuda-arquivo">
-          PDF, vídeo MP4/WebM, imagem, Office, TXT, CSV ou ZIP, até {LIMITE_UPLOAD_MB} MB.
+        <span className="linha-arquivo-texto">
+          <span className="campo-rotulo">{arquivo && arquivoAtual ? 'Novo arquivo' : 'Arquivo'}</span>
+          <span className="linha-arquivo-valor">{valor}</span>
         </span>
+        <ChevronRight className="linha-arquivo-seta" aria-hidden />
         <input
           type="file"
           accept={EXTENSOES_ACEITAS}
           aria-label="Arquivo do documento"
-          aria-describedby="ajuda-arquivo"
+          aria-describedby={idAjuda}
           aria-invalid={Boolean(erro)}
           onChange={(evento) => {
-            const escolhido = evento.target.files?.[0] ?? null;
-            aoEscolher(escolhido);
+            aoEscolher(evento.target.files?.[0] ?? null);
             evento.target.value = '';
           }}
         />
       </div>
+      <span className="campo-ajuda" id={idAjuda}>
+        {arquivo && arquivoAtual
+          ? `Substitui ${arquivoAtual.nome} ao salvar.`
+          : `PDF, vídeo MP4/WebM, imagem, Office, TXT, CSV ou ZIP, até ${LIMITE_UPLOAD_MB} MB.`}
+      </span>
       {erro && <span className="campo-erro">{erro}</span>}
-      {substituindo && (
-        <button type="button" className="botao botao-fantasma botao-pequeno" onClick={() => setSubstituindo(false)}>
-          Manter o arquivo atual
+      {arquivo && (
+        <button type="button" className="link-acao" onClick={() => aoEscolher(null)}>
+          {arquivoAtual ? 'Manter o arquivo atual' : 'Remover'}
         </button>
       )}
     </div>

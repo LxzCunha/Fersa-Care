@@ -1,16 +1,19 @@
 import { api, ErroApi } from './cliente';
 import type {
   Categoria,
+  ChamadoDetalhado,
   DocumentoAdmin,
   Documento,
   Idioma,
   Pagina,
+  PaginaChamados,
   PaginaUsuarios,
   Painel,
   Perfil,
   Produto,
   ProdutoAdmin,
   Segmento,
+  StatusChamado,
   StatusUsuario,
   TipoDocumento,
   Usuario,
@@ -46,6 +49,14 @@ export interface DadosDocumento {
   urlExterna: string | null;
   produtoIds: string[];
   usuarioIds: string[];
+  /** Apaga a capa enviada e volta para a automática. */
+  removerCapa: boolean;
+}
+
+/** Arquivos do formulário de documento: o conteúdo e uma capa própria (os dois opcionais na edição). */
+export interface ArquivosDocumento {
+  arquivo: File | null;
+  capa: File | null;
 }
 
 export function listarDocumentosAdmin(filtros: FiltrosDocumentosAdmin) {
@@ -103,27 +114,32 @@ function salvarDocumento(
   caminho: string,
   metodo: 'POST' | 'PUT',
   dados: DadosDocumento,
-  arquivo: File | null,
+  { arquivo, capa }: ArquivosDocumento,
   aoProgredir?: (percentual: number) => void,
 ) {
-  if (!arquivo) return api<DocumentoAdmin>(caminho, { metodo, corpo: dados });
+  if (!arquivo && !capa) return api<DocumentoAdmin>(caminho, { metodo, corpo: dados });
   const formulario = new FormData();
   formulario.append('dados', JSON.stringify(dados));
-  formulario.append('arquivo', arquivo);
+  if (arquivo) formulario.append('arquivo', arquivo);
+  if (capa) formulario.append('capa', capa);
   return enviarComProgresso<DocumentoAdmin>(caminho, metodo, formulario, aoProgredir);
 }
 
-export function criarDocumento(dados: DadosDocumento, arquivo: File | null, aoProgredir?: (percentual: number) => void) {
-  return salvarDocumento('/admin/documentos', 'POST', dados, arquivo, aoProgredir);
+export function criarDocumento(
+  dados: DadosDocumento,
+  arquivos: ArquivosDocumento,
+  aoProgredir?: (percentual: number) => void,
+) {
+  return salvarDocumento('/admin/documentos', 'POST', dados, arquivos, aoProgredir);
 }
 
 export function atualizarDocumento(
   id: string,
   dados: DadosDocumento,
-  arquivo: File | null,
+  arquivos: ArquivosDocumento,
   aoProgredir?: (percentual: number) => void,
 ) {
-  return salvarDocumento(`/admin/documentos/${id}`, 'PUT', dados, arquivo, aoProgredir);
+  return salvarDocumento(`/admin/documentos/${id}`, 'PUT', dados, arquivos, aoProgredir);
 }
 
 export function excluirDocumento(id: string) {
@@ -255,4 +271,30 @@ export function atualizarCategoria(id: string, dados: DadosCategoria) {
 
 export function excluirCategoria(id: string) {
   return api<void>(`/admin/categorias/${id}`, { metodo: 'DELETE' });
+}
+
+/** Refaz a indexação do documento para o assistente (em segundo plano). */
+export function reindexarDocumento(id: string) {
+  return api<{ mensagem: string }>(`/admin/documentos/${id}/indexar`, { metodo: 'POST' });
+}
+
+// ─── Chamados de suporte técnico ────────────────────────────────────────────
+
+export interface FiltrosChamados {
+  busca?: string;
+  status?: StatusChamado;
+  pagina?: number;
+  porPagina?: number;
+}
+
+export function listarChamados(filtros: FiltrosChamados) {
+  return api<PaginaChamados>('/admin/chamados', { parametros: { ...filtros } });
+}
+
+export function detalharChamado(id: string) {
+  return api<ChamadoDetalhado>(`/admin/chamados/${id}`);
+}
+
+export function atualizarChamado(id: string, dados: { status: StatusChamado; observacao: string }) {
+  return api<ChamadoDetalhado>(`/admin/chamados/${id}`, { metodo: 'PATCH', corpo: dados });
 }

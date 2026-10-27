@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Eye, FileUp, Link2, Save, Trash } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { FileUp, Link2 } from 'lucide-react';
+import { useId, useState, type FormEvent } from 'react';
+import { Link, useParams } from 'react-router';
 import {
   atualizarDocumento,
   criarDocumento,
   detalharDocumentoAdmin,
   excluirDocumento,
+  reindexarDocumento,
   type DadosDocumento,
 } from '../../api/admin';
 import { ErroApi } from '../../api/cliente';
@@ -23,24 +24,32 @@ import { DialogoConfirmacao } from '../../componentes/DialogoConfirmacao';
 import { AvisoErro, Carregando, mensagemDeErro } from '../../componentes/Estados';
 import { LIMITE_UPLOAD_MB } from '../../config';
 import { useNotificar } from '../../contexto/Notificacoes';
-import { data, plural } from '../../lib/formatar';
+import { data, dataHora, plural } from '../../lib/formatar';
 import { IDIOMAS, ORDEM_DOS_TIPOS, TIPOS, VISIBILIDADES } from '../../lib/rotulos';
 import { useRecarregarTudo } from './acoes';
 import { CampoArquivo } from './CampoArquivo';
+import { CampoImagem } from './CampoImagem';
+import { Janela, rolarJanelaParaTopo, useVoltarParaLista } from './Cadastro';
 import { SeletorProdutos, SeletorUsuarios } from './Seletores';
 
-/** Cadastro (/admin/documentos/novo) e edição (/admin/documentos/:id) de documentos. */
+/** Cadastro (/admin/documentos/novo) e edição (/admin/documentos/:id), numa janela sobre a lista. */
 export function FormDocumento() {
   const { id } = useParams();
+  const fechar = useVoltarParaLista('/admin/documentos');
   const consulta = useQuery({
     queryKey: ['admin', 'documento', id],
     queryFn: () => detalharDocumentoAdmin(id!),
     enabled: Boolean(id),
   });
 
-  if (id && consulta.isPending) return <Carregando />;
-  if (id && consulta.isError) return <AvisoErro erro={consulta.error} />;
-  return <FormularioDocumento key={id ?? 'novo'} documento={consulta.data} />;
+  if (id && !consulta.data) {
+    return (
+      <Janela titulo="Documento" aoFechar={fechar}>
+        {consulta.isError ? <AvisoErro erro={consulta.error} /> : <Carregando />}
+      </Janela>
+    );
+  }
+  return <FormularioDocumento key={id ?? 'novo'} documento={consulta.data} aoFechar={fechar} />;
 }
 
 /** "manual-de-montagem_v2.pdf" → "Manual de montagem v2" */
@@ -49,9 +58,9 @@ function tituloPeloNomeDoArquivo(nome: string): string {
   return semExtensao.charAt(0).toUpperCase() + semExtensao.slice(1);
 }
 
-function FormularioDocumento({ documento }: { documento?: DocumentoAdmin }) {
+function FormularioDocumento({ documento, aoFechar }: { documento?: DocumentoAdmin; aoFechar: () => void }) {
   const editando = Boolean(documento);
-  const navegar = useNavigate();
+  const idFormulario = useId();
   const notificar = useNotificar();
   const recarregar = useRecarregarTudo();
 
@@ -64,9 +73,12 @@ function FormularioDocumento({ documento }: { documento?: DocumentoAdmin }) {
   const [origem, setOrigem] = useState<'ARQUIVO' | 'LINK'>(documento?.origem ?? 'ARQUIVO');
   const [urlExterna, setUrlExterna] = useState(documento?.urlExterna ?? '');
   const [arquivo, setArquivo] = useState<File | null>(null);
+  const [capa, setCapa] = useState<File | null>(null);
+  const [removerCapa, setRemoverCapa] = useState(false);
   const [produtos, setProdutos] = useState<ProdutoResumo[]>(documento?.produtos ?? []);
   const [usuarios, setUsuarios] = useState<UsuarioComAcesso[]>(documento?.usuariosComAcesso ?? []);
 
+  const [alterado, setAlterado] = useState(false);
   const [erro, setErro] = useState<ErroApi | null>(null);
   const [salvando, setSalvando] = useState(false);
   const [progresso, setProgresso] = useState<number | null>(null);
@@ -114,25 +126,24 @@ function FormularioDocumento({ documento }: { documento?: DocumentoAdmin }) {
       urlExterna: origem === 'LINK' ? urlExterna.trim() : null,
       produtoIds: produtos.map((produto) => produto.id),
       usuarioIds: visibilidade === 'RESTRITO' ? usuarios.map((pessoa) => pessoa.id) : [],
+      removerCapa: removerCapa && !capa,
     };
-    const arquivoParaEnviar = origem === 'ARQUIVO' ? arquivo : null;
+    const arquivos = { arquivo: origem === 'ARQUIVO' ? arquivo : null, capa };
 
     setSalvando(true);
-    setProgresso(arquivoParaEnviar ? 0 : null);
+    setProgresso(arquivos.arquivo || arquivos.capa ? 0 : null);
     try {
       if (documento) {
-        await atualizarDocumento(documento.id, dados, arquivoParaEnviar, setProgresso);
+        await atualizarDocumento(documento.id, dados, arquivos, setProgresso);
       } else {
-        await criarDocumento(dados, arquivoParaEnviar, setProgresso);
+        await criarDocumento(dados, arquivos, setProgresso);
       }
       await recarregar();
       notificar(editando ? 'Documento atualizado.' : 'Documento cadastrado.');
-      navegar('/admin/documentos');
+      aoFechar();
     } catch (falha) {
-      setErro(
-        falha instanceof ErroApi ? falha : new ErroApi(0, 'ERRO', mensagemDeErro(falha)),
-      );
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setErro(falha instanceof ErroApi ? falha : new ErroApi(0, 'ERRO', mensagemDeErro(falha)));
+      rolarJanelaParaTopo();
     } finally {
       setSalvando(false);
       setProgresso(null);
@@ -146,7 +157,7 @@ function FormularioDocumento({ documento }: { documento?: DocumentoAdmin }) {
       await excluirDocumento(documento.id);
       await recarregar();
       notificar('Documento excluído.');
-      navegar('/admin/documentos');
+      aoFechar();
     } catch (falha) {
       notificar(mensagemDeErro(falha), 'erro');
       setExcluindo(false);
@@ -157,99 +168,83 @@ function FormularioDocumento({ documento }: { documento?: DocumentoAdmin }) {
   const errosGerais = erro && erro.detalhes.length === 0;
 
   return (
-    <>
-      <title>{`${editando ? 'Editar' : 'Cadastrar'} documento | Administração FERSA Care`}</title>
-
-      <Link to="/admin/documentos" className="voltar">
-        <ArrowLeft aria-hidden /> Documentos
-      </Link>
-
-      <header className="admin-cabecalho">
-        <div>
-          <h1>{editando ? 'Editar documento' : 'Cadastrar documento'}</h1>
-          {documento && (
-            <p>
+    <Janela
+      titulo={editando ? 'Documento' : 'Novo documento'}
+      idFormulario={idFormulario}
+      salvando={salvando}
+      alterado={alterado}
+      progresso={progresso}
+      aoFechar={aoFechar}
+      links={
+        documento && (
+          <>
+            <span className="janela-nota">
               {documento.criadoPor ? `Cadastrado por ${documento.criadoPor.nome} em ` : 'Cadastrado em '}
-              {data(documento.criadoEm)}. {plural(documento.totalVisualizacoes, 'abertura')} até agora.
-            </p>
-          )}
-        </div>
-        {documento && (
-          <Link to={`/documentos/${documento.id}`} className="botao botao-secundario">
-            <Eye aria-hidden /> Ver no portal
-          </Link>
-        )}
-      </header>
-
-      <form className="form-admin" onSubmit={salvar} noValidate>
+              {data(documento.criadoEm)} · {plural(documento.totalVisualizacoes, 'abertura')}
+            </span>
+            {documento.publicado && <Link to={`/documentos/${documento.id}`}>Ver no portal</Link>}
+            <button type="button" className="janela-link-perigo" onClick={() => setConfirmandoExclusao(true)}>
+              Excluir documento
+            </button>
+          </>
+        )
+      }
+    >
+      <form id={idFormulario} className="cadastro" onSubmit={salvar} onChange={() => setAlterado(true)} noValidate>
         {errosGerais && <AvisoErro erro={erro} />}
-        {erro && !errosGerais && (
-          <AvisoErro>Confira os campos destacados: {erro.message}</AvisoErro>
-        )}
+        {erro && !errosGerais && <AvisoErro>Confira os campos destacados: {erro.message}</AvisoErro>}
 
-        <section className="form-bloco" aria-labelledby="bloco-identificacao">
-          <div className="form-bloco-titulo">
-            <h2 id="bloco-identificacao">Identificação</h2>
-            <p>O título e a descrição entram na busca do portal.</p>
-          </div>
-          <CampoTexto
-            id="titulo"
-            rotulo="Título"
-            value={titulo}
-            onChange={(evento) => setTitulo(evento.target.value)}
-            erro={erroDe('titulo')}
-            maxLength={200}
-          />
-          <Campo id="descricao" rotulo="Descrição" opcional erro={erroDe('descricao')} ajuda="Explique em uma ou duas frases o que o cliente encontra no material.">
+        <CampoTexto
+          id="titulo"
+          rotulo="Título"
+          value={titulo}
+          onChange={(evento) => setTitulo(evento.target.value)}
+          erro={erroDe('titulo')}
+          ajuda="O título e a descrição entram na busca do portal."
+          maxLength={200}
+        />
+        <Campo id="descricao" rotulo="Descrição" opcional erro={erroDe('descricao')}>
+          {(atributos) => (
+            <textarea
+              className="area-texto"
+              rows={3}
+              placeholder="Em uma ou duas frases, o que o cliente encontra no material."
+              value={descricao}
+              onChange={(evento) => setDescricao(evento.target.value)}
+              {...atributos}
+            />
+          )}
+        </Campo>
+        <div className="cadastro-linha">
+          <Campo id="tipo" rotulo="Tipo" erro={erroDe('tipo')}>
             {(atributos) => (
-              <textarea
-                className="area-texto"
-                rows={3}
-                value={descricao}
-                onChange={(evento) => setDescricao(evento.target.value)}
-                {...atributos}
-              />
+              <select className="selecao" value={tipo} onChange={(e) => setTipo(e.target.value as TipoDocumento)} {...atributos}>
+                {ORDEM_DOS_TIPOS.map((opcao) => (
+                  <option key={opcao} value={opcao}>
+                    {TIPOS[opcao].singular}
+                  </option>
+                ))}
+              </select>
             )}
           </Campo>
-          <div className="linha-campos">
-            <Campo id="tipo" rotulo="Tipo" erro={erroDe('tipo')}>
-              {(atributos) => (
-                <select className="selecao" value={tipo} onChange={(e) => setTipo(e.target.value as TipoDocumento)} {...atributos}>
-                  {ORDEM_DOS_TIPOS.map((opcao) => (
-                    <option key={opcao} value={opcao}>
-                      {TIPOS[opcao].singular}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </Campo>
-            <Campo id="idioma" rotulo="Idioma" erro={erroDe('idioma')}>
-              {(atributos) => (
-                <select className="selecao" value={idioma} onChange={(e) => setIdioma(e.target.value as Idioma)} {...atributos}>
-                  {(Object.keys(IDIOMAS) as Idioma[]).map((opcao) => (
-                    <option key={opcao} value={opcao}>
-                      {IDIOMAS[opcao]}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </Campo>
-          </div>
-        </section>
+          <Campo id="idioma" rotulo="Idioma" erro={erroDe('idioma')}>
+            {(atributos) => (
+              <select className="selecao" value={idioma} onChange={(e) => setIdioma(e.target.value as Idioma)} {...atributos}>
+                {(Object.keys(IDIOMAS) as Idioma[]).map((opcao) => (
+                  <option key={opcao} value={opcao}>
+                    {IDIOMAS[opcao]}
+                  </option>
+                ))}
+              </select>
+            )}
+          </Campo>
+        </div>
 
-        <section className="form-bloco" aria-labelledby="bloco-conteudo">
-          <div className="form-bloco-titulo">
-            <h2 id="bloco-conteudo">Conteúdo</h2>
-            <p>Envie o arquivo ou use o link de onde o material já está (YouTube, Vimeo, SharePoint...).</p>
-          </div>
+        <section className="cadastro-secao" aria-labelledby={`${idFormulario}-conteudo`}>
+          <h2 id={`${idFormulario}-conteudo`}>Conteúdo</h2>
           <div className="alternancia-origem" role="radiogroup" aria-label="Origem do conteúdo">
             <label>
-              <input
-                type="radio"
-                name="origem"
-                checked={origem === 'ARQUIVO'}
-                onChange={() => setOrigem('ARQUIVO')}
-              />
+              <input type="radio" name="origem" checked={origem === 'ARQUIVO'} onChange={() => setOrigem('ARQUIVO')} />
               <FileUp aria-hidden /> Enviar arquivo
             </label>
             <label>
@@ -262,7 +257,10 @@ function FormularioDocumento({ documento }: { documento?: DocumentoAdmin }) {
             <CampoArquivo
               arquivo={arquivo}
               arquivoAtual={documento?.arquivo ?? null}
-              aoEscolher={escolherArquivo}
+              aoEscolher={(escolhido) => {
+                escolherArquivo(escolhido);
+                setAlterado(true);
+              }}
               erro={erroDe('arquivo')}
             />
           ) : (
@@ -279,29 +277,41 @@ function FormularioDocumento({ documento }: { documento?: DocumentoAdmin }) {
             />
           )}
 
-          {progresso !== null && (
-            <div className="progresso" role="status">
-              <span>Enviando arquivo: {progresso}%</span>
-              <div className="progresso-barra">
-                <span style={{ width: `${progresso}%` }} />
-              </div>
-            </div>
+          {documento?.capaUrl && !documento.capaPersonalizada && !capa && (
+            <figure className="capa-automatica">
+              <img src={documento.capaUrl} alt="" />
+              <figcaption>Capa atual, gerada do arquivo. Para usar outra, escolha uma imagem abaixo.</figcaption>
+            </figure>
           )}
+          <CampoImagem
+            objeto="capa"
+            rotulo="Capa"
+            dica="Opcional: sem ela, o portal usa a primeira página do PDF; vídeos e links mostram o ícone do tipo."
+            urlAtual={documento?.capaPersonalizada ? documento.capaUrl : null}
+            arquivo={capa}
+            removerAtual={removerCapa}
+            aoEscolher={(escolhida) => {
+              setCapa(escolhida);
+              setAlterado(true);
+              if (escolhida) setRemoverCapa(false);
+            }}
+            aoRemoverAtual={(remover) => {
+              setRemoverCapa(remover);
+              setAlterado(true);
+            }}
+            erro={erroDe('capa')}
+          />
+          {documento?.indexacao && <SituacaoNoAssistente documento={documento} />}
         </section>
 
-        <section className="form-bloco" aria-labelledby="bloco-pecas">
-          <div className="form-bloco-titulo">
-            <h2 id="bloco-pecas">Peças relacionadas</h2>
-            <p>O documento aparece na página de cada peça e na busca pelo código dela.</p>
-          </div>
+        <section className="cadastro-secao" aria-labelledby={`${idFormulario}-pecas`}>
+          <h2 id={`${idFormulario}-pecas`}>Peças relacionadas</h2>
+          <p className="cadastro-dica">O documento aparece na página de cada peça e na busca pelo código dela.</p>
           <SeletorProdutos selecionados={produtos} aoMudar={setProdutos} />
         </section>
 
-        <section className="form-bloco" aria-labelledby="bloco-acesso">
-          <div className="form-bloco-titulo">
-            <h2 id="bloco-acesso">Quem pode ver</h2>
-            <p>Administradores sempre veem todos os documentos.</p>
-          </div>
+        <section className="cadastro-secao" aria-labelledby={`${idFormulario}-acesso`}>
+          <h2 id={`${idFormulario}-acesso`}>Quem pode ver</h2>
           <fieldset className="opcoes">
             <legend className="visualmente-oculto">Nível de acesso</legend>
             {(Object.keys(VISIBILIDADES) as Visibilidade[]).map((opcao) => {
@@ -337,39 +347,14 @@ function FormularioDocumento({ documento }: { documento?: DocumentoAdmin }) {
               )}
             </div>
           )}
+          <p className="cadastro-dica">Administradores sempre veem todos os documentos.</p>
         </section>
 
-        <section className="form-bloco" aria-labelledby="bloco-publicacao">
-          <div className="form-bloco-titulo">
-            <h2 id="bloco-publicacao">Publicação</h2>
-            <p>Rascunhos ficam visíveis só para administradores, mesmo que o nível de acesso seja público.</p>
-          </div>
-          <label className="alternador">
-            <input type="checkbox" checked={publicado} onChange={(evento) => setPublicado(evento.target.checked)} />
-            {publicado ? 'Publicado no portal' : 'Rascunho'}
-          </label>
-        </section>
-
-        <div className="form-rodape">
-          <div className="grupo-botoes">
-            <button type="submit" className="botao botao-principal" disabled={salvando}>
-              <Save aria-hidden /> {salvando ? (progresso !== null ? `Enviando ${progresso}%` : 'Salvando...') : 'Salvar documento'}
-            </button>
-            <Link to="/admin/documentos" className="botao botao-fantasma">
-              Cancelar
-            </Link>
-          </div>
-          {documento && (
-            <button
-              type="button"
-              className="botao botao-perigo"
-              onClick={() => setConfirmandoExclusao(true)}
-              disabled={salvando}
-            >
-              <Trash aria-hidden /> Excluir
-            </button>
-          )}
-        </div>
+        <label className="caixa">
+          <input type="checkbox" checked={publicado} onChange={(evento) => setPublicado(evento.target.checked)} />
+          Publicado no portal
+          <span className="caixa-dica">Rascunhos ficam visíveis só para administradores.</span>
+        </label>
       </form>
 
       <DialogoConfirmacao
@@ -382,6 +367,43 @@ function FormularioDocumento({ documento }: { documento?: DocumentoAdmin }) {
         aoCancelar={() => setConfirmandoExclusao(false)}
         aoConfirmar={excluir}
       />
-    </>
+    </Janela>
+  );
+}
+
+/** Se o assistente técnico já "leu" o documento, com a opção de indexar de novo. */
+function SituacaoNoAssistente({ documento }: { documento: DocumentoAdmin }) {
+  const notificar = useNotificar();
+  const recarregar = useRecarregarTudo();
+  const [agendando, setAgendando] = useState(false);
+  const indexacao = documento.indexacao!;
+
+  async function indexarDeNovo() {
+    setAgendando(true);
+    try {
+      await reindexarDocumento(documento.id);
+      notificar('O assistente vai ler o documento de novo em instantes.');
+      await recarregar();
+    } catch (falha) {
+      notificar(mensagemDeErro(falha), 'erro');
+    } finally {
+      setAgendando(false);
+    }
+  }
+
+  const texto = {
+    INDEXADO: `Assistente técnico: já conhece este documento (${plural(indexacao.trechos, 'trecho')}, lido em ${dataHora(indexacao.indexadoEm)}).`,
+    NA_FILA: 'Assistente técnico: na fila para ler este documento.',
+    FALHOU: 'Assistente técnico: não conseguiu ler este documento.',
+  }[indexacao.situacao];
+
+  return (
+    <div className="indexacao" role="status">
+      <span>{texto}</span>
+      <button type="button" className="link-acao" onClick={indexarDeNovo} disabled={agendando}>
+        {indexacao.situacao === 'FALHOU' ? 'Tentar de novo' : 'Ler de novo'}
+      </button>
+      {indexacao.erro && <span className="indexacao-erro">{indexacao.erro}</span>}
+    </div>
   );
 }

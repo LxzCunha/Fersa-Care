@@ -3,8 +3,8 @@ import { Link, useSearchParams } from 'react-router';
 import { listarDocumentos } from '../api/portal';
 import type { Segmento, TipoDocumento } from '../api/tipos';
 import { BlocoSuporte } from '../componentes/BlocoSuporte';
+import { GradeDocumentos } from '../componentes/CartaoDocumento';
 import { AvisoErro, Carregando, EstadoVazio } from '../componentes/Estados';
-import { ListaDocumentos } from '../componentes/ListaDocumentos';
 import { Paginacao } from '../componentes/Paginacao';
 import { useAutenticacao } from '../contexto/Autenticacao';
 import { plural } from '../lib/formatar';
@@ -135,7 +135,7 @@ export function Documentos() {
                 : 'Assim que a equipe FERSA publicar materiais, eles aparecem aqui.'}
             </EstadoVazio>
           ) : (
-            <ListaDocumentos documentos={consulta.data.itens} rotulo="Resultados" />
+            <GradeDocumentos documentos={consulta.data.itens} rotulo="Resultados" />
           )}
 
           <Paginacao

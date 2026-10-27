@@ -4,11 +4,11 @@ import { Link, useParams } from 'react-router';
 import { ErroApi } from '../api/cliente';
 import { detalharProduto } from '../api/portal';
 import { BlocoSuporte } from '../componentes/BlocoSuporte';
+import { GradeDocumentos } from '../componentes/CartaoDocumento';
 import { ImagemPeca } from '../componentes/CartaoPeca';
 import { AvisoErro, Carregando, EstadoVazio } from '../componentes/Estados';
-import { ListaDocumentos } from '../componentes/ListaDocumentos';
 import { Trilha } from '../componentes/Trilha';
-import { SUPORTE } from '../config';
+import { useAssistente } from '../contexto/Assistente';
 import { useAutenticacao } from '../contexto/Autenticacao';
 import { plural } from '../lib/formatar';
 import { fichaTecnica } from '../lib/medidas';
@@ -19,6 +19,7 @@ import './ProdutoDetalhe.css';
 export function ProdutoDetalhe() {
   const { id = '' } = useParams();
   const { usuario } = useAutenticacao();
+  const assistente = useAssistente();
   const consulta = useQuery({ queryKey: ['produto', id], queryFn: () => detalharProduto(id) });
 
   if (consulta.isPending) return <Carregando texto="Carregando peça..." />;
@@ -97,14 +98,13 @@ export function ProdutoDetalhe() {
               <ArrowDown aria-hidden />
               {totalMateriais > 0 ? `Ver ${plural(totalMateriais, 'material', 'materiais')}` : 'Materiais técnicos'}
             </a>
-            <a
+            <button
+              type="button"
               className="botao botao-secundario"
-              href={SUPORTE.linkWhatsapp(`Olá! Preciso de ajuda técnica sobre a peça ${produto.codigo}.`)}
-              target="_blank"
-              rel="noreferrer"
+              onClick={() => assistente.abrir({ rascunho: `Sobre a peça ${produto.codigo}: ` })}
             >
               <MessageCircle aria-hidden /> Dúvida sobre a peça
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -131,7 +131,7 @@ export function ProdutoDetalhe() {
           Materiais técnicos desta peça
         </h2>
         {totalMateriais > 0 ? (
-          <ListaDocumentos documentos={produto.documentos} rotulo={`Materiais da peça ${produto.codigo}`} />
+          <GradeDocumentos documentos={produto.documentos} rotulo={`Materiais da peça ${produto.codigo}`} />
         ) : (
           <EstadoVazio titulo="Ainda não há materiais para esta peça">
             Fale com o suporte técnico: respondemos dúvidas de montagem e aplicação.

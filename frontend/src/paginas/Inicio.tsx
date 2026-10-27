@@ -5,10 +5,11 @@ import { listarCategorias, resumoDaBiblioteca } from '../api/portal';
 import type { Segmento } from '../api/tipos';
 import { BlocoSuporte } from '../componentes/BlocoSuporte';
 import { CampoBusca } from '../componentes/CampoBusca';
+import { GradeDocumentos } from '../componentes/CartaoDocumento';
 import { DesenhoRolamento } from '../componentes/DesenhoRolamento';
 import { AvisoErro, Carregando } from '../componentes/Estados';
-import { ListaDocumentos } from '../componentes/ListaDocumentos';
-import { EXEMPLOS_DE_BUSCA, SUPORTE } from '../config';
+import { EXEMPLOS_DE_BUSCA } from '../config';
+import { useAssistente } from '../contexto/Assistente';
 import { useAutenticacao } from '../contexto/Autenticacao';
 import { numero, plural } from '../lib/formatar';
 import { ORDEM_DOS_TIPOS, SEGMENTOS, TIPOS } from '../lib/rotulos';
@@ -21,6 +22,7 @@ const CATEGORIAS_NO_INICIO = 9;
 export function Inicio() {
   const navegar = useNavigate();
   const { usuario } = useAutenticacao();
+  const assistente = useAssistente();
   const resumo = useQuery({ queryKey: ['resumo-biblioteca'], queryFn: resumoDaBiblioteca });
   const categorias = useQuery({ queryKey: ['categorias'], queryFn: listarCategorias });
 
@@ -79,14 +81,14 @@ export function Inicio() {
             </span>
             <ChevronRight className="atalho-seta" aria-hidden />
           </Link>
-          <a href={SUPORTE.linkWhatsapp()} target="_blank" rel="noreferrer" className="atalho">
+          <button type="button" className="atalho" onClick={() => assistente.abrir()}>
             <MessageCircle className="atalho-icone" aria-hidden />
             <span className="atalho-texto">
               <strong>Suporte técnico</strong>
-              <span>Fale com o técnico pelo WhatsApp</span>
+              <span>Pergunte ao assistente técnico</span>
             </span>
             <ChevronRight className="atalho-seta" aria-hidden />
-          </a>
+          </button>
         </nav>
 
         {categorias.data && categorias.data.length > 0 && (
@@ -178,7 +180,7 @@ export function Inicio() {
                     Ver todos os {numero(resumo.data.totalDocumentos)} <ArrowRight aria-hidden />
                   </Link>
                 </div>
-                <ListaDocumentos documentos={resumo.data.recentes} rotulo="Documentos atualizados recentemente" />
+                <GradeDocumentos documentos={resumo.data.recentes} rotulo="Documentos atualizados recentemente" />
               </section>
             )}
           </>

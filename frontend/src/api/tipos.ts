@@ -71,6 +71,10 @@ export interface Documento {
   origem: 'ARQUIVO' | 'LINK';
   arquivo: { nome: string; mime: string | null; tamanho: number | null } | null;
   urlExterna: string | null;
+  /** Miniatura WebP para os cartões, ou null (vídeos, links e Office sem capa enviada). */
+  capaUrl: string | null;
+  /** A capa foi enviada pelo admin (senão, veio da 1ª página do PDF ou da imagem). */
+  capaPersonalizada: boolean;
   produtos: ProdutoResumo[];
   criadoEm: string;
   atualizadoEm: string;
@@ -88,6 +92,13 @@ export interface DocumentoAdmin extends Documento {
   usuariosComAcesso: UsuarioComAcesso[];
   criadoPor: { id: string; nome: string } | null;
   totalVisualizacoes: number;
+  /** Só no detalhe: como o documento está na base do assistente. */
+  indexacao?: {
+    situacao: 'INDEXADO' | 'NA_FILA' | 'FALHOU';
+    indexadoEm: string | null;
+    erro: string | null;
+    trechos: number;
+  };
 }
 
 export interface Pagina<T> {
@@ -142,4 +153,70 @@ export interface Painel {
     visualizacoes: number;
   }[];
   solicitacoesPendentes: Usuario[];
+}
+
+// ─── Assistente técnico e chamados ──────────────────────────────────────────
+
+/** Documento ou peça usado na resposta do assistente. */
+export interface FonteDaResposta {
+  tipo: 'DOCUMENTO' | 'PRODUTO';
+  id: string;
+  titulo: string;
+  /** O número citado no texto da resposta: [1], [2]... */
+  numero: number;
+}
+
+/** O que o chat mostra depois da resposta. */
+export type Encaminhamento = 'NENHUM' | 'SUGERIR_CHAMADO' | 'PEDIR_CONTATO' | 'CHAMADO_ABERTO';
+
+export interface MensagemDoAssistente {
+  id: string;
+  papel: 'USUARIO' | 'ASSISTENTE';
+  conteudo: string;
+  fontes: FonteDaResposta[];
+  insatisfacao: boolean;
+  criadoEm: string;
+}
+
+export interface ConversaDoAssistente {
+  id: string;
+  mensagens: MensagemDoAssistente[];
+  chamado: { numero: number } | null;
+}
+
+/** Eventos que chegam enquanto a resposta é gerada. */
+export type EventoDoAssistente =
+  | { tipo: 'conversa'; conversaId: string }
+  | { tipo: 'texto'; texto: string }
+  | {
+      tipo: 'fim';
+      mensagemId: string;
+      fontes: FonteDaResposta[];
+      encaminhamento: Encaminhamento;
+      chamado: { numero: number } | null;
+    }
+  | { tipo: 'erro'; mensagem: string };
+
+export type StatusChamado = 'ABERTO' | 'EM_ATENDIMENTO' | 'RESOLVIDO';
+
+export interface Chamado {
+  id: string;
+  numero: number;
+  nome: string;
+  email: string | null;
+  telefone: string | null;
+  resumo: string;
+  status: StatusChamado;
+  observacao: string | null;
+  clienteCadastrado: boolean;
+  criadoEm: string;
+  atualizadoEm: string;
+}
+
+export interface ChamadoDetalhado extends Chamado {
+  conversa: MensagemDoAssistente[];
+}
+
+export interface PaginaChamados extends Pagina<Chamado> {
+  porStatus: Record<StatusChamado, number>;
 }

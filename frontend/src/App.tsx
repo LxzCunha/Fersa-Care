@@ -30,6 +30,17 @@ const AreaAdmin = lazy(() => import('./paginas/admin/AreaAdmin'));
 export function App() {
   return (
     <Routes>
+      {/* A administração tem a própria estrutura (menu lateral), sem o cabeçalho do portal. */}
+      <Route
+        path="admin/*"
+        element={
+          <RotaProtegida perfil="ADMIN">
+            <Suspense fallback={<Carregando />}>
+              <AreaAdmin />
+            </Suspense>
+          </RotaProtegida>
+        }
+      />
       <Route element={<Layout />}>
         <Route index element={<Inicio />} />
         <Route path="documentos" element={<Documentos />} />
@@ -45,16 +56,6 @@ export function App() {
           element={
             <RotaProtegida>
               <MinhaConta />
-            </RotaProtegida>
-          }
-        />
-        <Route
-          path="admin/*"
-          element={
-            <RotaProtegida perfil="ADMIN">
-              <Suspense fallback={<Carregando />}>
-                <AreaAdmin />
-              </Suspense>
             </RotaProtegida>
           }
         />

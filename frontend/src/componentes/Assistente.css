@@ -1,0 +1,413 @@
+/* ─── Assistente técnico: bolinha e painel de conversa ─────────────────────── */
+
+/* Bolinha no canto inferior direito; no celular, acima da barra de navegação. */
+.assistente-bolinha {
+  position: fixed;
+  right: var(--e-4);
+  bottom: calc(var(--altura-nav-inferior) + env(safe-area-inset-bottom) + var(--e-3));
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 0;
+  border-radius: var(--raio-pilula);
+  background: var(--marca);
+  color: var(--superficie);
+  box-shadow:
+    0 6px 20px rgb(16 35 63 / 0.35),
+    0 1px 3px rgb(16 35 63 / 0.25);
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    background-color 0.15s;
+}
+
+.assistente-bolinha:hover {
+  background: var(--marca-hover);
+  transform: scale(1.05);
+}
+
+.assistente-bolinha svg {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+/* Painel: tela inteira no celular; janela flutuante no desktop. */
+.assistente-painel {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: flex;
+  flex-direction: column;
+  background: var(--superficie);
+}
+
+.assistente-topo {
+  display: flex;
+  align-items: center;
+  gap: var(--e-3);
+  padding: var(--e-3) var(--e-2) var(--e-3) var(--e-4);
+  background: var(--marca);
+  color: var(--superficie);
+}
+
+.assistente-avatar {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--raio-pilula);
+  background: var(--marca-hover);
+}
+
+.assistente-avatar svg {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.assistente-topo-texto {
+  flex: 1;
+  min-width: 0;
+}
+
+.assistente-topo h2 {
+  font-size: var(--texto-md);
+}
+
+.assistente-topo p {
+  color: var(--marca-borda);
+  font-size: var(--texto-xs);
+}
+
+.assistente-topo-botao {
+  display: grid;
+  place-items: center;
+  width: var(--toque-minimo);
+  height: var(--toque-minimo);
+  border: 0;
+  border-radius: var(--raio-pilula);
+  background: transparent;
+  color: var(--superficie);
+  cursor: pointer;
+}
+
+.assistente-topo-botao:hover {
+  background: var(--marca-hover);
+}
+
+.assistente-topo-botao svg {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.assistente-topo :focus-visible {
+  outline-color: var(--superficie);
+}
+
+/* Conversa */
+.assistente-mensagens {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--e-3);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--e-4);
+  background: var(--nevoa);
+}
+
+.assistente-aviso {
+  color: var(--texto-suave);
+  font-size: var(--texto-sm);
+  text-align: center;
+}
+
+.assistente-boas-vindas {
+  display: grid;
+  gap: var(--e-3);
+  color: var(--texto);
+  font-size: var(--texto-sm);
+}
+
+.assistente-boas-vindas ul {
+  display: grid;
+  gap: var(--e-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.assistente-boas-vindas button {
+  width: 100%;
+  padding: var(--e-2) var(--e-3);
+  border: 1px solid var(--marca-borda);
+  border-radius: var(--raio-controle);
+  background: var(--superficie);
+  color: var(--marca);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.assistente-boas-vindas button:hover {
+  border-color: var(--marca);
+  background: var(--marca-clara);
+}
+
+.assistente-mensagem {
+  max-width: 88%;
+  padding: var(--e-2) var(--e-3);
+  border-radius: var(--raio-painel);
+  font-size: var(--texto-sm);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.assistente-mensagem-usuario {
+  align-self: flex-end;
+  border-bottom-right-radius: var(--raio-etiqueta);
+  background: var(--marca);
+  color: var(--superficie);
+  white-space: pre-wrap;
+}
+
+.assistente-mensagem-resposta {
+  display: grid;
+  gap: var(--e-2);
+  align-self: flex-start;
+  border: 1px solid var(--linha);
+  border-bottom-left-radius: var(--raio-etiqueta);
+  background: var(--superficie);
+  color: var(--texto);
+}
+
+.assistente-mensagem-resposta p,
+.assistente-mensagem-resposta ol,
+.assistente-mensagem-resposta ul {
+  margin: 0;
+}
+
+.assistente-mensagem-resposta ol,
+.assistente-mensagem-resposta ul {
+  display: grid;
+  gap: var(--e-1);
+  padding-left: 1.25rem;
+}
+
+.assistente-mensagem-resposta.falhou {
+  border-color: var(--erro);
+  background: var(--erro-fundo);
+  color: var(--erro);
+}
+
+.assistente-citacao {
+  margin-left: 0.1em;
+  padding: 0 0.3em;
+  border-radius: var(--raio-etiqueta);
+  background: var(--marca-clara);
+  color: var(--marca);
+  font-size: 0.7em;
+  font-weight: 700;
+}
+
+/* "Digitando...": três pontos pulsando enquanto a resposta não chega */
+.assistente-digitando {
+  display: inline-flex;
+  gap: 0.3rem;
+  padding: var(--e-1) 0;
+}
+
+.assistente-digitando span[aria-hidden] {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--aco-claro);
+  animation: assistente-pulso 1.2s infinite ease-in-out;
+}
+
+.assistente-digitando span[aria-hidden]:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.assistente-digitando span[aria-hidden]:nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+@keyframes assistente-pulso {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .assistente-digitando span[aria-hidden] {
+    animation: none;
+  }
+}
+
+/* Fontes citadas, logo abaixo da resposta */
+.assistente-fontes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-1);
+  margin: 0;
+  padding: var(--e-2) 0 0;
+  border-top: 1px solid var(--linha);
+  list-style: none;
+}
+
+.assistente-fontes a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  max-width: 100%;
+  padding: 0.2rem 0.55rem 0.2rem 0.25rem;
+  border: 1px solid var(--marca-borda);
+  border-radius: var(--raio-pilula);
+  background: var(--marca-clara);
+  color: var(--marca);
+  font-size: var(--texto-xs);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.assistente-fontes a:hover {
+  border-color: var(--marca);
+}
+
+.assistente-fontes svg {
+  flex-shrink: 0;
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.assistente-fonte-numero {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  border-radius: var(--raio-pilula);
+  background: var(--marca);
+  color: var(--superficie);
+  font-size: 0.65rem;
+}
+
+/* Chamado: convite, formulário de contato e confirmação */
+.assistente-pedido {
+  display: grid;
+  gap: var(--e-3);
+  padding: var(--e-3);
+  border: 1px solid var(--marca-borda);
+  border-radius: var(--raio-painel);
+  background: var(--superficie);
+  font-size: var(--texto-sm);
+}
+
+.assistente-pedido .botao {
+  justify-self: start;
+  min-height: 2.5rem;
+  font-size: var(--texto-sm);
+}
+
+.assistente-chamado {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e-2);
+  padding: var(--e-3);
+  border-radius: var(--raio-painel);
+  background: var(--ok-fundo);
+  color: var(--ok);
+  font-size: var(--texto-sm);
+  font-weight: 600;
+}
+
+.assistente-chamado svg {
+  flex-shrink: 0;
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+/* Campo da pergunta */
+.assistente-formulario {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--e-2);
+  padding: var(--e-3) var(--e-3) var(--e-1);
+  border-top: 1px solid var(--linha);
+}
+
+.assistente-formulario textarea {
+  flex: 1;
+  min-height: 2.75rem;
+  max-height: 8rem;
+  padding: 0.65rem var(--e-4);
+  border: 1.5px solid var(--linha-forte);
+  border-radius: 1.4rem;
+  background: var(--superficie);
+  color: var(--tinta);
+  font: inherit;
+  font-size: var(--texto-sm);
+  field-sizing: content;
+  resize: none;
+}
+
+.assistente-formulario textarea:focus {
+  border-color: var(--marca);
+  outline: none;
+}
+
+.assistente-enviar {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: var(--toque-minimo);
+  height: var(--toque-minimo);
+  border: 0;
+  border-radius: var(--raio-pilula);
+  background: var(--marca);
+  color: var(--superficie);
+  cursor: pointer;
+}
+
+.assistente-enviar:disabled {
+  background: var(--aco-claro);
+  cursor: default;
+}
+
+.assistente-enviar svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.assistente-rodape {
+  padding: 0 var(--e-4) calc(var(--e-2) + env(safe-area-inset-bottom));
+  color: var(--texto-suave);
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+@media (min-width: 40rem) {
+  .assistente-painel {
+    inset: auto var(--e-5) var(--e-5) auto;
+    width: 25rem;
+    height: min(40rem, 100dvh - 2 * var(--e-5));
+    overflow: hidden;
+    border-radius: var(--raio-painel);
+    box-shadow: 0 24px 60px rgb(16 35 63 / 0.35);
+  }
+}
+
+@media (min-width: 64rem) {
+  .assistente-bolinha {
+    right: var(--e-5);
+    bottom: var(--e-5);
+  }
+}

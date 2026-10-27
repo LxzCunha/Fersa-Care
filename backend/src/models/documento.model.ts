@@ -7,6 +7,7 @@ import {
   index,
   pgTable,
   text,
+  timestamp,
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
@@ -39,6 +40,20 @@ export const documentos = pgTable(
     arquivoMime: varchar('arquivo_mime', { length: 120 }),
     arquivoTamanho: bigint('arquivo_tamanho', { mode: 'number' }),
     urlExterna: text('url_externa'),
+
+    /**
+     * Capa (miniatura WebP) mostrada nos cartões. Gerada da 1ª página do PDF ou
+     * da própria imagem; o admin pode enviar uma capa própria (vídeos, links...).
+     */
+    capaChave: varchar('capa_chave', { length: 120 }),
+    /** A capa foi enviada pelo admin: trocar o arquivo do documento não a substitui. */
+    capaPersonalizada: boolean('capa_personalizada').notNull().default(false),
+
+    // Base do assistente (RAG): quando o texto do documento foi dividido em trechos.
+    /** Última indexação concluída; null = ainda na fila. */
+    indexadoEm: timestamp('indexado_em', { withTimezone: true }),
+    /** Motivo da última falha de indexação (null quando deu certo). */
+    indexacaoErro: text('indexacao_erro'),
 
     criadoPor: uuid('criado_por').references(() => usuarios.id, { onDelete: 'set null' }),
     ...datas,

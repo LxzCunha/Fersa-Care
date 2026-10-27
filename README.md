@@ -68,6 +68,20 @@ npm run dev          # http://localhost:5173
 
 Abra **http://localhost:5173**. O Vite repassa as chamadas `/api` para a API, então site e API funcionam como se fossem um só endereço.
 
+### Assistente técnico (bolinha de chat)
+
+O suporte técnico do portal é um assistente que responde **só sobre peças, produtos e dúvidas técnicas da FERSA**, com base nos manuais, fichas e boletins cadastrados, e cita as fontes. Se a pessoa reclama duas vezes que não ajudou (ou pede um atendente), ele abre um **chamado** para a equipe técnica, que aparece em Administração › Suporte › Chamados com a conversa inteira.
+
+Os modelos de IA rodam na própria máquina, pelo [Ollama](https://ollama.com) (nenhuma pergunta ou documento sai do servidor):
+
+```bash
+ollama pull bge-m3        # embeddings (busca por similaridade)
+ollama pull qwen2.5:14b   # respostas (troque em IA_MODELO_CHAT; um modelo menor responde mais rápido)
+cd backend && npm run ia:indexar   # o assistente "lê" os documentos já cadastrados
+```
+
+Documentos novos ou editados são lidos automaticamente em segundo plano. Sem o Ollama no ar, o portal funciona normalmente e o assistente só oferece abrir um chamado.
+
 ### Logins de exemplo (criados pelo `npm run setup`)
 
 | Perfil | E-mail | Senha |
@@ -85,7 +99,7 @@ Produtos, documentos e visualizações de exemplo são **fictícios**, só para 
 docker compose up --build     # http://localhost:3000
 ```
 
-A imagem compila o site e a API, aplica as migrações, cria o administrador e os exemplos (`SEED_EXEMPLOS=true`) e entrega tudo na porta 3000. Para produção, defina `JWT_SEGREDO`, `ADMIN_SENHA`, `SEED_EXEMPLOS=false` e `COOKIE_SEGURO=true` (com HTTPS).
+A imagem compila o site e a API, aplica as migrações, cria o administrador e os exemplos (`SEED_EXEMPLOS=true`), gera as capas de documentos que faltam e entrega tudo na porta 3000. Para produção, defina `JWT_SEGREDO`, `ADMIN_SENHA`, `SEED_EXEMPLOS=false` e `COOKIE_SEGURO=true` (com HTTPS).
 
 ---
 
@@ -94,18 +108,22 @@ A imagem compila o site e a API, aplica as migrações, cria o administrador e o
 | Onde | Comando | O que faz |
 |---|---|---|
 | backend | `npm run dev` | API com recarga automática |
-| backend | `npm test` | Testes automatizados (67 testes, usam o banco `fersa_care_teste`) |
+| backend | `npm test` | Testes automatizados (200 testes: unidade + integração com o banco `fersa_care_teste`) |
+| backend | `npm run test:unidade` | Só os testes de unidade (validações, DTOs, utilitários), sem banco |
 | backend | `npm run typecheck` | Confere os tipos do TypeScript |
 | backend | `npm run db:gerar` | Gera a migração SQL depois de alterar um model em `src/models/` |
 | backend | `npm run db:migrar` | Aplica as migrações pendentes |
 | backend | `npm run db:seed` | Cria o administrador inicial, se não existir |
 | backend | `npm run db:seed:exemplos` | Também cria clientes, produtos e documentos fictícios |
+| backend | `npm run ia:indexar` | Indexa os documentos para o assistente (pendentes; `-- --todos` refaz todos). Precisa do Ollama |
+| backend | `npm run capas:gerar` | Gera as capas dos documentos que ainda não têm (ex.: cadastrados antes das capas existirem) |
 | backend | `npm run db:studio` | Interface web para olhar os dados (Drizzle Studio) |
 | backend | `npm run build` / `npm start` | Compila e roda em modo produção |
 | frontend | `npm run dev` | Site em http://localhost:5173 |
 | frontend | `npm run build` | Confere os tipos e gera o site em `frontend/dist` |
+| frontend | `npm test` | Testes das telas (194 testes, com a API simulada; não precisa da API nem do banco) |
 
-Os testes cobrem a matriz completa de acesso (visitante, usuário, usuário liberado e admin × documentos públicos, de clientes, restritos e rascunhos, na lista, no detalhe e no download), login e aprovação, upload e troca de arquivos, regras de administrador, busca e painel. O banco de testes é criado pelo `docker compose` na primeira vez; com PostgreSQL próprio (com pgvector), crie um banco `fersa_care_teste` ou aponte `DATABASE_URL_TESTE` (no terminal ou no `backend/.env`).
+Os testes cobrem a matriz completa de acesso (visitante, usuário, usuário liberado e admin × documentos públicos, de clientes, restritos e rascunhos, na lista, no detalhe e no download), login e aprovação, upload e troca de arquivos, capas dos documentos, regras de administrador, busca e painel; o CRUD de peças, categorias, documentos e usuários campo a campo (validações, 404, duplicados); e, no site, os cartões, listas, filtros e janelas de cadastro. O banco de testes é criado pelo `docker compose` na primeira vez; com PostgreSQL próprio (com pgvector), crie um banco `fersa_care_teste` ou aponte `DATABASE_URL_TESTE` (no terminal ou no `backend/.env`).
 
 ---
 
@@ -145,7 +163,6 @@ fersa-care/
 │       ├── estilos/             Tokens de cor/tipografia e componentes visuais
 │       ├── assets/marca/        Lugar do logotipo oficial da FERSA (ver LEIA-ME.md)
 │       └── config.ts            Contatos do suporte e outras configurações
-├── docs/RAG.md                  Plano da fase 2: assistente com RAG
 ├── docker/postgres/             Script que cria o banco de testes
 ├── docker-compose.yml           PostgreSQL (+ portal completo)
 └── Dockerfile                   Imagem única: API + site
@@ -209,6 +226,9 @@ erDiagram
   categorias ||--o{ produtos : agrupa
   documentos ||--o{ documento_visualizacoes : "é aberto"
   documentos ||--o{ documento_trechos : "dividido em (RAG)"
+  usuarios ||--o{ assistente_conversas : "conversa com o assistente"
+  assistente_conversas ||--o{ assistente_mensagens : contém
+  assistente_conversas ||--o| chamados : "vira (se não resolver)"
   usuarios {
     uuid id
     text email "único, minúsculo"
@@ -222,6 +242,7 @@ erDiagram
     enum visibilidade "PUBLICO | AUTENTICADO | RESTRITO"
     bool publicado
     text arquivo_chave "ou url_externa"
+    text capa_chave "miniatura WebP dos cartões"
     tsvector busca "gerada pelo banco"
   }
   produtos {
@@ -245,6 +266,18 @@ erDiagram
     text conteudo
     vector embedding "1024 dimensões, índice HNSW"
   }
+  assistente_mensagens {
+    enum papel "USUARIO | ASSISTENTE"
+    text conteudo
+    jsonb fontes "documentos e peças citados"
+    bool insatisfacao "reclamou da resposta"
+  }
+  chamados {
+    int numero "nº do chamado"
+    text nome "e e-mail/telefone"
+    text resumo "as perguntas da conversa"
+    enum status "ABERTO | EM_ATENDIMENTO | RESOLVIDO"
+  }
 ```
 
 A busca usa o full-text search do PostgreSQL em português e ignora acentos (`manutencao` encontra "Manutenção"). Códigos de peça são comparados sem espaços e hífens (`32008X` encontra "32008 X").
@@ -260,24 +293,30 @@ Com a API rodando, a documentação interativa fica em **http://localhost:3000/a
 | `GET/PUT /api/auth/eu`, `PUT /api/auth/eu/senha` | logado | Minha conta |
 | `GET /api/documentos`, `GET /api/documentos/resumo` | todos | Biblioteca filtrada pelo nível de acesso |
 | `GET /api/documentos/:id`, `GET /api/documentos/:id/arquivo` | todos | Detalhe e conteúdo (com permissão) |
+| `GET /api/documentos/:id/capa` | todos | Capa do documento (mesma permissão do documento) |
+| `POST /api/assistente/perguntas` | todos | Pergunta ao assistente; a resposta chega aos pedaços (Server-Sent Events) |
+| `GET /api/assistente/conversas/:id`, `POST /api/assistente/chamados` | quem começou a conversa | Retomar a conversa; abrir o chamado de suporte |
 | `GET /api/produtos`, `GET /api/produtos/:id` | todos | Catálogo (filtros por categoria, linha e medidas) |
 | `GET /api/produtos/:id/imagem` | todos | Foto da peça |
 | `GET /api/categorias` | todos | Categorias com peças no catálogo |
 | `GET /api/admin/painel` | admin | Números do painel |
-| `/api/admin/documentos` (GET, POST, PUT, DELETE) | admin | Cadastro com upload e lista de acesso |
+| `/api/admin/documentos` (GET, POST, PUT, DELETE) | admin | Cadastro com upload, capa e lista de acesso |
 | `/api/admin/usuarios` (+ `PATCH /:id/status`) | admin | Aprovação e gestão de usuários |
 | `/api/admin/produtos` | admin | Gestão das peças (foto via multipart) |
 | `/api/admin/categorias` (GET, POST, PUT, DELETE) | admin | Gestão das categorias |
+| `/api/admin/chamados` (GET, PATCH) | admin | Chamados de suporte abertos pelo assistente |
+| `POST /api/admin/documentos/:id/indexar` | admin | O assistente lê o documento de novo |
 
 ---
 
 ## Identidade visual
 
-O front-end segue o site da FERSA (brasil.fersa.com): fundo branco, azul-marinho da marca, busca em pílula logo abaixo do cabeçalho, botão "Catálogo" em destaque, cartões de peça com a ficha de medidas em cinza e filtros em acordeão. No celular, os filtros abrem numa gaveta e a navegação principal fica na barra inferior.
+O front-end segue o site da FERSA (brasil.fersa.com): fundo branco, azul-marinho da marca, busca em pílula logo abaixo do cabeçalho, seção atual em pílula azul no menu, cartões de peça com a ficha de medidas em cinza e filtros em acordeão. No celular, os filtros abrem numa gaveta e a navegação principal fica na barra inferior.
 
 - Cores, fonte (Plus Jakarta Sans) e raios ficam em [`frontend/src/estilos/tokens.css`](frontend/src/estilos/tokens.css). O resto do CSS só usa essas variáveis.
 - **Logotipo:** coloque o arquivo oficial da FERSA em `frontend/src/assets/marca/fersa.svg` (ou `.png`/`.webp`). Ele é usado automaticamente no cabeçalho e no rodapé; sem o arquivo, aparece o nome em texto.
 - A busca do cabeçalho filtra as peças no catálogo e os materiais em "Manuais e vídeos"; nas demais telas ela abre a busca geral, que procura nos dois.
+- **Manuais e vídeos** aparecem em cartões com capa, título e botão de baixar. A capa sai sozinha da primeira página do PDF (ou da própria imagem); para vídeos, links e arquivos do Office, o administrador pode enviar uma capa no cadastro. Sem capa, o cartão mostra o ícone do tipo.
 
 ## Segurança
 
@@ -300,7 +339,7 @@ O painel do administrador mostra aberturas por dia e os documentos mais acessado
 
 ## Próximos passos
 
-1. **Fase 2 — assistente com RAG** (depois do portal estável): plano detalhado em [docs/RAG.md](docs/RAG.md).
+1. **Assistente**: montar com a equipe técnica um conjunto de 30 a 50 perguntas reais (com a resposta e o documento esperados) e medir as respostas antes de liberar aos clientes; ler DOCX; avisar a equipe por e-mail quando abrir um chamado.
 2. Avisar os administradores por e-mail quando chegar uma solicitação de acesso.
 3. Grupos de usuários (ex.: "Distribuidores") para liberar documentos restritos a várias pessoas de uma vez.
 4. Imagens dos produtos no catálogo e leitura de QR Code da embalagem.

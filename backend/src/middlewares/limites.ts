@@ -31,3 +31,30 @@ export const limiteDeCadastro = rateLimit({
     },
   },
 });
+
+// O assistente usa bastante processamento (modelo de IA): perguntas por IP são limitadas.
+export const limiteDoAssistente = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  limit: env.emTeste ? 1000 : 30,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: {
+    erro: {
+      codigo: 'MUITAS_PERGUNTAS',
+      mensagem: 'Muitas perguntas em pouco tempo. Aguarde alguns minutos e tente de novo.',
+    },
+  },
+});
+
+export const limiteDeChamados = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: env.emTeste ? 1000 : 10,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: {
+    erro: {
+      codigo: 'MUITOS_CHAMADOS',
+      mensagem: 'Muitos chamados abertos a partir desta rede. Tente novamente mais tarde.',
+    },
+  },
+});

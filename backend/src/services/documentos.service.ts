@@ -99,6 +99,20 @@ export async function obterConteudoDoDocumento(
   };
 }
 
+/**
+ * Capa do documento, com a mesma permissão do próprio documento. `publica`
+ * diz se ela pode ficar em cache compartilhado (proxies, CDN).
+ */
+export async function obterCapa(id: string, usuario: UsuarioAutenticado | undefined) {
+  const documento = await buscarDocumentoVisivel(id, usuario);
+  const chave = documento.capaChave;
+  if (!chave || !(await arquivoExiste(chave))) throw naoEncontrado('Este documento não tem capa.');
+  return {
+    caminho: caminhoDoArquivo(chave),
+    publica: documento.publicado && documento.visibilidade === 'PUBLICO',
+  };
+}
+
 /** Dados da página inicial: quantidade por tipo e materiais mais recentes. */
 export async function resumoDaBiblioteca(usuario: UsuarioAutenticado | undefined) {
   const linhasPorTipo = await documentosRepository.contarPorTipo(usuario);

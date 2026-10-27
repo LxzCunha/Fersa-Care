@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, KeyRound, Save, Shuffle, Trash } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { useId, useState, type FormEvent } from 'react';
+import { Link, useParams } from 'react-router';
 import {
   atualizarUsuario,
   criarUsuario,
@@ -19,18 +18,26 @@ import { useNotificar } from '../../contexto/Notificacoes';
 import { data, dataHora } from '../../lib/formatar';
 import { STATUS_USUARIO, TIPOS } from '../../lib/rotulos';
 import { useRecarregarTudo } from './acoes';
+import { Janela, rolarJanelaParaTopo, useVoltarParaLista } from './Cadastro';
 
+/** Cadastro (/admin/usuarios/novo) e edição (/admin/usuarios/:id), numa janela sobre a lista. */
 export function FormUsuario() {
   const { id } = useParams();
+  const fechar = useVoltarParaLista('/admin/usuarios');
   const consulta = useQuery({
     queryKey: ['admin', 'usuario', id],
     queryFn: () => detalharUsuario(id!),
     enabled: Boolean(id),
   });
 
-  if (id && consulta.isPending) return <Carregando />;
-  if (id && consulta.isError) return <AvisoErro erro={consulta.error} />;
-  return <FormularioUsuario key={id ?? 'novo'} usuario={consulta.data} />;
+  if (id && !consulta.data) {
+    return (
+      <Janela titulo="Usuário" largura="estreita" aoFechar={fechar}>
+        {consulta.isError ? <AvisoErro erro={consulta.error} /> : <Carregando />}
+      </Janela>
+    );
+  }
+  return <FormularioUsuario key={id ?? 'novo'} usuario={consulta.data} aoFechar={fechar} />;
 }
 
 /** Senha aleatória que atende à regra da API (letras e números, 10 caracteres). */
@@ -45,11 +52,16 @@ function gerarSenha(): string {
   return caracteres.join('');
 }
 
-function FormularioUsuario({ usuario }: { usuario?: UsuarioDetalhado }) {
+const PERFIS_DO_FORMULARIO: [Perfil, string, string][] = [
+  ['USUARIO', 'Cliente', 'Vê documentos públicos, de clientes e os liberados para ele.'],
+  ['ADMIN', 'Administrador', 'Vê tudo e gerencia documentos, usuários e peças.'],
+];
+
+function FormularioUsuario({ usuario, aoFechar }: { usuario?: UsuarioDetalhado; aoFechar: () => void }) {
   const editando = Boolean(usuario);
+  const idFormulario = useId();
   const { usuario: eu } = useAutenticacao();
   const ehEuMesmo = usuario?.id === eu?.id;
-  const navegar = useNavigate();
   const notificar = useNotificar();
   const recarregar = useRecarregarTudo();
 
@@ -62,6 +74,7 @@ function FormularioUsuario({ usuario }: { usuario?: UsuarioDetalhado }) {
     status: usuario?.status ?? 'ATIVO',
   });
   const [senha, setSenha] = useState('');
+  const [alterado, setAlterado] = useState(false);
   const [erro, setErro] = useState<ErroApi | null>(null);
   const [salvando, setSalvando] = useState(false);
   const [confirmandoExclusao, setConfirmandoExclusao] = useState(false);
@@ -84,10 +97,10 @@ function FormularioUsuario({ usuario }: { usuario?: UsuarioDetalhado }) {
         notificar(`${dados.nome} foi cadastrado. Envie a senha inicial para a pessoa.`);
       }
       await recarregar();
-      navegar('/admin/usuarios');
+      aoFechar();
     } catch (falha) {
       setErro(falha instanceof ErroApi ? falha : new ErroApi(0, 'ERRO', mensagemDeErro(falha)));
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      rolarJanelaParaTopo();
     } finally {
       setSalvando(false);
     }
@@ -100,7 +113,7 @@ function FormularioUsuario({ usuario }: { usuario?: UsuarioDetalhado }) {
       await excluirUsuario(usuario.id);
       await recarregar();
       notificar('Usuário excluído.');
-      navegar('/admin/usuarios');
+      aoFechar();
     } catch (falha) {
       notificar(mensagemDeErro(falha), 'erro');
       setExcluindo(false);
@@ -112,82 +125,74 @@ function FormularioUsuario({ usuario }: { usuario?: UsuarioDetalhado }) {
   const mostrarAvisoGeral = erro && (erro.detalhes.length === 0 || erro.status === 409);
 
   return (
-    <>
-      <title>{`${editando ? 'Editar' : 'Cadastrar'} usuário | Administração FERSA Care`}</title>
-
-      <Link to="/admin/usuarios" className="voltar">
-        <ArrowLeft aria-hidden /> Usuários
-      </Link>
-
-      <header className="admin-cabecalho">
-        <div>
-          <h1>{editando ? usuario?.nome : 'Cadastrar usuário'}</h1>
-          {usuario && (
-            <p>
-              Cadastro em {data(usuario.criadoEm)}.{' '}
-              {usuario.ultimoAcessoEm ? `Último acesso em ${dataHora(usuario.ultimoAcessoEm)}.` : 'Ainda não entrou no portal.'}
-            </p>
-          )}
-        </div>
-      </header>
-
-      <form className="form-admin" onSubmit={salvar} noValidate>
+    <Janela
+      titulo={editando ? 'Usuário' : 'Novo usuário'}
+      largura="estreita"
+      idFormulario={idFormulario}
+      salvando={salvando}
+      alterado={alterado}
+      aoFechar={aoFechar}
+      links={
+        usuario && (
+          <>
+            <span className="janela-nota">
+              Cadastro em {data(usuario.criadoEm)} ·{' '}
+              {usuario.ultimoAcessoEm ? `último acesso em ${dataHora(usuario.ultimoAcessoEm)}` : 'ainda não entrou'}
+            </span>
+            {!ehEuMesmo && (
+              <button type="button" className="janela-link-perigo" onClick={() => setConfirmandoExclusao(true)}>
+                Excluir usuário
+              </button>
+            )}
+          </>
+        )
+      }
+    >
+      <form id={idFormulario} className="cadastro" onSubmit={salvar} onChange={() => setAlterado(true)} noValidate>
         {mostrarAvisoGeral && <AvisoErro erro={erro} />}
 
-        <section className="form-bloco" aria-labelledby="bloco-dados">
-          <div className="form-bloco-titulo">
-            <h2 id="bloco-dados">Dados da pessoa</h2>
-          </div>
+        <CampoTexto
+          id="nome"
+          rotulo="Nome completo"
+          value={dados.nome}
+          onChange={(e) => atualizar('nome', e.target.value)}
+          erro={erroDe('nome')}
+        />
+        <CampoTexto
+          id="email"
+          rotulo="E-mail"
+          type="email"
+          value={dados.email}
+          onChange={(e) => atualizar('email', e.target.value)}
+          erro={erroDe('email')}
+          ajuda="É o login da pessoa no portal."
+        />
+        <div className="cadastro-linha">
           <CampoTexto
-            id="nome"
-            rotulo="Nome completo"
-            value={dados.nome}
-            onChange={(e) => atualizar('nome', e.target.value)}
-            erro={erroDe('nome')}
+            id="empresa"
+            rotulo="Empresa"
+            opcional
+            value={dados.empresa}
+            onChange={(e) => atualizar('empresa', e.target.value)}
+            erro={erroDe('empresa')}
           />
           <CampoTexto
-            id="email"
-            rotulo="E-mail"
-            type="email"
-            value={dados.email}
-            onChange={(e) => atualizar('email', e.target.value)}
-            erro={erroDe('email')}
-            ajuda="É o login da pessoa no portal."
+            id="telefone"
+            rotulo="Telefone ou WhatsApp"
+            opcional
+            type="tel"
+            value={dados.telefone}
+            onChange={(e) => atualizar('telefone', e.target.value)}
+            erro={erroDe('telefone')}
           />
-          <div className="linha-campos">
-            <CampoTexto
-              id="empresa"
-              rotulo="Empresa"
-              opcional
-              value={dados.empresa}
-              onChange={(e) => atualizar('empresa', e.target.value)}
-              erro={erroDe('empresa')}
-            />
-            <CampoTexto
-              id="telefone"
-              rotulo="Telefone ou WhatsApp"
-              opcional
-              type="tel"
-              value={dados.telefone}
-              onChange={(e) => atualizar('telefone', e.target.value)}
-              erro={erroDe('telefone')}
-            />
-          </div>
-        </section>
+        </div>
 
-        <section className="form-bloco" aria-labelledby="bloco-acesso">
-          <div className="form-bloco-titulo">
-            <h2 id="bloco-acesso">Acesso ao portal</h2>
-            {ehEuMesmo && <p>Você não pode alterar o próprio perfil nem a própria situação.</p>}
-          </div>
+        <section className="cadastro-secao" aria-labelledby={`${idFormulario}-acesso`}>
+          <h2 id={`${idFormulario}-acesso`}>Acesso ao portal</h2>
+          {ehEuMesmo && <p className="cadastro-dica">Você não pode alterar o próprio perfil nem a própria situação.</p>}
           <fieldset className="opcoes" disabled={ehEuMesmo}>
-            <legend className="campo-rotulo">Perfil</legend>
-            {(
-              [
-                ['USUARIO', 'Cliente', 'Vê documentos públicos, de clientes e os liberados para ele.'],
-                ['ADMIN', 'Administrador', 'Vê tudo e gerencia documentos, usuários e produtos.'],
-              ] as [Perfil, string, string][]
-            ).map(([valor, rotulo, descricao]) => (
+            <legend className="visualmente-oculto">Perfil</legend>
+            {PERFIS_DO_FORMULARIO.map(([valor, rotulo, descricao]) => (
               <label key={valor} className="opcao">
                 <input
                   type="radio"
@@ -219,21 +224,18 @@ function FormularioUsuario({ usuario }: { usuario?: UsuarioDetalhado }) {
           </Campo>
         </section>
 
-        <section className="form-bloco" aria-labelledby="bloco-senha">
-          <div className="form-bloco-titulo">
-            <h2 id="bloco-senha">{editando ? 'Redefinir senha' : 'Senha inicial'}</h2>
-            <p>
-              {editando
-                ? 'Deixe em branco para manter a senha atual. Use quando a pessoa esquecer a senha.'
-                : 'Envie esta senha para a pessoa; ela pode trocá-la em “Minha conta”.'}
-            </p>
-          </div>
+        <section className="cadastro-secao" aria-labelledby={`${idFormulario}-senha`}>
+          <h2 id={`${idFormulario}-senha`}>{editando ? 'Redefinir senha' : 'Senha inicial'}</h2>
           <Campo
             id="senha"
             rotulo={editando ? 'Nova senha' : 'Senha'}
             opcional={editando}
             erro={erroDe(editando ? 'novaSenha' : 'senha')}
-            ajuda="Pelo menos 8 caracteres, com letras e números."
+            ajuda={
+              editando
+                ? 'Deixe em branco para manter a senha atual. Pelo menos 8 caracteres, com letras e números.'
+                : 'Envie esta senha para a pessoa; ela pode trocá-la em “Minha conta”. Pelo menos 8 caracteres, com letras e números.'
+            }
           >
             {(atributos) => (
               <div className="senha-gerada">
@@ -246,8 +248,15 @@ function FormularioUsuario({ usuario }: { usuario?: UsuarioDetalhado }) {
                   onChange={(e) => setSenha(e.target.value)}
                   {...atributos}
                 />
-                <button type="button" className="botao botao-secundario" onClick={() => setSenha(gerarSenha())}>
-                  <Shuffle aria-hidden /> Gerar senha
+                <button
+                  type="button"
+                  className="link-acao"
+                  onClick={() => {
+                    setSenha(gerarSenha());
+                    setAlterado(true);
+                  }}
+                >
+                  Gerar senha
                 </button>
               </div>
             )}
@@ -255,11 +264,8 @@ function FormularioUsuario({ usuario }: { usuario?: UsuarioDetalhado }) {
         </section>
 
         {usuario && usuario.documentosLiberados.length > 0 && (
-          <section className="form-bloco" aria-labelledby="bloco-liberados">
-            <div className="form-bloco-titulo">
-              <h2 id="bloco-liberados">Documentos restritos liberados</h2>
-              <p>Para tirar o acesso, edite o documento e remova a pessoa da lista.</p>
-            </div>
+          <section className="cadastro-secao" aria-labelledby={`${idFormulario}-liberados`}>
+            <h2 id={`${idFormulario}-liberados`}>Documentos restritos liberados</h2>
             <ul className="lista-simples">
               {usuario.documentosLiberados.map((documento) => (
                 <li key={documento.id}>
@@ -268,25 +274,9 @@ function FormularioUsuario({ usuario }: { usuario?: UsuarioDetalhado }) {
                 </li>
               ))}
             </ul>
+            <p className="cadastro-dica">Para tirar o acesso, edite o documento e remova a pessoa da lista.</p>
           </section>
         )}
-
-        <div className="form-rodape">
-          <div className="grupo-botoes">
-            <button type="submit" className="botao botao-principal" disabled={salvando}>
-              {senha && editando ? <KeyRound aria-hidden /> : <Save aria-hidden />}
-              {salvando ? 'Salvando...' : editando ? 'Salvar alterações' : 'Cadastrar usuário'}
-            </button>
-            <Link to="/admin/usuarios" className="botao botao-fantasma">
-              Cancelar
-            </Link>
-          </div>
-          {usuario && !ehEuMesmo && (
-            <button type="button" className="botao botao-perigo" onClick={() => setConfirmandoExclusao(true)}>
-              <Trash aria-hidden /> Excluir
-            </button>
-          )}
-        </div>
       </form>
 
       <DialogoConfirmacao
@@ -299,6 +289,6 @@ function FormularioUsuario({ usuario }: { usuario?: UsuarioDetalhado }) {
         aoCancelar={() => setConfirmandoExclusao(false)}
         aoConfirmar={excluir}
       />
-    </>
+    </Janela>
   );
 }

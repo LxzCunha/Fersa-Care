@@ -4,20 +4,31 @@ import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from
 import { SUPORTE } from '../config';
 import { useAutenticacao } from '../contexto/Autenticacao';
 import { useNotificar } from '../contexto/Notificacoes';
+import { ProvedorAssistente, useAssistente } from '../contexto/Assistente';
+import { Assistente } from './Assistente';
 import { CampoBusca } from './CampoBusca';
 import { Marca } from './Marca';
 import './Layout.css';
 
 /** Telas sem a busca global logo abaixo do cabeçalho (têm a própria ou são formulários). */
-const SEM_BUSCA_GLOBAL = ['/', '/busca', '/entrar', '/solicitar-acesso', '/minha-conta', '/admin'];
+const SEM_BUSCA_GLOBAL = ['/', '/busca', '/entrar', '/solicitar-acesso', '/minha-conta'];
 
 /**
  * Estrutura comum a todas as telas, no modelo do site FERSA: cabeçalho branco
- * com o "Catálogo" em destaque, busca em pílula logo abaixo, rodapé cinza e,
+ * com a seção atual em pílula azul, busca em pílula logo abaixo, rodapé cinza e,
  * no celular, a barra de navegação inferior (alcance do polegar).
  */
 export function Layout() {
+  return (
+    <ProvedorAssistente>
+      <EstruturaDoPortal />
+    </ProvedorAssistente>
+  );
+}
+
+function EstruturaDoPortal() {
   const { usuario, ehAdmin, sair } = useAutenticacao();
+  const assistente = useAssistente();
   const notificar = useNotificar();
   const navegar = useNavigate();
   const { pathname } = useLocation();
@@ -34,6 +45,9 @@ export function Layout() {
   }
 
   const primeiroNome = usuario?.nome.split(' ')[0];
+  /** A lista de categorias faz parte do catálogo: lá, "Catálogo" também fica marcado. */
+  const classeCatalogo = ({ isActive }: { isActive: boolean }) =>
+    isActive || pathname.startsWith('/categorias') ? 'active' : undefined;
   const mostrarBusca = !SEM_BUSCA_GLOBAL.some(
     (rota) => pathname === rota || (rota !== '/' && pathname.startsWith(`${rota}/`)),
   );
@@ -51,12 +65,13 @@ export function Layout() {
           </Link>
 
           <nav className="nav-principal" aria-label="Principal">
-            <NavLink to="/produtos">Catálogo</NavLink>
-            <NavLink to="/categorias">Categorias</NavLink>
+            <NavLink to="/produtos" className={classeCatalogo}>
+              Catálogo
+            </NavLink>
             <NavLink to="/documentos">Manuais e vídeos</NavLink>
-            <a href={SUPORTE.linkWhatsapp()} target="_blank" rel="noreferrer">
+            <button type="button" onClick={() => assistente.abrir()}>
               Suporte técnico
-            </a>
+            </button>
             {ehAdmin && <NavLink to="/admin">Administração</NavLink>}
           </nav>
 
@@ -131,7 +146,7 @@ export function Layout() {
           <House aria-hidden />
           <span>Início</span>
         </NavLink>
-        <NavLink to="/produtos">
+        <NavLink to="/produtos" className={classeCatalogo}>
           <Package aria-hidden />
           <span>Catálogo</span>
         </NavLink>
@@ -155,6 +170,9 @@ export function Layout() {
           </NavLink>
         )}
       </nav>
+
+      {/* Assistente técnico: a bolinha de chat no canto inferior direito. */}
+      <Assistente />
     </div>
   );
 }

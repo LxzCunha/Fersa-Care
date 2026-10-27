@@ -267,7 +267,8 @@
     gap: var(--e-1);
   }
 
-  .nav-principal a {
+  .nav-principal a,
+  .nav-principal button {
     display: inline-flex;
     align-items: center;
     min-height: 2.5rem;
@@ -280,7 +281,16 @@
     text-decoration: none;
   }
 
-  .nav-principal a:hover {
+  /* "Suporte técnico" abre o assistente: um botão com a cara dos links. */
+  .nav-principal button {
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .nav-principal a:hover,
+  .nav-principal button:hover {
     color: var(--marca);
   }
 

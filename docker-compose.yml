@@ -50,22 +50,29 @@ services:
       ADMIN_SENHA: ${ADMIN_SENHA:-Admin@123}
       # Cria clientes, produtos e documentos fictícios para demonstração.
       SEED_EXEMPLOS: ${SEED_EXEMPLOS:-true}
+      # Onde o assistente encontra os modelos de IA (serviço "ollama" ou o Ollama do Mac).
+      OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
     ports:
       - "3000:3000"
     volumes:
       - arquivos:/app/uploads
 
-  # Fase 2 (assistente com RAG): descomente para rodar o modelo localmente.
-  # Depois: docker compose exec ollama ollama pull qwen3:14b
-  # ollama:
-  #   image: ollama/ollama
-  #   restart: unless-stopped
-  #   ports:
-  #     - "11434:11434"
-  #   volumes:
-  #     - modelos-ollama:/root/.ollama
+  # Modelos de IA do assistente técnico (bolinha de chat). Depois de subir, baixe os modelos:
+  #   docker compose exec ollama ollama pull bge-m3
+  #   docker compose exec ollama ollama pull qwen2.5:14b
+  # No Mac, o Ollama dentro do Docker não usa a GPU e fica bem lento: prefira o app
+  # do Ollama instalado no Mac e rode o portal com
+  #   OLLAMA_URL=http://host.docker.internal:11434 docker compose up app
+  ollama:
+    image: ollama/ollama
+    restart: unless-stopped
+    profiles: ["ia"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - modelos-ollama:/root/.ollama
 
 volumes:
   dados-postgres:
   arquivos:
-  # modelos-ollama:
+  modelos-ollama:

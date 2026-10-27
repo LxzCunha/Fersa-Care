@@ -24,6 +24,19 @@ export async function detalhar(req: Request, res: Response) {
 }
 
 /**
+ * Capa (WebP) mostrada nos cartões. A URL muda a cada edição (?v=), então as
+ * capas de documentos públicos podem ficar em cache em qualquer lugar; as
+ * demais, só no navegador de quem pode vê-las.
+ */
+export async function capa(req: Request, res: Response) {
+  const { id } = esquemaParametroId.parse(req.params);
+  const imagem = await documentosService.obterCapa(id, req.usuario);
+  res.setHeader('Content-Type', 'image/webp');
+  res.setHeader('Cache-Control', imagem.publica ? 'public, max-age=31536000, immutable' : 'private, max-age=86400');
+  res.sendFile(imagem.caminho, { cacheControl: false });
+}
+
+/**
  * Entrega o conteúdo do documento depois de conferir a permissão.
  * - Arquivo: abre no navegador quando possível (PDF, imagem, vídeo);
  *   com ?download=1 força o download. Suporta Range, então vídeos podem ser adiantados.

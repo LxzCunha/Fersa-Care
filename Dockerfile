@@ -50,5 +50,5 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s \
   CMD wget -qO- http://127.0.0.1:3000/api/saude > /dev/null || exit 1
 
 # Aplica migrações, garante o administrador inicial (e os exemplos, se
-# SEED_EXEMPLOS=true) e sobe o servidor.
-CMD ["sh", "-c", "node dist/db/migrar.js && node dist/db/seed.js && node dist/server.js"]
+# SEED_EXEMPLOS=true), gera as capas que faltam e sobe o servidor.
+CMD ["sh", "-c", "node dist/db/migrar.js && node dist/db/seed.js && node dist/db/gerar-capas.js && node dist/server.js"]

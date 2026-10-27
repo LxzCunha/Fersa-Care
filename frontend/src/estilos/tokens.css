@@ -30,6 +30,16 @@
   --atencao-fundo: #fff4dc;
   --atencao-borda: #efd29a;
 
+  /* Menu lateral da administração: painel azul-marinho escuro, como um sistema de gestão */
+  --lateral-fundo: var(--marca-escura);
+  --lateral-texto: #c6d1e1;
+  --lateral-texto-suave: #8d9bb1;
+  --lateral-texto-forte: #ffffff;
+  --lateral-destaque: #9cc0f0; /* página atual: texto, ícone e marcador */
+  --lateral-hover: rgb(255 255 255 / 0.06);
+  --lateral-selecionado: rgb(255 255 255 / 0.1);
+  --lateral-linha: rgb(255 255 255 / 0.12);
+
   /* Estados */
   --ok: #1d6f46;
   --ok-fundo: #e3f3ea;
@@ -75,5 +85,7 @@
   --largura-texto: 42rem;
   --altura-cabecalho: 3.75rem;
   --altura-nav-inferior: 4.25rem;
+  --largura-lateral: 16.5rem;
+  --largura-lateral-recolhida: 4.5rem;
   --toque-minimo: 2.75rem; /* 44px: alvo mínimo de toque */
 }

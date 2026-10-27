@@ -73,6 +73,11 @@ export function caminhoDoArquivo(chave: string): string {
   return path.join(env.UPLOAD_DIR, path.basename(chave));
 }
 
+/** Grava um arquivo gerado pelo próprio sistema (ex.: a capa de um documento). */
+export async function gravarArquivo(chave: string, conteudo: Buffer): Promise<void> {
+  await fs.writeFile(caminhoDoArquivo(chave), conteudo);
+}
+
 export async function removerArquivo(chave: string | null | undefined): Promise<void> {
   if (!chave) return;
   await fs.rm(caminhoDoArquivo(chave), { force: true });

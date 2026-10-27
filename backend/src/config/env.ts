@@ -37,6 +37,13 @@ const esquema = z.object({
   UPLOAD_LIMITE_MB: z.coerce.number().positive().default(200),
   FRONTEND_DIST: textoOpcional,
   CONFIAR_PROXY: z.coerce.number().int().min(0).default(0),
+
+  // Assistente técnico (RAG) com modelos rodando no Ollama.
+  OLLAMA_URL: z.url('OLLAMA_URL precisa ser um endereço, ex.: http://localhost:11434').default('http://localhost:11434'),
+  IA_MODELO_CHAT: z.string().trim().min(1).default('qwen2.5:14b'),
+  IA_MODELO_EMBEDDING: z.string().trim().min(1).default('bge-m3'),
+  /** Indexa o documento para o assistente sempre que ele é salvo (os testes desligam). */
+  IA_INDEXAR_AO_SALVAR: z.stringbool().default(true),
 });
 
 const resultado = esquema.safeParse(process.env);

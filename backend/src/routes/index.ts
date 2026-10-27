@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { adminRotas } from './admin.routes.js';
+import { assistenteRotas } from './assistente.routes.js';
 import { authRotas } from './auth.routes.js';
 import { categoriasRotas } from './categorias.routes.js';
 import { documentosRotas } from './documentos.routes.js';
@@ -23,4 +24,5 @@ rotasDaApi.use('/auth', authRotas);
 rotasDaApi.use('/documentos', documentosRotas);
 rotasDaApi.use('/produtos', produtosRotas);
 rotasDaApi.use('/categorias', categoriasRotas);
+rotasDaApi.use('/assistente', assistenteRotas);
 rotasDaApi.use('/admin', adminRotas);

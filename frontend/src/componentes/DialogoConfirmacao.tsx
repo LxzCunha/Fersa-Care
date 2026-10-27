@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useId, useRef } from 'react';
 
 /**
  * Confirmação antes de ações que não têm volta (excluir, recusar...).
@@ -24,6 +24,7 @@ export function DialogoConfirmacao({
   aoCancelar: () => void;
 }) {
   const referencia = useRef<HTMLDialogElement>(null);
+  const idTitulo = useId();
 
   useEffect(() => {
     const dialogo = referencia.current;
@@ -36,14 +37,14 @@ export function DialogoConfirmacao({
     <dialog
       ref={referencia}
       className="dialogo"
-      aria-labelledby="dialogo-titulo"
+      aria-labelledby={idTitulo}
       onCancel={(evento) => {
         evento.preventDefault();
         aoCancelar();
       }}
     >
       <div className="dialogo-conteudo">
-        <h2 id="dialogo-titulo">{titulo}</h2>
+        <h2 id={idTitulo}>{titulo}</h2>
         <p>{mensagem}</p>
         <div className="dialogo-acoes">
           <button type="button" className="botao botao-secundario" onClick={aoCancelar} disabled={processando}>

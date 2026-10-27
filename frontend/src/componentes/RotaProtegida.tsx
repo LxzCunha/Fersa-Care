@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router';
+import { Link, Navigate, useLocation } from 'react-router';
 import type { Perfil } from '../api/tipos';
 import { useAutenticacao } from '../contexto/Autenticacao';
 import { Carregando, EstadoVazio } from './Estados';
@@ -23,7 +23,15 @@ export function RotaProtegida({ perfil, children }: { perfil?: Perfil; children:
   if (perfil && usuario.perfil !== perfil) {
     return (
       <div className="conteiner pagina">
-        <EstadoVazio titulo="Esta área é só para administradores" nivel={1}>
+        <EstadoVazio
+          titulo="Esta área é só para administradores"
+          nivel={1}
+          acao={
+            <Link to="/" className="botao botao-secundario">
+              Voltar para o portal
+            </Link>
+          }
+        >
           Se você precisa cadastrar documentos, peça acesso de administrador à equipe FERSA Care.
         </EstadoVazio>
       </div>

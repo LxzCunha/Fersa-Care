@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Eye, Save, Trash } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { useId, useState, type FormEvent } from 'react';
+import { Link, useParams } from 'react-router';
 import {
   atualizarCategoria,
   criarCategoria,
@@ -17,23 +16,31 @@ import { AvisoErro, Carregando, mensagemDeErro } from '../../componentes/Estados
 import { useNotificar } from '../../contexto/Notificacoes';
 import { plural } from '../../lib/formatar';
 import { useRecarregarTudo } from './acoes';
+import { Janela, rolarJanelaParaTopo, useVoltarParaLista } from './Cadastro';
 
+/** Cadastro (/admin/categorias/nova) e edição (/admin/categorias/:id), numa janela sobre a lista. */
 export function FormCategoria() {
   const { id } = useParams();
+  const fechar = useVoltarParaLista('/admin/categorias');
   const consulta = useQuery({
     queryKey: ['admin', 'categoria', id],
     queryFn: () => detalharCategoriaAdmin(id!),
     enabled: Boolean(id),
   });
 
-  if (id && consulta.isPending) return <Carregando />;
-  if (id && consulta.isError) return <AvisoErro erro={consulta.error} />;
-  return <FormularioCategoria key={id ?? 'nova'} categoria={consulta.data} />;
+  if (id && !consulta.data) {
+    return (
+      <Janela titulo="Categoria" largura="estreita" aoFechar={fechar}>
+        {consulta.isError ? <AvisoErro erro={consulta.error} /> : <Carregando />}
+      </Janela>
+    );
+  }
+  return <FormularioCategoria key={id ?? 'nova'} categoria={consulta.data} aoFechar={fechar} />;
 }
 
-function FormularioCategoria({ categoria }: { categoria?: Categoria }) {
+function FormularioCategoria({ categoria, aoFechar }: { categoria?: Categoria; aoFechar: () => void }) {
   const editando = Boolean(categoria);
-  const navegar = useNavigate();
+  const idFormulario = useId();
   const notificar = useNotificar();
   const recarregar = useRecarregarTudo();
 
@@ -41,6 +48,7 @@ function FormularioCategoria({ categoria }: { categoria?: Categoria }) {
     nome: categoria?.nome ?? '',
     descricao: categoria?.descricao ?? '',
   });
+  const [alterado, setAlterado] = useState(false);
   const [erro, setErro] = useState<ErroApi | null>(null);
   const [salvando, setSalvando] = useState(false);
   const [confirmandoExclusao, setConfirmandoExclusao] = useState(false);
@@ -57,10 +65,10 @@ function FormularioCategoria({ categoria }: { categoria?: Categoria }) {
       else await criarCategoria(dados);
       await recarregar();
       notificar(editando ? 'Categoria atualizada.' : 'Categoria cadastrada.');
-      navegar('/admin/categorias');
+      aoFechar();
     } catch (falha) {
       setErro(falha instanceof ErroApi ? falha : new ErroApi(0, 'ERRO', mensagemDeErro(falha)));
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      rolarJanelaParaTopo();
     } finally {
       setSalvando(false);
     }
@@ -73,7 +81,7 @@ function FormularioCategoria({ categoria }: { categoria?: Categoria }) {
       await excluirCategoria(categoria.id);
       await recarregar();
       notificar('Categoria excluída.');
-      navegar('/admin/categorias');
+      aoFechar();
     } catch (falha) {
       notificar(mensagemDeErro(falha), 'erro');
       setExcluindo(false);
@@ -85,76 +93,55 @@ function FormularioCategoria({ categoria }: { categoria?: Categoria }) {
   const mostrarAvisoGeral = erro && (erro.detalhes.length === 0 || erro.status === 409);
 
   return (
-    <>
-      <title>{`${editando ? 'Editar' : 'Cadastrar'} categoria | Administração FERSA Care`}</title>
-
-      <Link to="/admin/categorias" className="voltar">
-        <ArrowLeft aria-hidden /> Categorias
-      </Link>
-
-      <header className="admin-cabecalho">
-        <div>
-          <h1>{editando ? categoria?.nome : 'Cadastrar categoria'}</h1>
-          {categoria && <p>{plural(categoria.totalProdutos, 'peça nesta categoria', 'peças nesta categoria')}.</p>}
-        </div>
-        {categoria && categoria.totalProdutos > 0 && (
-          <Link to={`/produtos?categoria=${categoria.id}`} className="botao botao-secundario">
-            <Eye aria-hidden /> Ver no portal
-          </Link>
-        )}
-      </header>
-
-      <form className="form-admin" onSubmit={salvar} noValidate>
+    <Janela
+      titulo={editando ? 'Categoria' : 'Nova categoria'}
+      largura="estreita"
+      idFormulario={idFormulario}
+      salvando={salvando}
+      alterado={alterado}
+      aoFechar={aoFechar}
+      links={
+        categoria && (
+          <>
+            <span className="janela-nota">{plural(categoria.totalProdutos, 'peça', 'peças')} nesta categoria</span>
+            {categoria.totalProdutos > 0 && <Link to={`/produtos?categoria=${categoria.id}`}>Ver no portal</Link>}
+            <button type="button" className="janela-link-perigo" onClick={() => setConfirmandoExclusao(true)}>
+              Excluir categoria
+            </button>
+          </>
+        )
+      }
+    >
+      <form id={idFormulario} className="cadastro" onSubmit={salvar} onChange={() => setAlterado(true)} noValidate>
         {mostrarAvisoGeral && <AvisoErro erro={erro} />}
 
-        <section className="form-bloco" aria-labelledby="bloco-categoria">
-          <div className="form-bloco-titulo">
-            <h2 id="bloco-categoria">Categoria</h2>
-            <p>O nome aparece no catálogo, nos filtros e nos cartões das peças.</p>
-          </div>
-          <CampoTexto
-            id="nome"
-            rotulo="Nome"
-            placeholder="Ex.: Rolamentos de Esferas"
-            value={dados.nome}
-            onChange={(e) => setDados((atuais) => ({ ...atuais, nome: e.target.value }))}
-            erro={erroDe('nome')}
-            maxLength={120}
-          />
-          <Campo
-            id="descricao"
-            rotulo="Descrição"
-            opcional
-            erro={erroDe('descricao')}
-            ajuda="Aparece no topo do catálogo quando a categoria é escolhida."
-          >
-            {(atributos) => (
-              <textarea
-                className="area-texto"
-                rows={3}
-                value={dados.descricao}
-                onChange={(e) => setDados((atuais) => ({ ...atuais, descricao: e.target.value }))}
-                {...atributos}
-              />
-            )}
-          </Campo>
-        </section>
-
-        <div className="form-rodape">
-          <div className="grupo-botoes">
-            <button type="submit" className="botao botao-principal" disabled={salvando}>
-              <Save aria-hidden /> {salvando ? 'Salvando...' : 'Salvar categoria'}
-            </button>
-            <Link to="/admin/categorias" className="botao botao-fantasma">
-              Cancelar
-            </Link>
-          </div>
-          {categoria && (
-            <button type="button" className="botao botao-perigo" onClick={() => setConfirmandoExclusao(true)}>
-              <Trash aria-hidden /> Excluir
-            </button>
+        <CampoTexto
+          id="nome"
+          rotulo="Nome"
+          placeholder="Ex.: Rolamentos de Esferas"
+          value={dados.nome}
+          onChange={(e) => setDados((atuais) => ({ ...atuais, nome: e.target.value }))}
+          erro={erroDe('nome')}
+          ajuda="Aparece no catálogo, nos filtros e nos cartões das peças."
+          maxLength={120}
+        />
+        <Campo
+          id="descricao"
+          rotulo="Descrição"
+          opcional
+          erro={erroDe('descricao')}
+          ajuda="Aparece no topo do catálogo quando a categoria é escolhida."
+        >
+          {(atributos) => (
+            <textarea
+              className="area-texto"
+              rows={4}
+              value={dados.descricao}
+              onChange={(e) => setDados((atuais) => ({ ...atuais, descricao: e.target.value }))}
+              {...atributos}
+            />
           )}
-        </div>
+        </Campo>
       </form>
 
       <DialogoConfirmacao
@@ -171,6 +158,6 @@ function FormularioCategoria({ categoria }: { categoria?: Categoria }) {
         aoCancelar={() => setConfirmandoExclusao(false)}
         aoConfirmar={excluir}
       />
-    </>
+    </Janela>
   );
 }

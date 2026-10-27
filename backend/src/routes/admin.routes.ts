@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import * as categoriasController from '../controllers/categorias.controller.js';
+import * as chamadosController from '../controllers/chamados.controller.js';
 import * as documentosAdminController from '../controllers/documentos-admin.controller.js';
 import * as painelController from '../controllers/painel.controller.js';
 import * as produtosController from '../controllers/produtos.controller.js';
 import * as usuariosController from '../controllers/usuarios.controller.js';
 import { exigirAdmin } from '../middlewares/autenticacao.js';
-import { uploadDeArquivo, uploadDeImagem } from '../middlewares/upload.js';
+import { uploadDeDocumento, uploadDeImagem } from '../middlewares/upload.js';
 
 /**
  * Área do administrador: /api/admin/...
@@ -20,9 +21,14 @@ adminRotas.get('/painel', painelController.obter);
 
 adminRotas.get('/documentos', documentosAdminController.listar);
 adminRotas.get('/documentos/:id', documentosAdminController.detalhar);
-adminRotas.post('/documentos', uploadDeArquivo, documentosAdminController.criar);
-adminRotas.put('/documentos/:id', uploadDeArquivo, documentosAdminController.atualizar);
+adminRotas.post('/documentos', uploadDeDocumento, documentosAdminController.criar);
+adminRotas.put('/documentos/:id', uploadDeDocumento, documentosAdminController.atualizar);
 adminRotas.delete('/documentos/:id', documentosAdminController.excluir);
+adminRotas.post('/documentos/:id/indexar', documentosAdminController.reindexar);
+
+adminRotas.get('/chamados', chamadosController.listar);
+adminRotas.get('/chamados/:id', chamadosController.detalhar);
+adminRotas.patch('/chamados/:id', chamadosController.atualizar);
 
 adminRotas.get('/usuarios', usuariosController.listar);
 adminRotas.get('/usuarios/:id', usuariosController.detalhar);

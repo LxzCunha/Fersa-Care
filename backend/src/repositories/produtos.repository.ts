@@ -103,6 +103,26 @@ export async function buscarPorId(id: string, opcoes: OpcoesDeListagem): Promise
   return produto;
 }
 
+/**
+ * Peças do catálogo (ativas) cujo código, sem espaços e hífens, é um dos
+ * informados. O assistente usa para trazer a ficha da peça citada na pergunta.
+ */
+export function buscarAtivosPorCodigos(codigosSemEspacos: string[]): Promise<LinhaProduto[]> {
+  if (codigosSemEspacos.length === 0) return Promise.resolve([]);
+  return db
+    .select(colunasDoProduto)
+    .from(produtos)
+    .leftJoin(categorias, eq(categorias.id, produtos.categoriaId))
+    .where(
+      and(
+        eq(produtos.ativo, true),
+        inArray(sql`upper(regexp_replace(${produtos.codigo}, '[^[:alnum:]]', '', 'g'))`, codigosSemEspacos),
+      ),
+    )
+    .orderBy(asc(produtos.codigo))
+    .limit(5);
+}
+
 /** Quantos documentos estão ligados ao produto (sem filtro de acesso: uso do admin). */
 export async function contarDocumentosRelacionados(id: string): Promise<number> {
   const [contagem] = await db

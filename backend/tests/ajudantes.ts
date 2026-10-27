@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import request from 'supertest';
 import { criarApp } from '../src/app.js';
 import { db } from '../src/db/index.js';
-import { caminhoDoArquivo, gerarChave } from '../src/lib/armazenamento.js';
+import { caminhoDoArquivo, gerarChave, tipoDoArquivo } from '../src/lib/armazenamento.js';
 import { gerarHashSenha } from '../src/lib/senha.js';
 import {
   categorias,
@@ -103,6 +103,8 @@ export async function criarDocumento(
     link?: string;
     liberadoPara?: string[];
     produtoIds?: string[];
+    /** Arquivo com conteúdo de verdade (ex.: um .txt para o assistente ler). */
+    arquivo?: { nome: string; conteudo: string | Buffer };
   } = {},
 ) {
   const numero = proximo();
@@ -110,9 +112,16 @@ export async function criarDocumento(
   if (dados.link) {
     conteudo = { urlExterna: dados.link };
   } else {
-    const chave = gerarChave('arquivo.pdf');
-    await fs.writeFile(caminhoDoArquivo(chave), `%PDF-1.4 conteúdo ${numero}`);
-    conteudo = { arquivoChave: chave, arquivoNome: `documento-${numero}.pdf`, arquivoMime: 'application/pdf', arquivoTamanho: 20 };
+    const nome = dados.arquivo?.nome ?? `documento-${numero}.pdf`;
+    const bytes = dados.arquivo?.conteudo ?? `%PDF-1.4 conteúdo ${numero}`;
+    const chave = gerarChave(nome);
+    await fs.writeFile(caminhoDoArquivo(chave), bytes);
+    conteudo = {
+      arquivoChave: chave,
+      arquivoNome: nome,
+      arquivoMime: tipoDoArquivo(nome)?.mime ?? 'application/octet-stream',
+      arquivoTamanho: Buffer.byteLength(bytes),
+    };
   }
 
   const [documento] = await db
