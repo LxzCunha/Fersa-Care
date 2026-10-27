@@ -1,0 +1,92 @@
+import { paraProdutoDto } from '../dtos/produtos.dto.js';
+import { arquivoExiste, caminhoDoArquivo, removerArquivo, tipoDoArquivo } from '../lib/armazenamento.js';
+import { naoEncontrado, requisicaoInvalida } from '../lib/erros.js';
+import { montarPagina } from '../lib/validacao.js';
+import type { UsuarioAutenticado } from '../models/index.js';
+import * as categoriasRepository from '../repositories/categorias.repository.js';
+import * as produtosRepository from '../repositories/produtos.repository.js';
+import type { DadosProduto, FiltrosProdutos } from '../validators/produtos.validator.js';
+import { listarPagina as listarDocumentos } from './documentos.service.js';
+
+/** Catálogo de peças. Peças são públicas; os documentos ligados a elas seguem a regra de acesso. */
+
+type ImagemRecebida = Express.Multer.File;
+
+export async function listarProdutos(filtros: FiltrosProdutos, opcoes: { incluirInativos: boolean }) {
+  const { linhas, total } = await produtosRepository.listar(filtros, opcoes);
+  return montarPagina(linhas.map(paraProdutoDto), total, filtros.pagina, filtros.porPagina);
+}
+
+async function buscarOuFalhar(id: string, opcoes: { incluirInativos: boolean }) {
+  const produto = await produtosRepository.buscarPorId(id, opcoes);
+  if (!produto) throw naoEncontrado('Produto não encontrado.');
+  return produto;
+}
+
+/** Página do produto no portal: dados da peça + documentos que o usuário pode ver. */
+export async function detalharProdutoNoPortal(id: string, usuario: UsuarioAutenticado | undefined) {
+  const produto = await buscarOuFalhar(id, { incluirInativos: false });
+  const documentosVisiveis = await listarDocumentos({ produtoId: id, pagina: 1, porPagina: 100 }, usuario);
+  return { ...paraProdutoDto(produto), documentos: documentosVisiveis.itens };
+}
+
+export async function detalharProdutoParaAdmin(id: string) {
+  const produto = await buscarOuFalhar(id, { incluirInativos: true });
+  const totalDocumentos = await produtosRepository.contarDocumentosRelacionados(id);
+  return { ...paraProdutoDto(produto), totalDocumentos };
+}
+
+/**
+ * Foto da peça. Peças fora do catálogo só mostram a foto para administradores
+ * (é o caso da pré-visualização no formulário).
+ */
+export async function obterImagem(id: string, usuario: UsuarioAutenticado | undefined) {
+  const produto = await produtosRepository.buscarPorId(id, { incluirInativos: usuario?.perfil === 'ADMIN' });
+  const chave = produto?.imagemChave;
+  if (!chave || !(await arquivoExiste(chave))) throw naoEncontrado('Imagem não encontrada.');
+  return {
+    caminho: caminhoDoArquivo(chave),
+    mime: tipoDoArquivo(chave)?.mime ?? 'application/octet-stream',
+    publica: produto.ativo,
+  };
+}
+
+export async function criarProduto(dados: DadosProduto, imagem: ImagemRecebida | undefined) {
+  const { removerImagem: _ignorado, ...valores } = dados;
+  await conferirCategoria(valores.categoriaId);
+  const produto = await produtosRepository.inserir({ ...valores, imagemChave: imagem?.filename ?? null });
+  return detalharProdutoParaAdmin(produto.id);
+}
+
+/**
+ * Foto na edição: uma nova substitui a atual; `removerImagem` apaga a atual;
+ * sem nenhum dos dois, a foto atual continua.
+ */
+export async function atualizarProduto(id: string, dados: DadosProduto, imagem: ImagemRecebida | undefined) {
+  const atual = await buscarOuFalhar(id, { incluirInativos: true });
+  const { removerImagem, ...valores } = dados;
+  await conferirCategoria(valores.categoriaId);
+
+  const novaChave = imagem ? imagem.filename : removerImagem ? null : atual.imagemChave;
+  await produtosRepository.atualizar(id, { ...valores, imagemChave: novaChave });
+
+  // Só apaga a foto antiga depois que o banco confirmou a troca.
+  if (atual.imagemChave && atual.imagemChave !== novaChave) await removerArquivo(atual.imagemChave);
+
+  return detalharProdutoParaAdmin(id);
+}
+
+/** Os documentos continuam existindo; só perdem o vínculo com o produto. */
+export async function excluirProduto(id: string) {
+  const removido = await produtosRepository.excluir(id);
+  if (!removido) throw naoEncontrado('Produto não encontrado.');
+  await removerArquivo(removido.imagemChave);
+}
+
+async function conferirCategoria(categoriaId: string | null) {
+  if (categoriaId && !(await categoriasRepository.buscarPorId(categoriaId))) {
+    throw requisicaoInvalida('A categoria escolhida não existe mais. Atualize a página.', [
+      { campo: 'categoriaId', mensagem: 'A categoria escolhida não existe mais. Atualize a página.' },
+    ]);
+  }
+}

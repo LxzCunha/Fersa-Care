@@ -1,0 +1,126 @@
+/* Telas de entrar, solicitar acesso e minha conta. */
+
+.acesso {
+  display: grid;
+  gap: var(--e-6);
+  align-items: start;
+}
+
+@media (min-width: 64rem) {
+  .acesso {
+    grid-template-columns: minmax(0, 28rem) minmax(0, 1fr);
+    gap: var(--e-8);
+  }
+}
+
+.acesso-formulario {
+  display: grid;
+  gap: var(--e-5);
+  padding: var(--e-5);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-painel);
+  background: var(--superficie);
+}
+
+.acesso-formulario h1 {
+  font-size: var(--texto-2xl);
+}
+
+.acesso-rodape {
+  color: var(--texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.acesso-rodape a {
+  font-weight: 700;
+}
+
+/* Explicação dos níveis de acesso */
+.niveis {
+  display: grid;
+  gap: var(--e-4);
+}
+
+.niveis h2 {
+  font-size: var(--texto-xl);
+}
+
+.niveis-lista {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.niveis-lista li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--e-1) var(--e-3);
+  padding: var(--e-4) 0;
+}
+
+.niveis-lista li + li {
+  border-top: 1px solid var(--linha);
+}
+
+.niveis-lista svg {
+  width: 1.4rem;
+  height: 1.4rem;
+  margin-top: 0.1rem;
+  color: var(--aco);
+}
+
+.niveis-lista strong {
+  display: block;
+}
+
+.niveis-lista p {
+  grid-column: 2;
+  color: var(--texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.conta-grade {
+  display: grid;
+  gap: var(--e-5);
+  align-items: start;
+}
+
+@media (min-width: 64rem) {
+  .conta-grade {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.conta-identidade {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-2);
+  color: var(--texto-suave);
+}
+
+.campo-somente-leitura {
+  padding: 0.55rem 0;
+  font-weight: 700;
+}
+
+.sucesso {
+  display: grid;
+  gap: var(--e-4);
+  justify-items: start;
+  max-width: 36rem;
+  padding: var(--e-6) var(--e-5);
+  border: 1px solid var(--linha);
+  border-left: 4px solid var(--ok);
+  border-radius: var(--raio-painel);
+  background: var(--superficie);
+}
+
+.sucesso h1 {
+  font-size: var(--texto-2xl);
+}
+
+.sucesso p {
+  color: var(--texto-suave);
+}

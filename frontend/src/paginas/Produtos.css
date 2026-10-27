@@ -1,0 +1,303 @@
+/* ─── Catálogo de peças ──────────────────────────────────────────────────── */
+
+.catalogo-grade {
+  display: grid;
+  gap: var(--e-5);
+}
+
+.catalogo-lateral {
+  display: none;
+}
+
+.catalogo-cabecalho {
+  display: grid;
+  gap: var(--e-2);
+  margin-bottom: var(--e-3);
+}
+
+.catalogo-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-3);
+  padding-block: var(--e-3);
+  border-block: 1px solid var(--linha);
+  margin-bottom: var(--e-4);
+}
+
+.catalogo-contagem {
+  color: var(--texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.botao-filtrar {
+  min-height: 2.5rem;
+}
+
+.filtrar-contagem {
+  display: grid;
+  place-items: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding: 0 0.3rem;
+  border-radius: var(--raio-pilula);
+  background: var(--marca);
+  color: #fff;
+  font-size: 0.75rem;
+}
+
+/* Pílulas dos filtros em uso */
+.filtros-ativos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-2);
+  margin: 0 0 var(--e-4);
+  padding: 0;
+  list-style: none;
+}
+
+.chip-removivel {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-2);
+  min-height: 2.25rem;
+  padding-right: var(--e-3);
+  border-color: var(--marca-borda);
+  background: var(--marca-clara);
+  color: var(--marca);
+}
+
+.chip-removivel svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.limpar-filtros {
+  min-height: 2.25rem;
+  padding: 0 var(--e-2);
+  border: 0;
+  background: none;
+  color: var(--texto-suave);
+  font-size: var(--texto-sm);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* ─── Painel de filtros (acordeões, como no catálogo FERSA) ──────────────── */
+
+.painel-filtros {
+  display: grid;
+}
+
+.filtro-grupo {
+  border-bottom: 1px solid var(--linha);
+}
+
+.filtro-grupo summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 3.25rem;
+  cursor: pointer;
+  font-size: var(--texto-md);
+  font-weight: 500;
+  list-style: none;
+}
+
+.filtro-grupo summary::-webkit-details-marker {
+  display: none;
+}
+
+.filtro-grupo summary::after {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.35rem;
+  border-right: 2px solid var(--tinta);
+  border-bottom: 2px solid var(--tinta);
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 0.15s;
+}
+
+.filtro-grupo[open] summary::after {
+  transform: rotate(-135deg) translateY(-2px);
+}
+
+.filtro-opcoes {
+  display: grid;
+  padding-bottom: var(--e-3);
+}
+
+.opcao-filtro {
+  display: flex;
+  align-items: center;
+  gap: var(--e-3);
+  min-height: 2.5rem;
+  padding: 0 var(--e-2);
+  border-radius: var(--raio-controle);
+  cursor: pointer;
+  font-size: var(--texto-sm);
+}
+
+.opcao-filtro:hover {
+  background: var(--nevoa);
+}
+
+.opcao-filtro:has(input:checked) {
+  background: var(--marca-clara);
+  color: var(--marca);
+  font-weight: 700;
+}
+
+.opcao-filtro input {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+  accent-color: var(--marca);
+}
+
+.opcao-filtro-rotulo {
+  flex: 1;
+}
+
+.opcao-filtro-contagem {
+  color: var(--texto-suave);
+  font-size: var(--texto-xs);
+  font-weight: 600;
+}
+
+/* Medidas: painel cinza com mín./máx., como "Dimensões" no site FERSA */
+.filtro-medidas {
+  display: grid;
+  gap: var(--e-3);
+  margin-bottom: var(--e-4);
+  padding: var(--e-4);
+  border-radius: var(--raio-painel);
+  background: var(--nevoa);
+}
+
+.filtro-medidas fieldset {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--e-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.filtro-medidas legend {
+  margin-bottom: var(--e-1);
+  padding: 0;
+  font-size: var(--texto-sm);
+  font-weight: 700;
+}
+
+.filtro-medidas .entrada {
+  min-height: 2.75rem;
+}
+
+.filtro-medidas .botao {
+  justify-self: center;
+  min-width: 60%;
+  margin-top: var(--e-1);
+}
+
+/* ─── Gaveta de filtros (celular) ────────────────────────────────────────── */
+
+.gaveta {
+  width: 100%;
+  max-width: 100%;
+  max-height: 88dvh;
+  margin: auto 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--raio-painel) var(--raio-painel) 0 0;
+  background: var(--superficie);
+  color: var(--texto);
+}
+
+.gaveta[open] {
+  display: flex;
+  flex-direction: column;
+  animation: subir 0.22s ease-out;
+}
+
+.gaveta::backdrop {
+  background: rgb(16 35 63 / 0.5);
+}
+
+.gaveta-conteudo {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--e-2) var(--e-4) var(--e-4);
+  overscroll-behavior: contain;
+}
+
+.gaveta-topo {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-inline: calc(-1 * var(--e-4));
+  padding: var(--e-2) var(--e-2) var(--e-2) var(--e-4);
+  border-bottom: 1px solid var(--linha);
+  background: var(--superficie);
+}
+
+.gaveta-topo h2 {
+  font-size: var(--texto-lg);
+}
+
+.gaveta-rodape {
+  padding: var(--e-3) var(--e-4) calc(var(--e-3) + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--linha);
+}
+
+@keyframes subir {
+  from {
+    transform: translateY(40px);
+    opacity: 0.4;
+  }
+}
+
+/* ─── Desktop: filtros na lateral, como no catálogo FERSA ────────────────── */
+
+@media (min-width: 64rem) {
+  .catalogo-grade {
+    grid-template-columns: 17.5rem minmax(0, 1fr);
+    gap: var(--e-7);
+    align-items: start;
+  }
+
+  .catalogo-lateral {
+    display: grid;
+    gap: var(--e-5);
+  }
+
+  .catalogo-lateral-titulo {
+    padding-bottom: var(--e-3);
+    border-bottom: 1px solid var(--linha);
+    font-size: var(--texto-xl);
+  }
+
+  .catalogo-ajuda {
+    justify-items: center;
+    text-align: center;
+  }
+
+  .catalogo-ajuda h2 {
+    font-size: var(--texto-lg);
+  }
+
+  .catalogo-ajuda p {
+    font-size: var(--texto-sm);
+  }
+
+  .botao-filtrar {
+    display: none;
+  }
+}

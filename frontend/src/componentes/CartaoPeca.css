@@ -1,0 +1,193 @@
+/* ─── Foto da peça ───────────────────────────────────────────────────────── */
+
+.imagem-peca {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: var(--raio-controle);
+  background: var(--nevoa);
+  aspect-ratio: 1;
+}
+
+.imagem-peca img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #fff;
+}
+
+.imagem-peca-desenho {
+  width: 46%;
+  height: auto;
+}
+
+.imagem-peca-desenho circle {
+  fill: none;
+  stroke: var(--aco-claro);
+  stroke-width: 3;
+}
+
+.imagem-peca-desenho .esfera {
+  fill: var(--superficie);
+  stroke-width: 2;
+}
+
+/* ─── Grade de cartões ───────────────────────────────────────────────────── */
+
+.grade-pecas {
+  display: grid;
+  gap: var(--e-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 40rem) {
+  .grade-pecas {
+    grid-template-columns: repeat(auto-fill, minmax(14.5rem, 1fr));
+    gap: var(--e-4);
+  }
+}
+
+/* ─── Cartão (celular: foto à esquerda; tablet e desktop: vertical, como na FERSA) ─ */
+
+.cartao-peca {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  grid-template-areas:
+    'imagem identificacao'
+    'ficha ficha'
+    'acao acao';
+  gap: var(--e-3) var(--e-4);
+  height: 100%;
+  padding: var(--e-3);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-painel);
+  background: var(--superficie);
+  color: var(--texto);
+  text-decoration: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.cartao-peca:hover {
+  border-color: var(--marca-borda);
+  box-shadow: var(--sombra-cartao);
+}
+
+.cartao-peca-imagem {
+  grid-area: imagem;
+}
+
+.cartao-peca-identificacao {
+  display: grid;
+  grid-area: identificacao;
+  align-content: center;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.cartao-peca-categoria {
+  color: var(--texto-suave);
+  font-size: var(--texto-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cartao-peca-codigo {
+  color: var(--tinta);
+  font-size: 1.5rem;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.cartao-peca-nome {
+  color: var(--texto-suave);
+  font-size: var(--texto-sm);
+  line-height: 1.35;
+}
+
+/* Ficha cinza 2×2 (Ø interno, Ø externo, largura, peso) */
+.ficha-resumo {
+  display: grid;
+  grid-area: ficha;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--e-2) var(--e-3);
+  margin: 0;
+  padding: var(--e-3);
+  border-radius: var(--raio-controle);
+  background: var(--nevoa);
+}
+
+.ficha-resumo dt {
+  color: var(--texto-suave);
+  font-size: var(--texto-xs);
+}
+
+.ficha-resumo dd {
+  margin: 0;
+  color: var(--tinta);
+  font-size: var(--texto-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.cartao-peca-acao {
+  display: inline-flex;
+  grid-area: acao;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-2);
+  min-height: 2.5rem;
+  border-radius: var(--raio-controle);
+  background: var(--nevoa);
+  color: var(--marca);
+  font-size: var(--texto-sm);
+  font-weight: 600;
+}
+
+.cartao-peca-acao svg {
+  width: 1rem;
+  height: 1rem;
+  transition: transform 0.15s;
+}
+
+.cartao-peca:hover .cartao-peca-acao {
+  background: var(--marca-clara);
+}
+
+.cartao-peca:hover .cartao-peca-acao svg {
+  transform: translateX(3px);
+}
+
+@media (min-width: 40rem) {
+  .cartao-peca {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr auto;
+    grid-template-areas:
+      'imagem'
+      'identificacao'
+      'ficha'
+      'acao';
+    padding: var(--e-4);
+  }
+
+  .cartao-peca-imagem {
+    aspect-ratio: 4 / 3;
+  }
+
+  .cartao-peca-identificacao {
+    justify-items: center;
+    text-align: center;
+  }
+
+  .cartao-peca-codigo {
+    font-size: 1.75rem;
+  }
+
+  .ficha-resumo {
+    align-self: start;
+  }
+}

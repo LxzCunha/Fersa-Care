@@ -1,0 +1,305 @@
+/* ─── Faixa de abertura (azul-marinho FERSA) ─────────────────────────────── */
+
+.hero {
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 85% 10%, rgb(255 255 255 / 0.09), transparent 60%),
+    linear-gradient(160deg, var(--marca) 0%, var(--marca-escura) 100%);
+  color: #fff;
+}
+
+.hero-grade {
+  display: grid;
+  align-items: center;
+  gap: var(--e-5);
+  padding-block: var(--e-6) var(--e-7);
+}
+
+.hero-texto {
+  display: grid;
+  gap: var(--e-4);
+  min-width: 0;
+}
+
+.hero-sobretitulo {
+  color: rgb(255 255 255 / 0.72);
+  font-size: var(--texto-xs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hero-titulo {
+  max-width: 20ch;
+  font-size: var(--texto-4xl);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+}
+
+.hero-apoio {
+  max-width: 34rem;
+  color: rgb(255 255 255 / 0.82);
+  font-size: var(--texto-lg);
+}
+
+.hero-exemplos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-2);
+  color: rgb(255 255 255 / 0.72);
+  font-size: var(--texto-sm);
+}
+
+.hero-exemplo {
+  min-height: 2.25rem;
+  padding: 0 var(--e-3);
+  border: 1px solid rgb(255 255 255 / 0.3);
+  border-radius: var(--raio-pilula);
+  background: rgb(255 255 255 / 0.06);
+  color: #fff;
+  font-size: var(--texto-sm);
+  font-weight: 600;
+}
+
+.hero-exemplo:hover {
+  border-color: #fff;
+  background: rgb(255 255 255 / 0.14);
+}
+
+.hero-desenho {
+  display: none;
+}
+
+@media (min-width: 64rem) {
+  .hero-grade {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: var(--e-7);
+    padding-block: var(--e-8);
+  }
+
+  .hero-desenho {
+    display: block;
+    max-width: 28rem;
+    justify-self: end;
+    opacity: 0.9;
+  }
+}
+
+/* ─── Corpo ──────────────────────────────────────────────────────────────── */
+
+.inicio-corpo {
+  padding-block: var(--e-5) var(--e-7);
+}
+
+.secao-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 var(--e-4);
+  margin-bottom: var(--e-2);
+}
+
+.secao-cabecalho .secao-titulo {
+  margin-bottom: 0;
+}
+
+/* Atalhos: lista no celular, três cartões lado a lado no desktop */
+.atalhos {
+  display: grid;
+  gap: var(--e-2);
+  margin-top: calc(-1 * var(--e-6));
+}
+
+.atalho {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--e-4);
+  min-height: 4.5rem;
+  padding: var(--e-3) var(--e-4);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-painel);
+  background: var(--superficie);
+  box-shadow: var(--sombra-cartao);
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.atalho:hover {
+  border-color: var(--marca-borda);
+}
+
+.atalho-icone {
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0.65rem;
+  border-radius: 50%;
+  background: var(--marca-clara);
+  color: var(--marca);
+}
+
+.atalho-texto {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.atalho-texto strong {
+  font-size: var(--texto-md);
+}
+
+.atalho-texto span {
+  color: var(--texto-suave);
+  font-size: var(--texto-sm);
+  line-height: 1.35;
+}
+
+.atalho-seta {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--aco);
+}
+
+/* Linhas (leve, pesada, agrícola, industrial) */
+.linhas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--e-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.linha-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-2);
+  min-height: 3.5rem;
+  padding: 0 var(--e-4);
+  border-radius: var(--raio-painel);
+  background: var(--nevoa);
+  color: var(--tinta);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.linha-link svg {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--marca);
+}
+
+.linha-link:hover {
+  background: var(--marca-clara);
+  color: var(--marca);
+}
+
+/* Tipos de material */
+.tipos {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-painel);
+  background: var(--superficie);
+  list-style: none;
+}
+
+.tipos li + li {
+  border-top: 1px solid var(--linha);
+}
+
+.tipo-link {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: var(--e-3);
+  min-height: 3.5rem;
+  padding: var(--e-2) var(--e-4);
+  color: var(--tinta);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tipo-link:hover {
+  background: var(--nevoa);
+}
+
+.tipo-icone {
+  width: 1.3rem;
+  height: 1.3rem;
+  color: var(--marca);
+}
+
+.tipo-contagem {
+  color: var(--texto-suave);
+  font-size: var(--texto-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.tipo-seta {
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--aco);
+}
+
+/* Convite para clientes (cartão azul, como o "Bem-vindo" do catálogo FERSA) */
+.convite {
+  justify-items: start;
+}
+
+.convite-icone {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: rgb(255 255 255 / 0.8);
+}
+
+.convite h2 {
+  font-size: var(--texto-xl);
+}
+
+@media (min-width: 40rem) {
+  .linhas {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .tipos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tipos li:nth-child(2) {
+    border-top: 0;
+  }
+
+  .tipos li:nth-child(even) {
+    border-left: 1px solid var(--linha);
+  }
+}
+
+@media (min-width: 64rem) {
+  .atalhos {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--e-4);
+  }
+
+  .convite {
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    column-gap: var(--e-5);
+    padding: var(--e-6);
+  }
+
+  .convite-icone {
+    grid-row: span 2;
+  }
+
+  .convite .grupo-botoes {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
+}

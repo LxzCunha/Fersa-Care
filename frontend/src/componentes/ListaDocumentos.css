@@ -1,0 +1,102 @@
+.lista-documentos {
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-painel);
+  background: var(--superficie);
+  list-style: none;
+}
+
+.item-documento + .item-documento {
+  border-top: 1px solid var(--linha);
+}
+
+.item-documento-link {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: var(--e-3) var(--e-4);
+  padding: var(--e-4);
+  color: inherit;
+  text-decoration: none;
+}
+
+.item-documento-link:hover {
+  background: #f7f9fa;
+}
+
+.item-documento-link:hover .item-documento-titulo {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.item-documento-icone {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--raio-controle);
+  background: var(--nevoa);
+  color: var(--tinta);
+}
+
+.item-documento-icone svg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+/* Vídeos ganham o âmbar: são o formato que mais resolve dúvida de montagem. */
+.item-documento-icone.tipo-video {
+  background: var(--marca-clara);
+  color: var(--marca);
+}
+
+.item-documento-corpo {
+  display: grid;
+  gap: var(--e-1);
+  min-width: 0;
+}
+
+.item-documento-titulo {
+  font-weight: 700;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.item-documento-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-1) var(--e-3);
+  color: var(--texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.item-documento-formato {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+}
+
+.item-documento-formato svg {
+  width: 0.95em;
+  height: 0.95em;
+}
+
+.item-documento-meta .etiqueta-codigo {
+  font-size: var(--texto-xs);
+}
+
+.item-documento-mais {
+  font-size: var(--texto-xs);
+  font-weight: 700;
+}
+
+.item-documento-seta {
+  align-self: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--aco);
+}

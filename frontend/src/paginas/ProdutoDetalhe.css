@@ -1,0 +1,126 @@
+.peca-topo {
+  display: grid;
+  gap: var(--e-5);
+}
+
+/* No celular a foto fica menor: código e medidas aparecem já na primeira tela. */
+.peca-imagem {
+  width: min(62%, 14rem);
+  justify-self: center;
+  aspect-ratio: 1;
+}
+
+.peca-info {
+  display: grid;
+  align-content: start;
+  gap: var(--e-2);
+}
+
+.peca-categoria {
+  color: var(--texto-suave);
+  font-size: var(--texto-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.peca-categoria a {
+  color: var(--marca);
+  text-decoration: none;
+}
+
+.peca-categoria a:hover {
+  text-decoration: underline;
+}
+
+.peca-codigo {
+  font-size: var(--texto-4xl);
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.peca-nome {
+  color: var(--texto-suave);
+  font-size: var(--texto-lg);
+}
+
+/* Ficha cinza com mm e o equivalente em polegadas */
+.peca-ficha {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--e-3) var(--e-4);
+  margin: var(--e-3) 0 0;
+  padding: var(--e-4);
+  border-radius: var(--raio-painel);
+  background: var(--nevoa);
+}
+
+.peca-ficha dt {
+  color: var(--texto-suave);
+  font-size: var(--texto-xs);
+}
+
+.peca-ficha dd {
+  display: grid;
+  margin: 0;
+  color: var(--tinta);
+  font-size: var(--texto-lg);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.peca-ficha-equivalente {
+  color: var(--texto-suave);
+  font-size: var(--texto-xs);
+  font-weight: 500;
+}
+
+.peca-acoes {
+  margin-top: var(--e-3);
+}
+
+.peca-acoes .botao {
+  flex: 1 1 12rem;
+}
+
+.peca-textos {
+  display: grid;
+  gap: var(--e-5);
+  margin-top: var(--e-6);
+}
+
+.peca-textos h2 {
+  margin-bottom: var(--e-2);
+  font-size: var(--texto-lg);
+}
+
+.peca-textos p {
+  max-width: var(--largura-texto);
+  color: var(--texto-suave);
+}
+
+.peca-materiais {
+  margin-top: var(--e-7);
+  scroll-margin-top: calc(var(--altura-cabecalho) + var(--e-4));
+}
+
+.peca-aviso {
+  margin-top: var(--e-4);
+}
+
+@media (min-width: 48rem) {
+  .peca-topo {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: var(--e-7);
+    align-items: start;
+  }
+
+  .peca-imagem {
+    width: 100%;
+  }
+
+  .peca-textos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--e-6);
+  }
+}

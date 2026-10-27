@@ -1,0 +1,41 @@
+.filtros-documentos {
+  display: grid;
+  gap: var(--e-3);
+  margin-bottom: var(--e-5);
+}
+
+.filtros-linha {
+  display: grid;
+  gap: var(--e-3);
+}
+
+.filtro-segmento .selecao {
+  min-height: 2.5rem;
+}
+
+@media (min-width: 64rem) {
+  .filtros-linha {
+    grid-template-columns: minmax(0, 1fr) 14rem;
+    align-items: start;
+  }
+
+  /* No desktop há espaço: as pílulas quebram linha em vez de rolar. */
+  .filtros-linha .chips {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+}
+
+.aviso-visitante {
+  display: block;
+  margin-bottom: var(--e-4);
+}
+
+.resultado-resumo {
+  margin-bottom: var(--e-3);
+  color: var(--texto-suave);
+}
+
+.resultado-resumo strong {
+  color: var(--tinta);
+}

@@ -1,0 +1,218 @@
+.documento-cabecalho {
+  display: grid;
+  gap: var(--e-3);
+  margin: var(--e-2) 0 var(--e-5);
+}
+
+.documento-tipo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-2);
+  color: var(--texto-suave);
+  font-weight: 700;
+}
+
+.documento-tipo svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.documento-titulo {
+  max-width: 48rem;
+  font-size: clamp(2rem, 6vw, 2.75rem);
+}
+
+.documento-etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-2);
+}
+
+.documento-etiquetas .etiqueta-codigo {
+  min-height: 2rem;
+  font-size: var(--texto-md);
+}
+
+.documento-descricao {
+  max-width: var(--largura-texto);
+  color: var(--texto-suave);
+  font-size: var(--texto-lg);
+}
+
+.documento-grade {
+  display: grid;
+  gap: var(--e-5);
+}
+
+@media (min-width: 64rem) {
+  .documento-grade {
+    grid-template-columns: minmax(0, 1fr) 20rem;
+    align-items: start;
+  }
+}
+
+.documento-conteudo {
+  display: grid;
+  gap: var(--e-4);
+}
+
+.documento-video,
+.documento-imagem {
+  width: 100%;
+  border-radius: var(--raio-painel);
+  background: var(--tinta);
+}
+
+.documento-video {
+  aspect-ratio: 16 / 9;
+}
+
+.documento-incorporado {
+  overflow: hidden;
+  border-radius: var(--raio-painel);
+  background: var(--tinta);
+  aspect-ratio: 16 / 9;
+}
+
+.documento-incorporado iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* A pré-visualização de PDF só aparece em telas grandes: no celular o
+   navegador abre o PDF melhor em tela cheia, pelo botão "Abrir PDF". */
+.documento-pdf {
+  display: none;
+}
+
+@media (min-width: 64rem) {
+  .documento-pdf {
+    display: block;
+    overflow: hidden;
+    height: 70vh;
+    min-height: 32rem;
+    border: 1px solid var(--linha);
+    border-radius: var(--raio-painel);
+    background: var(--superficie);
+  }
+
+  .documento-pdf iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+}
+
+.documento-sem-previa {
+  display: flex;
+  align-items: center;
+  gap: var(--e-3);
+  padding: var(--e-5);
+  border: 1.5px dashed var(--linha-forte);
+  border-radius: var(--raio-painel);
+  background: var(--superficie);
+  color: var(--texto-suave);
+}
+
+.documento-sem-previa svg {
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--aco);
+}
+
+.documento-acoes .botao {
+  flex: 1 1 14rem;
+}
+
+@media (min-width: 64rem) {
+  .documento-acoes .botao {
+    flex: 0 0 auto;
+  }
+}
+
+/* Lateral com dados e peças relacionadas */
+.documento-lateral {
+  display: grid;
+  gap: var(--e-4);
+}
+
+.documento-dados {
+  display: grid;
+  margin: 0;
+  padding: var(--e-4);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-painel);
+  background: var(--superficie);
+}
+
+.documento-dados div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--e-3);
+  padding: var(--e-2) 0;
+}
+
+.documento-dados div + div {
+  border-top: 1px solid var(--linha);
+}
+
+.documento-dados dt {
+  color: var(--texto-suave);
+}
+
+.documento-dados dd {
+  margin: 0;
+  font-weight: 700;
+  text-align: right;
+}
+
+.documento-produtos h2 {
+  margin-bottom: var(--e-2);
+  font-size: var(--texto-xl);
+}
+
+.documento-produtos ul {
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-painel);
+  background: var(--superficie);
+  list-style: none;
+}
+
+.documento-produtos li + li {
+  border-top: 1px solid var(--linha);
+}
+
+.documento-produtos a {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 var(--e-3);
+  padding: var(--e-3) var(--e-4);
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.documento-produtos a:hover {
+  background: #f7f9fa;
+}
+
+.documento-produto-codigo {
+  grid-row: span 2;
+  font-size: var(--texto-xl);
+  line-height: 1.2;
+}
+
+.documento-produto-nome {
+  font-weight: 700;
+  font-size: var(--texto-sm);
+}
+
+.documento-produto-segmento {
+  color: var(--texto-suave);
+  font-size: var(--texto-xs);
+}

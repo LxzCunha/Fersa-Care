@@ -1,0 +1,31 @@
+.bloco-suporte {
+  display: grid;
+  gap: var(--e-4);
+  padding: var(--e-5);
+  border: 1px solid var(--linha);
+  border-left: 4px solid var(--marca);
+  border-radius: var(--raio-painel);
+  background: var(--superficie);
+}
+
+.bloco-suporte h2 {
+  font-size: var(--texto-xl);
+}
+
+.bloco-suporte-texto {
+  display: grid;
+  gap: var(--e-2);
+}
+
+.bloco-suporte-texto p {
+  max-width: var(--largura-texto);
+  color: var(--texto-suave);
+}
+
+@media (min-width: 48rem) {
+  .bloco-suporte {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: var(--e-6);
+  }
+}

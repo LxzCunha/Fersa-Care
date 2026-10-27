@@ -1,0 +1,42 @@
+.busca-cabecalho {
+  display: grid;
+  gap: var(--e-4);
+  margin-bottom: var(--e-5);
+}
+
+.busca-cabecalho h1 {
+  font-size: var(--texto-3xl);
+  overflow-wrap: anywhere;
+}
+
+.busca-sugestoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-2);
+  color: var(--texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.busca-grupo-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 var(--e-4);
+  margin-bottom: var(--e-2);
+}
+
+.busca-total {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.8rem;
+  height: 1.6rem;
+  margin-left: 0.35rem;
+  padding: 0 0.45rem;
+  border-radius: var(--raio-pilula);
+  background: var(--marca-clara);
+  color: var(--marca);
+  font-size: var(--texto-sm);
+  vertical-align: 0.15em;
+}

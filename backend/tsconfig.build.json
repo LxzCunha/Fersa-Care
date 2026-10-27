@@ -1,0 +1,11 @@
+{
+  // Configuração do "npm run build": compila só o código de produção (src -> dist).
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "rootDir": "src",
+    "outDir": "dist",
+    "sourceMap": true
+  },
+  "include": ["src"]
+}

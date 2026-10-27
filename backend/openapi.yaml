@@ -1,0 +1,792 @@
+openapi: 3.1.0
+info:
+  title: API FERSA CARE
+  version: 1.0.0
+  description: |
+    API REST do portal de pós-venda FERSA CARE.
+
+    **Níveis de acesso**
+    - **Visitante** (sem login): vê documentos `PUBLICO`.
+    - **Usuário** (cliente com login ativo): vê `PUBLICO`, `AUTENTICADO` e os `RESTRITO` liberados para ele.
+    - **Administrador**: vê e gerencia tudo em `/api/admin`.
+
+    **Como autenticar aqui no Swagger:** chame `POST /api/auth/entrar`. O navegador guarda o
+    cookie de sessão automaticamente. Se preferir, copie o `token` da resposta e use o botão
+    **Authorize** (Bearer).
+
+    **Erros** sempre seguem o formato `{ "erro": { "codigo", "mensagem", "detalhes" } }`.
+servers:
+  - url: /
+tags:
+  - name: Autenticação
+  - name: Documentos
+    description: Biblioteca pública — cada um recebe só o que pode ver.
+  - name: Produtos
+    description: Catálogo de peças — público; peças fora do catálogo não aparecem.
+  - name: Categorias
+  - name: Admin - Painel
+  - name: Admin - Documentos
+  - name: Admin - Usuários
+  - name: Admin - Produtos
+  - name: Admin - Categorias
+security:
+  - cookieSessao: []
+  - bearer: []
+  - {}
+
+paths:
+  /api/saude:
+    get:
+      tags: [Autenticação]
+      summary: Verifica se a API está no ar
+      security: []
+      responses:
+        '200':
+          description: OK
+
+  /api/auth/entrar:
+    post:
+      tags: [Autenticação]
+      summary: Entrar (login)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, senha]
+              properties:
+                email: { type: string, format: email, example: admin@fersacare.com.br }
+                senha: { type: string, example: Admin@123 }
+      responses:
+        '200':
+          description: Login feito. Grava o cookie `fersa_sessao` (httpOnly) e devolve o token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  usuario: { $ref: '#/components/schemas/Usuario' }
+                  token: { type: string }
+        '401': { $ref: '#/components/responses/Erro' }
+        '403':
+          description: Cadastro pendente (`CADASTRO_PENDENTE`) ou conta inativa (`CONTA_INATIVA`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+        '429': { $ref: '#/components/responses/Erro' }
+
+  /api/auth/sair:
+    post:
+      tags: [Autenticação]
+      summary: Sair (apaga o cookie de sessão)
+      responses:
+        '204': { description: Sessão encerrada }
+
+  /api/auth/solicitar-acesso:
+    post:
+      tags: [Autenticação]
+      summary: Cliente pede acesso (fica PENDENTE até um admin aprovar)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nome, email, senha]
+              properties:
+                nome: { type: string, example: Carlos Mendes }
+                email: { type: string, format: email }
+                senha: { type: string, minLength: 8, description: Pelo menos 8 caracteres, com letras e números }
+                empresa: { type: string, nullable: true, example: Auto Center Exemplo }
+                telefone: { type: string, nullable: true }
+      responses:
+        '201':
+          description: Solicitação registrada
+        '400': { $ref: '#/components/responses/Erro' }
+        '409': { $ref: '#/components/responses/Erro' }
+
+  /api/auth/eu:
+    get:
+      tags: [Autenticação]
+      summary: Quem está logado (visitante recebe usuario null)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  usuario:
+                    oneOf:
+                      - $ref: '#/components/schemas/Usuario'
+                      - type: 'null'
+    put:
+      tags: [Autenticação]
+      summary: Atualiza o próprio perfil
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nome]
+              properties:
+                nome: { type: string }
+                empresa: { type: string, nullable: true }
+                telefone: { type: string, nullable: true }
+      responses:
+        '200': { description: Perfil atualizado }
+        '401': { $ref: '#/components/responses/Erro' }
+
+  /api/auth/eu/senha:
+    put:
+      tags: [Autenticação]
+      summary: Troca a própria senha
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [senhaAtual, novaSenha]
+              properties:
+                senhaAtual: { type: string }
+                novaSenha: { type: string, minLength: 8 }
+      responses:
+        '204': { description: Senha alterada }
+        '400': { $ref: '#/components/responses/Erro' }
+
+  /api/documentos:
+    get:
+      tags: [Documentos]
+      summary: Lista os documentos que quem chama pode ver
+      parameters:
+        - $ref: '#/components/parameters/Busca'
+        - { name: tipo, in: query, schema: { $ref: '#/components/schemas/TipoDocumento' } }
+        - { name: segmento, in: query, schema: { $ref: '#/components/schemas/Segmento' } }
+        - { name: produtoId, in: query, schema: { type: string, format: uuid } }
+        - { name: idioma, in: query, schema: { type: string, enum: [pt-BR, es, en] } }
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/PorPagina'
+      responses:
+        '200':
+          description: Página de documentos
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginaDocumentos' }
+
+  /api/documentos/resumo:
+    get:
+      tags: [Documentos]
+      summary: Dados da página inicial (quantidade por tipo e recentes)
+      responses:
+        '200': { description: OK }
+
+  /api/documentos/{id}:
+    get:
+      tags: [Documentos]
+      summary: Detalhe de um documento (registra uma visualização)
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Documento' }
+        '401':
+          description: Visitante tentando abrir documento que exige login
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+        '404':
+          description: Não existe ou o usuário não tem permissão
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+
+  /api/documentos/{id}/arquivo:
+    get:
+      tags: [Documentos]
+      summary: Abre ou baixa o conteúdo (arquivo ou redirecionamento para o link)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - { name: download, in: query, description: '1 para forçar o download', schema: { type: string, enum: ['1'] } }
+      responses:
+        '200': { description: Conteúdo do arquivo (aceita Range para vídeos) }
+        '206': { description: Parte do arquivo (Range) }
+        '302': { description: Documento é um link externo }
+        '401': { $ref: '#/components/responses/Erro' }
+        '404': { $ref: '#/components/responses/Erro' }
+
+  /api/produtos:
+    get:
+      tags: [Produtos]
+      summary: Catálogo de produtos ativos
+      description: A busca procura no código (sem espaços/hífens), nome, aplicação, descrição e nome da categoria. Filtros de medida deixam de fora peças sem a medida cadastrada.
+      parameters:
+        - $ref: '#/components/parameters/Busca'
+        - { name: segmento, in: query, schema: { $ref: '#/components/schemas/Segmento' } }
+        - { name: categoriaId, in: query, schema: { type: string, format: uuid } }
+        - { name: internoMin, in: query, description: Ø interno mínimo (mm), schema: { type: number } }
+        - { name: internoMax, in: query, description: Ø interno máximo (mm), schema: { type: number } }
+        - { name: externoMin, in: query, description: Ø externo mínimo (mm), schema: { type: number } }
+        - { name: externoMax, in: query, description: Ø externo máximo (mm), schema: { type: number } }
+        - { name: larguraMin, in: query, description: Largura mínima (mm), schema: { type: number } }
+        - { name: larguraMax, in: query, description: Largura máxima (mm), schema: { type: number } }
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/PorPagina'
+      responses:
+        '200': { description: Página de produtos }
+
+  /api/produtos/{id}:
+    get:
+      tags: [Produtos]
+      summary: Produto com os documentos visíveis para quem chama
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: OK }
+        '404': { $ref: '#/components/responses/Erro' }
+
+  /api/produtos/{id}/imagem:
+    get:
+      tags: [Produtos]
+      summary: Foto da peça
+      description: Use a `imagemUrl` devolvida pela API (o `?v=` muda a cada edição). Peças fora do catálogo só mostram a foto para administradores.
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200':
+          description: Imagem PNG, JPG ou WebP
+          content:
+            image/*: { schema: { type: string, format: binary } }
+        '404': { $ref: '#/components/responses/Erro' }
+
+  /api/categorias:
+    get:
+      tags: [Categorias]
+      summary: Categorias com peças ativas no catálogo (com a contagem)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Categoria' } }
+
+  /api/admin/painel:
+    get:
+      tags: [Admin - Painel]
+      summary: Números do painel (documentos, usuários, visualizações)
+      responses:
+        '200': { description: OK }
+        '401': { $ref: '#/components/responses/Erro' }
+        '403': { $ref: '#/components/responses/Erro' }
+
+  /api/admin/documentos:
+    get:
+      tags: [Admin - Documentos]
+      summary: Lista todos os documentos (inclui rascunhos)
+      parameters:
+        - $ref: '#/components/parameters/Busca'
+        - { name: tipo, in: query, schema: { $ref: '#/components/schemas/TipoDocumento' } }
+        - { name: visibilidade, in: query, schema: { $ref: '#/components/schemas/Visibilidade' } }
+        - { name: publicado, in: query, schema: { type: boolean } }
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/PorPagina'
+      responses:
+        '200': { description: Página de documentos }
+    post:
+      tags: [Admin - Documentos]
+      summary: Cadastra documento (arquivo via multipart ou link via JSON)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [dados]
+              properties:
+                dados:
+                  type: string
+                  description: JSON com os campos de DadosDocumento
+                  example: '{"titulo":"Guia de montagem","tipo":"MANUAL","visibilidade":"PUBLICO","origem":"ARQUIVO"}'
+                arquivo:
+                  type: string
+                  format: binary
+          application/json:
+            schema: { $ref: '#/components/schemas/DadosDocumento' }
+      responses:
+        '201':
+          description: Criado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DocumentoAdmin' }
+        '400': { $ref: '#/components/responses/Erro' }
+        '413': { $ref: '#/components/responses/Erro' }
+
+  /api/admin/documentos/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      tags: [Admin - Documentos]
+      summary: Detalhe com usuários liberados e total de visualizações
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DocumentoAdmin' }
+    put:
+      tags: [Admin - Documentos]
+      summary: Edita documento (envie novo arquivo para substituir; sem arquivo mantém o atual)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [dados]
+              properties:
+                dados: { type: string }
+                arquivo: { type: string, format: binary }
+          application/json:
+            schema: { $ref: '#/components/schemas/DadosDocumento' }
+      responses:
+        '200': { description: Atualizado }
+        '400': { $ref: '#/components/responses/Erro' }
+        '404': { $ref: '#/components/responses/Erro' }
+    delete:
+      tags: [Admin - Documentos]
+      summary: Exclui documento e arquivo
+      responses:
+        '204': { description: Excluído }
+        '404': { $ref: '#/components/responses/Erro' }
+
+  /api/admin/usuarios:
+    get:
+      tags: [Admin - Usuários]
+      summary: Lista usuários (pendentes primeiro) com contagem por situação
+      parameters:
+        - $ref: '#/components/parameters/Busca'
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/StatusUsuario' } }
+        - { name: perfil, in: query, schema: { $ref: '#/components/schemas/Perfil' } }
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/PorPagina'
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [Admin - Usuários]
+      summary: Cadastra usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/DadosUsuario'
+                - type: object
+                  required: [senha]
+                  properties:
+                    senha: { type: string, minLength: 8 }
+      responses:
+        '201': { description: Criado }
+        '409': { $ref: '#/components/responses/Erro' }
+
+  /api/admin/usuarios/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      tags: [Admin - Usuários]
+      summary: Detalhe com documentos restritos liberados
+      responses:
+        '200': { description: OK }
+    put:
+      tags: [Admin - Usuários]
+      summary: Edita usuário (novaSenha opcional)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/DadosUsuario'
+                - type: object
+                  properties:
+                    novaSenha: { type: string, nullable: true }
+      responses:
+        '200': { description: Atualizado }
+        '403': { $ref: '#/components/responses/Erro' }
+    delete:
+      tags: [Admin - Usuários]
+      summary: Exclui usuário
+      responses:
+        '204': { description: Excluído }
+        '403': { $ref: '#/components/responses/Erro' }
+
+  /api/admin/usuarios/{id}/status:
+    patch:
+      tags: [Admin - Usuários]
+      summary: Aprova, recusa ou desativa (altera a situação)
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { $ref: '#/components/schemas/StatusUsuario' }
+      responses:
+        '200': { description: Situação alterada }
+        '403': { $ref: '#/components/responses/Erro' }
+
+  /api/admin/produtos:
+    get:
+      tags: [Admin - Produtos]
+      summary: Lista produtos (inclui inativos)
+      parameters:
+        - $ref: '#/components/parameters/Busca'
+        - { name: segmento, in: query, schema: { $ref: '#/components/schemas/Segmento' } }
+        - { name: ativo, in: query, schema: { type: boolean } }
+        - { name: categoriaId, in: query, schema: { type: string, format: uuid } }
+        - { name: internoMin, in: query, description: Ø interno mínimo (mm), schema: { type: number } }
+        - { name: internoMax, in: query, description: Ø interno máximo (mm), schema: { type: number } }
+        - { name: externoMin, in: query, description: Ø externo mínimo (mm), schema: { type: number } }
+        - { name: externoMax, in: query, description: Ø externo máximo (mm), schema: { type: number } }
+        - { name: larguraMin, in: query, description: Largura mínima (mm), schema: { type: number } }
+        - { name: larguraMax, in: query, description: Largura máxima (mm), schema: { type: number } }
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/PorPagina'
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [Admin - Produtos]
+      summary: Cadastra produto (com foto via multipart ou só os dados via JSON)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [dados]
+              properties:
+                dados:
+                  type: string
+                  description: JSON com os campos de DadosProduto
+                  example: '{"codigo":"30205","nome":"Rolamento de rolos cônicos","segmento":"LEVE"}'
+                imagem:
+                  type: string
+                  format: binary
+                  description: Foto da peça (PNG, JPG ou WebP, até 5 MB)
+          application/json:
+            schema: { $ref: '#/components/schemas/DadosProduto' }
+      responses:
+        '201': { description: Criado }
+        '409': { $ref: '#/components/responses/Erro' }
+
+  /api/admin/produtos/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      tags: [Admin - Produtos]
+      summary: Detalhe do produto
+      responses:
+        '200': { description: OK }
+    put:
+      tags: [Admin - Produtos]
+      summary: Edita produto (foto nova via multipart; sem foto, a atual é mantida)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [dados]
+              properties:
+                dados:
+                  type: string
+                  description: JSON com os campos de DadosProduto
+                  example: '{"codigo":"30205","nome":"Rolamento de rolos cônicos","segmento":"LEVE"}'
+                imagem:
+                  type: string
+                  format: binary
+                  description: Foto da peça (PNG, JPG ou WebP, até 5 MB)
+          application/json:
+            schema: { $ref: '#/components/schemas/DadosProduto' }
+      responses:
+        '200': { description: Atualizado }
+    delete:
+      tags: [Admin - Produtos]
+      summary: Exclui produto (os documentos continuam existindo)
+      responses:
+        '204': { description: Excluído }
+
+  /api/admin/categorias:
+    get:
+      tags: [Admin - Categorias]
+      summary: Lista todas as categorias com a quantidade de peças
+      parameters: [{ $ref: '#/components/parameters/Busca' }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Categoria' } }
+    post:
+      tags: [Admin - Categorias]
+      summary: Cadastra categoria
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DadosCategoria' }
+      responses:
+        '201': { description: Criada }
+        '409': { $ref: '#/components/responses/Erro' }
+
+  /api/admin/categorias/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      tags: [Admin - Categorias]
+      summary: Detalhe da categoria
+      responses:
+        '200': { description: OK }
+        '404': { $ref: '#/components/responses/Erro' }
+    put:
+      tags: [Admin - Categorias]
+      summary: Edita categoria
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DadosCategoria' }
+      responses:
+        '200': { description: Atualizada }
+        '409': { $ref: '#/components/responses/Erro' }
+    delete:
+      tags: [Admin - Categorias]
+      summary: Exclui categoria (as peças continuam, sem categoria)
+      responses:
+        '204': { description: Excluída }
+
+components:
+  securitySchemes:
+    cookieSessao:
+      type: apiKey
+      in: cookie
+      name: fersa_sessao
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    Busca:
+      name: busca
+      in: query
+      description: Texto livre. Ignora acentos; códigos são comparados sem espaços e hífens.
+      schema: { type: string }
+    Pagina:
+      name: pagina
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    PorPagina:
+      name: porPagina
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+
+  responses:
+    Erro:
+      description: Erro
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+
+  schemas:
+    Erro:
+      type: object
+      properties:
+        erro:
+          type: object
+          properties:
+            codigo: { type: string, example: NAO_ENCONTRADO }
+            mensagem: { type: string, example: Documento não encontrado. }
+            detalhes:
+              type: array
+              items:
+                type: object
+                properties:
+                  campo: { type: string }
+                  mensagem: { type: string }
+    Perfil:
+      type: string
+      enum: [ADMIN, USUARIO]
+    StatusUsuario:
+      type: string
+      enum: [PENDENTE, ATIVO, INATIVO]
+    Visibilidade:
+      type: string
+      enum: [PUBLICO, AUTENTICADO, RESTRITO]
+      description: 'PUBLICO: todos; AUTENTICADO: qualquer usuário logado; RESTRITO: só os usuários escolhidos'
+    TipoDocumento:
+      type: string
+      enum: [MANUAL, CATALOGO, VIDEO, TREINAMENTO, FICHA_TECNICA, BOLETIM, OUTRO]
+    Segmento:
+      type: string
+      enum: [LEVE, PESADA, AGRICOLA, INDUSTRIAL]
+    Usuario:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        nome: { type: string }
+        email: { type: string }
+        empresa: { type: string, nullable: true }
+        telefone: { type: string, nullable: true }
+        perfil: { $ref: '#/components/schemas/Perfil' }
+        status: { $ref: '#/components/schemas/StatusUsuario' }
+        ultimoAcessoEm: { type: string, format: date-time, nullable: true }
+        criadoEm: { type: string, format: date-time }
+    DadosUsuario:
+      type: object
+      required: [nome, email, perfil, status]
+      properties:
+        nome: { type: string }
+        email: { type: string, format: email }
+        empresa: { type: string, nullable: true }
+        telefone: { type: string, nullable: true }
+        perfil: { $ref: '#/components/schemas/Perfil' }
+        status: { $ref: '#/components/schemas/StatusUsuario' }
+    ProdutoResumo:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        codigo: { type: string, example: '30205' }
+        nome: { type: string }
+        segmento: { $ref: '#/components/schemas/Segmento' }
+    Produto:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        codigo: { type: string, example: '30205' }
+        nome: { type: string, example: Rolamento de rolos cônicos }
+        segmento: { $ref: '#/components/schemas/Segmento' }
+        categoria:
+          type: object
+          nullable: true
+          properties:
+            id: { type: string, format: uuid }
+            nome: { type: string, example: Rolamentos de Roletes Cônicos }
+        descricao: { type: string, nullable: true }
+        aplicacoes: { type: string, nullable: true }
+        diametroInternoMm: { type: number, nullable: true, example: 25 }
+        diametroExternoMm: { type: number, nullable: true, example: 52 }
+        larguraMm: { type: number, nullable: true, example: 16.25 }
+        pesoKg: { type: number, nullable: true, example: 0.16 }
+        imagemUrl: { type: string, nullable: true, example: '/api/produtos/3f1c2a9e-8b7d-4c6e-9f00-123456789abc/imagem?v=1793110566000' }
+        ativo: { type: boolean }
+        criadoEm: { type: string, format: date-time }
+        atualizadoEm: { type: string, format: date-time }
+    DadosProduto:
+      type: object
+      required: [codigo, nome, segmento]
+      properties:
+        codigo: { type: string, example: '30205' }
+        nome: { type: string, example: Rolamento de rolos cônicos }
+        segmento: { $ref: '#/components/schemas/Segmento' }
+        categoriaId: { type: string, format: uuid, nullable: true }
+        descricao: { type: string, nullable: true }
+        aplicacoes: { type: string, nullable: true }
+        diametroInternoMm: { type: number, nullable: true, example: 25 }
+        diametroExternoMm: { type: number, nullable: true, example: 52 }
+        larguraMm: { type: number, nullable: true, example: 16.25 }
+        pesoKg: { type: number, nullable: true, example: 0.16 }
+        ativo: { type: boolean, default: true }
+        removerImagem: { type: boolean, default: false, description: Na edição, apaga a foto atual }
+    Categoria:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        nome: { type: string, example: Rolamentos de Esferas }
+        descricao: { type: string, nullable: true }
+        totalProdutos: { type: integer, description: No portal, conta só peças ativas }
+        criadoEm: { type: string, format: date-time }
+        atualizadoEm: { type: string, format: date-time }
+    DadosCategoria:
+      type: object
+      required: [nome]
+      properties:
+        nome: { type: string, example: Rolamentos de Esferas }
+        descricao: { type: string, nullable: true }
+    Documento:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        titulo: { type: string }
+        descricao: { type: string, nullable: true }
+        tipo: { $ref: '#/components/schemas/TipoDocumento' }
+        idioma: { type: string }
+        visibilidade: { $ref: '#/components/schemas/Visibilidade' }
+        publicado: { type: boolean }
+        origem: { type: string, enum: [ARQUIVO, LINK] }
+        arquivo:
+          type: object
+          nullable: true
+          properties:
+            nome: { type: string }
+            mime: { type: string }
+            tamanho: { type: integer }
+        urlExterna: { type: string, nullable: true }
+        produtos:
+          type: array
+          items: { $ref: '#/components/schemas/ProdutoResumo' }
+        criadoEm: { type: string, format: date-time }
+        atualizadoEm: { type: string, format: date-time }
+    DocumentoAdmin:
+      allOf:
+        - $ref: '#/components/schemas/Documento'
+        - type: object
+          properties:
+            usuariosComAcesso:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string, format: uuid }
+                  nome: { type: string }
+                  email: { type: string }
+                  empresa: { type: string, nullable: true }
+            totalVisualizacoes: { type: integer }
+    PaginaDocumentos:
+      type: object
+      properties:
+        itens:
+          type: array
+          items: { $ref: '#/components/schemas/Documento' }
+        total: { type: integer }
+        pagina: { type: integer }
+        porPagina: { type: integer }
+        totalPaginas: { type: integer }
+    DadosDocumento:
+      type: object
+      required: [titulo, tipo, visibilidade, origem]
+      properties:
+        titulo: { type: string, minLength: 3 }
+        descricao: { type: string, nullable: true }
+        tipo: { $ref: '#/components/schemas/TipoDocumento' }
+        idioma: { type: string, enum: [pt-BR, es, en], default: pt-BR }
+        visibilidade: { $ref: '#/components/schemas/Visibilidade' }
+        publicado: { type: boolean, default: true }
+        origem: { type: string, enum: [ARQUIVO, LINK] }
+        urlExterna: { type: string, nullable: true, description: Obrigatório quando origem = LINK }
+        produtoIds:
+          type: array
+          items: { type: string, format: uuid }
+        usuarioIds:
+          type: array
+          description: Usuários com acesso (só vale quando visibilidade = RESTRITO)
+          items: { type: string, format: uuid }

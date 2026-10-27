@@ -1,0 +1,90 @@
+.desenho-rolamento {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.desenho-peca circle,
+.desenho-peca rect {
+  fill: none;
+  stroke: var(--aco-claro);
+  stroke-width: 1.6;
+}
+
+.desenho-peca rect {
+  fill: url(#hachura);
+}
+
+.desenho-peca .desenho-esfera {
+  fill: var(--marca-escura);
+  stroke: var(--aco-claro);
+}
+
+.desenho-peca .desenho-gaiola {
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+  opacity: 0.7;
+}
+
+.desenho-hachura {
+  stroke: var(--aco-claro);
+  stroke-width: 1;
+  opacity: 0.7;
+}
+
+.desenho-centro {
+  stroke: var(--aco);
+  stroke-width: 1;
+  stroke-dasharray: 14 4 2 4;
+}
+
+.desenho-extensao {
+  stroke: var(--aco);
+  stroke-width: 1;
+}
+
+/* Cotas em âmbar: é o único movimento automático do portal — as linhas são
+   "traçadas" uma vez quando a página abre (desligado com movimento reduzido). */
+.desenho-cota {
+  stroke: var(--marca);
+  stroke-width: 1.6;
+  stroke-dasharray: var(--comprimento);
+  stroke-dashoffset: var(--comprimento);
+  animation: tracar-cota 0.8s ease-out forwards;
+  animation-delay: var(--atraso);
+}
+
+.desenho-seta {
+  fill: var(--marca);
+}
+
+.desenho-seta,
+.desenho-rotulo {
+  opacity: 0;
+  animation: mostrar-cota 0.35s ease-out forwards;
+  animation-delay: calc(var(--atraso) + 0.55s);
+}
+
+.desenho-rotulo {
+  fill: var(--marca);
+  font-family: var(--fonte-titulo);
+  font-size: 22px;
+  font-weight: 600;
+  text-anchor: middle;
+}
+
+.desenho-rotulo-lateral {
+  text-anchor: start;
+}
+
+@keyframes tracar-cota {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes mostrar-cota {
+  to {
+    opacity: 1;
+  }
+}

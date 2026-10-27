@@ -1,0 +1,104 @@
+/* Busca em pílula: borda cinza fina, lupa à esquerda e envio redondo à direita. */
+.busca {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0 0.3rem 0 0;
+  border: 1.5px solid var(--linha-forte);
+  border-radius: var(--raio-pilula);
+  background: var(--superficie);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.busca:focus-within {
+  border-color: var(--marca);
+  box-shadow: 0 0 0 3px rgb(27 54 93 / 0.18);
+}
+
+.busca-icone {
+  flex-shrink: 0;
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-left: 1rem;
+  color: var(--tinta);
+  pointer-events: none;
+}
+
+.busca-entrada {
+  flex: 1;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0 0.6rem;
+  border: 0;
+  background: transparent;
+  appearance: none;
+}
+
+.busca-entrada:focus {
+  outline: none;
+}
+
+.busca-entrada::placeholder {
+  color: var(--texto-suave);
+}
+
+.busca-entrada::-webkit-search-cancel-button {
+  display: none;
+}
+
+.busca-limpar,
+.busca-enviar {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 0;
+  border-radius: 50%;
+}
+
+.busca-limpar {
+  background: transparent;
+  color: var(--aco);
+}
+
+.busca-limpar:hover {
+  background: var(--nevoa);
+  color: var(--tinta);
+}
+
+.busca-enviar {
+  background: var(--marca);
+  color: #fff;
+}
+
+.busca-enviar:hover {
+  background: var(--marca-hover);
+}
+
+.busca-limpar svg,
+.busca-enviar svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+/* Variante grande (página inicial e página de busca) */
+.busca-destaque {
+  min-height: 3.5rem;
+  border-color: transparent;
+  box-shadow: 0 8px 28px rgb(16 35 63 / 0.18);
+}
+
+.busca-destaque .busca-entrada {
+  min-height: 3.25rem;
+  font-size: var(--texto-lg);
+}
+
+.busca-destaque .busca-enviar {
+  width: 2.85rem;
+  height: 2.85rem;
+}
