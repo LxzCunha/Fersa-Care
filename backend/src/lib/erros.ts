@@ -1,11 +1,3 @@
-/**
- * Erro com status HTTP. Qualquer parte da API pode lançar um ErroHttp e o
- * middleware de erros (middlewares/erros.ts) transforma em resposta JSON:
- *
- *   { "erro": { "codigo": "NAO_ENCONTRADO", "mensagem": "Documento não encontrado." } }
- *
- * Equivale a lançar uma ResponseStatusException no Spring.
- */
 export class ErroHttp extends Error {
   readonly status: number;
   readonly codigo: string;

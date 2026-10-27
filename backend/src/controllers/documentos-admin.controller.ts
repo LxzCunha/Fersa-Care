@@ -5,14 +5,6 @@ import { arquivoEnviado } from '../middlewares/upload.js';
 import * as documentosAdminService from '../services/documentos-admin.service.js';
 import { esquemaDocumento, esquemaFiltrosDocumentosAdmin } from '../validators/documentos.validator.js';
 
-/**
- * Gestão de documentos: /api/admin/documentos/...
- *
- * Cadastro e edição aceitam:
- * - multipart/form-data com o campo "arquivo" e/ou "capa" + o campo "dados" (JSON), ou
- * - application/json direto no corpo, quando não há arquivo para enviar.
- */
-
 function arquivosDoDocumento(req: Request) {
   return { arquivo: arquivoEnviado(req, 'arquivo'), capa: arquivoEnviado(req, 'capa') };
 }
@@ -39,7 +31,6 @@ export async function atualizar(req: Request, res: Response) {
   res.json(await documentosAdminService.atualizarDocumento(id, dados, arquivosDoDocumento(req), usuarioLogado(req)));
 }
 
-/** Refaz a indexação do documento para o assistente (em segundo plano). */
 export async function reindexar(req: Request, res: Response) {
   const { id } = esquemaParametroId.parse(req.params);
   await documentosAdminService.reindexarDocumento(id, usuarioLogado(req));

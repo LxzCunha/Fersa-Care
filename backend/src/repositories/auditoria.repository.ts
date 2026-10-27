@@ -15,7 +15,6 @@ export async function inserir(evento: NovoEventoDeAuditoria, tx?: Transacao): Pr
   await (tx ?? db).insert(eventosDeAuditoria).values(evento);
 }
 
-/** Busca no autor, no alvo, no IP e no código da ação. */
 function condicaoDeBusca(busca: string | undefined): SQL | undefined {
   const termos = termosDaBusca(busca ?? '');
   if (termos.length === 0) return undefined;
@@ -33,7 +32,6 @@ function condicaoDeBusca(busca: string | undefined): SQL | undefined {
   );
 }
 
-/** Página de eventos, mais recentes primeiro. `acoes` restringe a um grupo (ex.: só acessos). */
 export async function listar(
   filtros: Omit<FiltrosAuditoria, 'grupo'> & { acoes?: readonly AcaoDeAuditoria[] },
 ): Promise<{ linhas: EventoDeAuditoria[]; total: number }> {

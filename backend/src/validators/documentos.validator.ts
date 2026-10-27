@@ -4,7 +4,6 @@ import { segmentoProduto, tipoDocumento, visibilidadeDocumento } from '../models
 
 export const IDIOMAS = ['pt-BR', 'es', 'en'] as const;
 
-/** Filtros da biblioteca pública: GET /api/documentos?busca=...&tipo=... */
 export const esquemaFiltrosDocumentos = esquemaPaginacao.extend({
   busca: opcionalNaUrl(z.string().trim().max(120)),
   tipo: opcionalNaUrl(z.enum(tipoDocumento.enumValues)),
@@ -13,7 +12,6 @@ export const esquemaFiltrosDocumentos = esquemaPaginacao.extend({
   idioma: opcionalNaUrl(z.enum(IDIOMAS)),
 });
 
-/** Filtros da tela de administração: incluem visibilidade e situação. */
 export const esquemaFiltrosDocumentosAdmin = esquemaFiltrosDocumentos.extend({
   visibilidade: opcionalNaUrl(z.enum(visibilidadeDocumento.enumValues)),
   publicado: opcionalNaUrl(z.stringbool()),
@@ -21,7 +19,6 @@ export const esquemaFiltrosDocumentosAdmin = esquemaFiltrosDocumentos.extend({
 
 export type FiltrosDocumentos = z.infer<typeof esquemaFiltrosDocumentosAdmin>;
 
-/** Dados para cadastrar ou editar um documento (área do administrador). */
 export const esquemaDocumento = z
   .object({
     titulo: z
@@ -36,16 +33,15 @@ export const esquemaDocumento = z
       error: 'Escolha quem pode ver o documento.',
     }),
     publicado: z.boolean().default(true),
-    /** ARQUIVO = arquivo enviado junto (campo "arquivo"); LINK = endereço externo. */
     origem: z.enum(['ARQUIVO', 'LINK'], { error: 'Escolha entre enviar um arquivo ou usar um link.' }),
     urlExterna: z
       .url({ protocol: /^https?$/, error: 'Informe um link que comece com http:// ou https://.' })
       .max(2000, 'Link longo demais.')
       .nullish(),
     produtoIds: z.array(z.uuid('Produto inválido.')).max(100).default([]),
-    /** Usuários com acesso — usado apenas quando a visibilidade é RESTRITO. */
+    /** Só vale quando a visibilidade é RESTRITO. */
     usuarioIds: z.array(z.uuid('Usuário inválido.')).max(2000).default([]),
-    /** Apaga a capa enviada pelo admin e volta para a automática (1ª página do PDF). */
+    /** Volta da capa enviada pelo admin para a automática. */
     removerCapa: z.boolean().default(false),
   })
   .superRefine((dados, contexto) => {

@@ -3,21 +3,15 @@ import { env } from '../config/env.js';
 
 const chave = new TextEncoder().encode(env.JWT_SEGREDO);
 const EMISSOR = 'fersa-care';
-/** Para quem o token vale: só para a sessão da API (um token feito para outra finalidade não serve aqui). */
 const PUBLICO = 'fersa-care:sessao';
 
 export interface DadosDaSessao {
   usuarioId: string;
-  /** Versão da sessão da conta quando o token foi emitido (ver usuarios.versao_sessao). */
+  /** usuarios.versao_sessao na emissão: somar 1 a ela derruba os tokens antigos. */
   versao: number;
 }
 
-/**
- * Gera o token de sessão (JWT assinado com HS256).
- * Guardamos só o id do usuário e a versão da sessão: perfil e situação são
- * lidos do banco a cada requisição, então desativar alguém ou trocar o perfil
- * vale na hora, e somar 1 à versão derruba os tokens antigos.
- */
+// Só id e versão: perfil e situação vêm do banco a cada requisição, para mudanças valerem na hora.
 export async function gerarToken({ usuarioId, versao }: DadosDaSessao): Promise<string> {
   const agoraEmSegundos = Math.floor(Date.now() / 1000);
   return new SignJWT({ ver: versao })
@@ -30,15 +24,12 @@ export async function gerarToken({ usuarioId, versao }: DadosDaSessao): Promise<
     .sign(chave);
 }
 
-/**
- * Valida assinatura, algoritmo (só HS256: impede o truque do "alg: none"),
- * emissor, público e validade. Retorna os dados da sessão ou null.
- */
 export async function lerToken(token: string): Promise<DadosDaSessao | null> {
   try {
     const { payload } = await jwtVerify(token, chave, {
       issuer: EMISSOR,
       audience: PUBLICO,
+      // Só HS256: impede o truque do "alg: none".
       algorithms: ['HS256'],
       requiredClaims: ['sub', 'exp', 'iat'],
     });

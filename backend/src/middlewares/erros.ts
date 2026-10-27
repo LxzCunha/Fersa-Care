@@ -5,15 +5,6 @@ import { env } from '../config/env.js';
 import { ErroHttp } from '../lib/erros.js';
 import { log } from '../lib/log.js';
 
-/**
- * Middleware de erros: último da cadeia. Todo erro lançado em rotas e serviços
- * chega aqui e vira uma resposta JSON padronizada:
- *
- *   { "erro": { "codigo": "...", "mensagem": "...", "detalhes": [...] } }
- *
- * (No Spring, isso seria um @ControllerAdvice com @ExceptionHandler.)
- */
-
 interface CorpoDeErro {
   erro: { codigo: string; mensagem: string; detalhes?: unknown };
 }
@@ -55,7 +46,6 @@ export function tratarErros(erro: unknown, _req: Request, res: Response, _next: 
     return responder(res, erro.status, erro.codigo, erro.message, erro.detalhes);
   }
 
-  // Validação com Zod: devolve a lista de campos com problema para o formulário.
   if (erro instanceof z.ZodError) {
     const detalhes = erro.issues.map((problema) => ({
       campo: problema.path.join('.'),
@@ -77,7 +67,7 @@ export function tratarErros(erro: unknown, _req: Request, res: Response, _next: 
     return responder(res, 400, 'UPLOAD_INVALIDO', 'Envie um único arquivo no campo "arquivo".');
   }
 
-  // Erros do body-parser do Express (JSON malformado ou grande demais).
+  // Erros do body-parser do Express.
   const tipo = (erro as { type?: string })?.type;
   if (tipo === 'entity.parse.failed') {
     return responder(res, 400, 'JSON_INVALIDO', 'O corpo da requisição não é um JSON válido.');
@@ -98,8 +88,7 @@ export function tratarErros(erro: unknown, _req: Request, res: Response, _next: 
     return responder(res, 400, 'DADOS_INVALIDOS', 'Identificador em formato inválido.');
   }
 
-  // O detalhe fica só no log (com o id da requisição); o cliente recebe uma mensagem genérica
-  // e o mesmo id no cabeçalho X-Request-Id, para o suporte achar o registro.
+  // Detalhe só no log; o cliente recebe o id da requisição (X-Request-Id) para o suporte achar o registro.
   log.error({ err: erro }, 'Erro inesperado');
   return responder(res, 500, 'ERRO_INTERNO', 'Ocorreu um erro inesperado. Tente novamente.');
 }

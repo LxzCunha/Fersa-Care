@@ -1,9 +1,6 @@
 import type { Usuario } from '../models/index.js';
 
-/**
- * Formato público de um usuário nas respostas da API.
- * Nunca devolvemos o hash da senha.
- */
+/** Nunca devolve o hash da senha. */
 export function paraUsuarioDto(usuario: Usuario) {
   return {
     id: usuario.id,

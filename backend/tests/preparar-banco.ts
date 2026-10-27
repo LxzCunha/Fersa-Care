@@ -4,7 +4,6 @@ import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import pg from 'pg';
 import { garantirQueEhBancoDeTeste, URL_BANCO_TESTE } from './ambiente.js';
 
-/** Roda uma vez antes da suíte: zera o banco de teste e aplica todas as migrações. */
 export async function setup() {
   garantirQueEhBancoDeTeste(URL_BANCO_TESTE);
 

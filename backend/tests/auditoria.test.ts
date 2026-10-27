@@ -14,7 +14,6 @@ import {
   SENHA_PADRAO,
 } from './ajudantes.js';
 
-/** Eventos gravados, mais novos primeiro. */
 async function eventos(): Promise<EventoDeAuditoria[]> {
   return db.select().from(eventosDeAuditoria).orderBy(desc(eventosDeAuditoria.criadoEm), desc(eventosDeAuditoria.id));
 }

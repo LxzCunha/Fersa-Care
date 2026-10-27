@@ -1,5 +1,3 @@
-# Atualizações automáticas de dependências (abre pull requests semanais).
-# Correções de segurança chegam assim que publicadas, fora desta agenda.
 version: 2
 updates:
   - package-ecosystem: npm

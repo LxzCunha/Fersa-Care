@@ -20,15 +20,7 @@ import {
 } from '../models/index.js';
 import { db, pool } from './index.js';
 
-/**
- * Popula o banco.
- *
- *   npm run db:seed            → cria o administrador inicial (se ainda não existir)
- *   npm run db:seed:exemplos   → também cria clientes, produtos e documentos FICTÍCIOS
- *
- * Pode rodar várias vezes: nada é duplicado.
- */
-
+// Idempotente: pode rodar várias vezes sem duplicar nada.
 const PASTA_EXEMPLOS = fileURLToPath(new URL('../../seed/arquivos/', import.meta.url));
 const SENHA_CLIENTES_EXEMPLO = 'Cliente@123';
 
@@ -76,7 +68,7 @@ async function copiarArquivoDeExemplo(nome: string) {
   };
 }
 
-/** Gerador pseudoaleatório com semente fixa: o painel de exemplo sai sempre igual. */
+/** Semente fixa: o painel de exemplo sai sempre igual. */
 function aleatorio(semente: number) {
   let estado = semente;
   return () => {
@@ -95,7 +87,6 @@ async function inserirExemplos() {
   const [admin] = await db.select({ id: usuarios.id }).from(usuarios).where(eq(usuarios.perfil, 'ADMIN')).limit(1);
   const senhaHash = await gerarHashSenha(SENHA_CLIENTES_EXEMPLO);
 
-  // ── Clientes ──
   const clientes = await db
     .insert(usuarios)
     .values([
@@ -130,7 +121,6 @@ async function inserirExemplos() {
     .returning({ id: usuarios.id, email: usuarios.email });
   const clientePorEmail = Object.fromEntries(clientes.map((c) => [c.email, c.id]));
 
-  // ── Categorias (as mesmas do catálogo FERSA) ──
   const nomesDasCategorias = [
     'Rolamentos de Esferas',
     'Rolamentos de Roletes Cônicos',
@@ -157,8 +147,7 @@ async function inserirExemplos() {
     .returning({ id: categorias.id, nome: categorias.nome });
   const categoriaPorNome = Object.fromEntries(categoriasCriadas.map((c) => [c.nome, c.id]));
 
-  // ── Produtos ──
-  // Medidas: Ø interno × Ø externo × largura (mm) e peso (kg). Kits sem medidas únicas ficam vazios.
+  // Medidas em mm e kg; kits sem medidas únicas ficam sem elas.
   const listaDeProdutos: {
     codigo: string;
     nome: string;
@@ -292,7 +281,6 @@ async function inserirExemplos() {
     .returning({ id: produtos.id, codigo: produtos.codigo });
   const produtoPorCodigo = Object.fromEntries(produtosCriados.map((p) => [p.codigo, p.id]));
 
-  // ── Documentos ──
   await garantirPastaDeUploads();
 
   const listaDeDocumentos: {
@@ -415,7 +403,6 @@ async function inserirExemplos() {
     }
   }
 
-  // ── Visualizações dos últimos 14 dias (para o painel não começar vazio) ──
   const sorteio = aleatorio(2026);
   const leitores = [null, null, clientePorEmail['oficina@exemplo.com']!, clientePorEmail['distribuidor@exemplo.com']!];
   const visualizacoes = Array.from({ length: 60 }, () => {

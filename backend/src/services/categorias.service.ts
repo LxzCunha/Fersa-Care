@@ -4,9 +4,6 @@ import * as categoriasRepository from '../repositories/categorias.repository.js'
 import type { DadosCategoria, FiltrosCategorias } from '../validators/categorias.validator.js';
 import { registrarEvento } from './auditoria.service.js';
 
-/** Categorias do catálogo de peças. */
-
-/** Categorias que aparecem no portal: só as que têm peças ativas. */
 export function listarCategoriasDoPortal() {
   return categoriasRepository.listar({}, { somenteComPecasAtivas: true });
 }
@@ -39,7 +36,6 @@ export async function atualizarCategoria(id: string, dados: DadosCategoria) {
   return detalharCategoria(id);
 }
 
-/** As peças continuam no catálogo, só ficam sem categoria. */
 export async function excluirCategoria(id: string) {
   const removida = await categoriasRepository.excluir(id);
   if (!removida) throw naoEncontrado('Categoria não encontrada.');

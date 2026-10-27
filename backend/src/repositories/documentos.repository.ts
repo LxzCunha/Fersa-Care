@@ -17,15 +17,9 @@ import type { FiltrosDocumentos } from '../validators/documentos.validator.js';
 import { contarSe } from './sql.js';
 import { condicaoDeVisibilidade } from './visibilidade.js';
 
-/**
- * Acesso à tabela documentos e às tabelas ligadas a ela (produtos e lista de acesso).
- *
- * Toda leitura que devolve documentos recebe o usuário da requisição e aplica
- * condicaoDeVisibilidade: o service diz PARA QUEM é a consulta e a regra de
- * quem vê o quê fica só no repository.
- */
+// Toda leitura que devolve documentos aplica condicaoDeVisibilidade: quem vê o quê fica só no repository.
 
-/** Colunas lidas nas consultas de documentos (não traz o vetor de busca). */
+/** Lista explícita para não trazer o tsvector de busca. */
 const colunasDoDocumento = {
   id: documentos.id,
   titulo: documentos.titulo,
@@ -53,20 +47,11 @@ interface OpcoesDeAcesso {
   incluirRascunhos?: boolean;
 }
 
-// ─── Busca ──────────────────────────────────────────────────────────────────
-
 function consultaTextual(texto: string): SQL {
   return sql`websearch_to_tsquery('portuguese', f_unaccent(${texto}))`;
 }
 
-/**
- * Um documento entra no resultado quando:
- * - a busca textual do PostgreSQL (com radicais em português: "rolamentos"
- *   encontra "rolamento") bate com título/descrição; ou
- * - cada termo digitado aparece no título, na descrição ou em um produto
- *   relacionado (código, nome ou aplicação). Para códigos, espaços e hífens
- *   são ignorados: "F15052" encontra "F 15052".
- */
+/** Busca textual em português (radicais) OU cada termo no título, na descrição ou numa peça ligada. */
 function condicaoDeBusca(busca: string | undefined): SQL | undefined {
   const termos = termosDaBusca(busca ?? '');
   if (termos.length === 0) return undefined;
@@ -144,9 +129,6 @@ function condicoesDosFiltros(filtros: Partial<FiltrosDocumentos>): (SQL | undefi
   ];
 }
 
-// ─── Leitura ────────────────────────────────────────────────────────────────
-
-/** Uma página dos documentos que `usuario` pode ver, com os filtros aplicados. */
 export async function listar(
   filtros: Partial<FiltrosDocumentos> & { pagina: number; porPagina: number },
   usuario: UsuarioAutenticado | undefined,
@@ -173,7 +155,6 @@ export async function listar(
   return { linhas, total: contagem?.total ?? 0 };
 }
 
-/** O documento, se existir e `usuario` puder vê-lo. */
 export async function buscarPorId(
   id: string,
   usuario: UsuarioAutenticado | undefined,
@@ -187,7 +168,7 @@ export async function buscarPorId(
   return documento;
 }
 
-/** Existe um documento publicado com este id (independente de quem pode vê-lo)? */
+/** Ignora a visibilidade de propósito: só decide se o visitante recebe 401 em vez de 404. */
 export async function existePublicado(id: string): Promise<boolean> {
   const [documento] = await db
     .select({ id: documentos.id })
@@ -197,7 +178,6 @@ export async function existePublicado(id: string): Promise<boolean> {
   return documento !== undefined;
 }
 
-/** Quantos documentos `usuario` pode ver, agrupados por tipo. */
 export function contarPorTipo(usuario: UsuarioAutenticado | undefined) {
   return db
     .select({ tipo: documentos.tipo, total: count() })
@@ -206,7 +186,6 @@ export function contarPorTipo(usuario: UsuarioAutenticado | undefined) {
     .groupBy(documentos.tipo);
 }
 
-/** Quantos documentos publicados têm esta visibilidade. */
 export async function contarPublicados(visibilidade: Visibilidade): Promise<number> {
   const [contagem] = await db
     .select({ total: count() })
@@ -215,7 +194,6 @@ export async function contarPublicados(visibilidade: Visibilidade): Promise<numb
   return contagem?.total ?? 0;
 }
 
-/** Busca, numa consulta só, os produtos ligados a cada documento da lista. */
 export async function produtosRelacionados(ids: string[]): Promise<Map<string, ProdutoResumo[]>> {
   const mapa = new Map<string, ProdutoResumo[]>();
   if (ids.length === 0) return mapa;
@@ -241,7 +219,6 @@ export async function produtosRelacionados(ids: string[]): Promise<Map<string, P
   return mapa;
 }
 
-/** Usuários que estão na lista de acesso do documento. */
 export function usuariosComAcesso(documentoId: string) {
   return db
     .select({
@@ -257,7 +234,6 @@ export function usuariosComAcesso(documentoId: string) {
     .orderBy(asc(usuarios.nome));
 }
 
-/** Documentos RESTRITOS liberados especificamente para esta pessoa. */
 export function restritosLiberadosPara(usuarioId: string) {
   return db
     .select({ id: documentos.id, titulo: documentos.titulo, tipo: documentos.tipo })
@@ -267,7 +243,6 @@ export function restritosLiberadosPara(usuarioId: string) {
     .orderBy(asc(documentos.titulo));
 }
 
-/** Totais para o painel do administrador. */
 export async function resumoParaPainel() {
   const [resumo] = await db
     .select({
@@ -282,8 +257,6 @@ export async function resumoParaPainel() {
   return resumo;
 }
 
-// ─── Escrita (área do administrador) ────────────────────────────────────────
-
 export async function inserir(valores: NovoDocumento, tx: Transacao): Promise<string> {
   const [novo] = await tx.insert(documentos).values(valores).returning({ id: documentos.id });
   return novo!.id;
@@ -296,10 +269,8 @@ export async function atualizar(id: string, valores: Partial<NovoDocumento>, tx:
     .where(eq(documentos.id, id));
 }
 
-// ─── Indexação para o assistente (uso interno, sem regra de visibilidade) ──────
-// Nada daqui chega a um usuário: a busca do assistente aplica a regra em trechos.repository.
+// Indexação: sem regra de visibilidade, porque nada daqui chega a um usuário (trechos.repository aplica).
 
-/** O que a indexação precisa do documento: arquivo, título, descrição e códigos das peças. */
 export async function dadosParaIndexar(id: string) {
   const [documento] = await db
     .select({
@@ -323,7 +294,6 @@ export async function dadosParaIndexar(id: string) {
   return { ...documento, codigosDasPecas: pecas.map((peca) => peca.codigo) };
 }
 
-/** Documentos a indexar: os nunca indexados, os editados depois da última indexação e os que falharam. */
 export async function listarParaIndexar(todos: boolean): Promise<string[]> {
   const linhas = await db
     .select({ id: documentos.id })
@@ -341,7 +311,7 @@ export async function listarParaIndexar(todos: boolean): Promise<string[]> {
   return linhas.map((linha) => linha.id);
 }
 
-/** Registra o fim da indexação. Não mexe em atualizadoEm (o conteúdo não mudou). */
+/** Não mexe em atualizadoEm: o conteúdo não mudou. */
 export async function marcarIndexacao(id: string, erro: string | null, tx?: Transacao) {
   await (tx ?? db)
     .update(documentos)
@@ -349,7 +319,6 @@ export async function marcarIndexacao(id: string, erro: string | null, tx?: Tran
     .where(eq(documentos.id, id));
 }
 
-/** Exclui o documento e devolve o título e as chaves do arquivo e da capa (para apagá-los), ou undefined se não existia. */
 export async function excluir(
   id: string,
 ): Promise<{ titulo: string; arquivoChave: string | null; capaChave: string | null } | undefined> {
@@ -360,10 +329,7 @@ export async function excluir(
   return removido;
 }
 
-/**
- * Documentos com arquivo e ainda sem capa. Uso interno (comando de manutenção):
- * nada daqui chega a um usuário, por isso não passa pela regra de visibilidade.
- */
+/** Uso interno (npm run capas:gerar), por isso sem a regra de visibilidade. */
 export function listarSemCapa() {
   return db
     .select({ id: documentos.id, arquivoChave: documentos.arquivoChave, arquivoNome: documentos.arquivoNome })
@@ -371,15 +337,11 @@ export function listarSemCapa() {
     .where(and(isNull(documentos.capaChave), isNotNull(documentos.arquivoChave)));
 }
 
-/**
- * Grava a capa gerada para um documento antigo. Não mexe em `atualizadoEm`:
- * o conteúdo não mudou, e a lista de "atualizados recentemente" não deve mudar.
- */
+/** Não mexe em atualizadoEm, para não mudar a lista de "atualizados recentemente". */
 export async function definirCapa(id: string, capaChave: string) {
   await db.update(documentos).set({ capaChave }).where(eq(documentos.id, id));
 }
 
-/** Troca a lista de produtos relacionados ao documento. */
 export async function substituirProdutos(documentoId: string, produtoIds: string[], tx: Transacao) {
   await tx.delete(documentoProdutos).where(eq(documentoProdutos.documentoId, documentoId));
   if (produtoIds.length > 0) {
@@ -389,10 +351,7 @@ export async function substituirProdutos(documentoId: string, produtoIds: string
   }
 }
 
-/**
- * Deixa a lista de acesso igual a `usuarioIds`. Quem já tinha acesso e
- * continua na lista mantém a data original de concessão.
- */
+/** Não apaga quem continua na lista, para manter a data original de concessão. */
 export async function sincronizarAcessos(documentoId: string, usuarioIds: string[], tx: Transacao) {
   await tx
     .delete(documentoAcessos)

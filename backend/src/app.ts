@@ -15,22 +15,15 @@ import { rotasDaApi } from './routes/index.js';
 
 const ARQUIVO_OPENAPI = fileURLToPath(new URL('../openapi.yaml', import.meta.url));
 
-/**
- * Monta a aplicação Express. Fica separado do server.ts para os testes
- * conseguirem usar a API sem abrir uma porta de rede.
- */
 export function criarApp() {
   const app = express();
 
   if (env.CONFIAR_PROXY > 0) app.set('trust proxy', env.CONFIAR_PROXY);
-  // Não anuncia "X-Powered-By: Express" (o helmet também remove; aqui vale mesmo sem ele).
   app.disable('x-powered-by');
 
-  // Id da requisição + contexto (logs e auditoria) e uma linha de log por chamada.
   app.use(identificarRequisicao);
   app.use(registrarRequisicao);
 
-  // Cabeçalhos de segurança (CSP, HSTS, nosniff, frame-ancestors, referrer...).
   app.use(
     helmet({
       contentSecurityPolicy: {
@@ -42,7 +35,6 @@ export function criarApp() {
           mediaSrc: ["'self'", 'blob:'],
           fontSrc: ["'self'", 'data:'],
           connectSrc: ["'self'"],
-          // Vídeos incorporados (YouTube/Vimeo) e PDFs do próprio portal.
           frameSrc: [
             "'self'",
             'https://www.youtube-nocookie.com',
@@ -55,11 +47,9 @@ export function criarApp() {
         },
       },
       crossOriginEmbedderPolicy: false,
-      // Em HTTPS, o navegador passa a recusar HTTP no domínio por 1 ano.
       strictTransportSecurity: env.COOKIE_SEGURO ? { maxAge: 31536000, includeSubDomains: true } : false,
     }),
   );
-  // Recursos do navegador que o portal não usa ficam desligados (inclusive para iframes de terceiros).
   app.use((_req, res, next) => {
     res.setHeader(
       'Permissions-Policy',
@@ -71,12 +61,10 @@ export function criarApp() {
   app.use(express.json({ limit: '1mb' }));
   app.use(cookieParser());
 
-  // ── API ──────────────────────────────────────────────────────────────────
   app.use('/api', conferirOrigem);
   app.use('/api', identificarUsuario);
   app.use('/api', rotasDaApi);
 
-  // Documentação interativa da API (Swagger UI) em /api/docs
   if (fs.existsSync(ARQUIVO_OPENAPI)) {
     const especificacao = YAML.parse(fs.readFileSync(ARQUIVO_OPENAPI, 'utf8')) as JsonObject;
     app.get('/api/docs/openapi.json', (_req, res) => {
@@ -94,8 +82,6 @@ export function criarApp() {
 
   app.use('/api', rotaNaoEncontrada);
 
-  // ── Front-end (produção) ────────────────────────────────────────────────
-  // Com FRONTEND_DIST definido, a API também entrega o site React.
   if (env.FRONTEND_DIST && fs.existsSync(path.join(env.FRONTEND_DIST, 'index.html'))) {
     const pastaDoSite = env.FRONTEND_DIST;
     app.use(
@@ -109,7 +95,6 @@ export function criarApp() {
         },
       }),
     );
-    // Qualquer outra rota devolve o index.html e o React Router assume a navegação.
     app.get('/{*caminho}', (_req, res) => {
       res.setHeader('Cache-Control', 'no-cache');
       res.sendFile(path.join(pastaDoSite, 'index.html'));

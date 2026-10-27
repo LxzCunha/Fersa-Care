@@ -1,11 +1,6 @@
 import type { LinhaDocumento, ProdutoResumo } from '../models/index.js';
 
-/**
- * Formato público de um documento. As chaves internas do arquivo e da capa
- * (nomes no disco) nunca saem da API: o download é sempre feito por
- * /api/documentos/:id/arquivo e a capa por /api/documentos/:id/capa, que
- * conferem a permissão antes de entregar.
- */
+/** As chaves do arquivo e da capa nunca saem da API: as rotas que entregam conferem a permissão. */
 export function paraDocumentoDto(documento: LinhaDocumento, produtosRelacionados: ProdutoResumo[]) {
   return {
     id: documento.id,

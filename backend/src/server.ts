@@ -6,8 +6,6 @@ import { iaDisponivel } from './lib/ia.js';
 import { log, mensagemDoErro } from './lib/log.js';
 import { indexarPendentes } from './services/indexacao.service.js';
 
-/** Ponto de entrada: confere o banco, prepara a pasta de uploads e abre a porta. */
-
 async function conferirBanco() {
   try {
     await pool.query('select 1');
@@ -40,10 +38,6 @@ const servidor = criarApp().listen(env.PORTA, () => {
   void prepararAssistente();
 });
 
-/**
- * Em segundo plano, indexa para o assistente os documentos que ficaram
- * pendentes (cadastrados com o Ollama desligado, editados, com falha...).
- */
 async function prepararAssistente() {
   if (!env.IA_INDEXAR_AO_SALVAR) return;
   if (!(await iaDisponivel())) {
@@ -65,7 +59,6 @@ process.on('unhandledRejection', (motivo) => {
   process.exit(1);
 });
 
-// Encerramento gracioso: termina as requisições em andamento e fecha o banco.
 function encerrar(sinal: string) {
   log.info({ sinal }, 'Encerrando...');
   servidor.close(() => {

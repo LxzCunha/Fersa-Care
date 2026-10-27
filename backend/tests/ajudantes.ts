@@ -18,8 +18,6 @@ import {
   type Visibilidade,
 } from '../src/models/index.js';
 
-/** Funções que montam o cenário de cada teste direto no banco. */
-
 export const app = criarApp();
 export const SENHA_PADRAO = 'Senha1234';
 
@@ -45,7 +43,6 @@ export async function criarUsuario(
 
 export const criarAdmin = () => criarUsuario({ perfil: 'ADMIN' });
 
-/** Agente HTTP que guarda o cookie de sessão, como um navegador logado. */
 export async function entrarComo(usuario: { email: string }, senha = SENHA_PADRAO) {
   const agente = request.agent(app);
   const resposta = await agente.post('/api/auth/entrar').send({ email: usuario.email, senha });
@@ -103,7 +100,6 @@ export async function criarDocumento(
     link?: string;
     liberadoPara?: string[];
     produtoIds?: string[];
-    /** Arquivo com conteúdo de verdade (ex.: um .txt para o assistente ler). */
     arquivo?: { nome: string; conteudo: string | Buffer };
   } = {},
 ) {

@@ -2,7 +2,6 @@ import { sql } from 'drizzle-orm';
 import { pgTable, text, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core';
 import { datas } from './colunas.js';
 
-/** Categorias do catálogo (ex.: "Rolamentos de Esferas", "Kits de Roda para Turismo"). */
 export const categorias = pgTable(
   'categorias',
   {
@@ -11,7 +10,6 @@ export const categorias = pgTable(
     descricao: text('descricao'),
     ...datas,
   },
-  // Nome único sem diferenciar maiúsculas: "Rolamentos de esferas" = "Rolamentos de Esferas".
   (t) => [uniqueIndex('categorias_nome_unico').on(sql`lower(${t.nome})`)],
 );
 

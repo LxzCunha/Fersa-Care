@@ -4,7 +4,6 @@ import { describe, expect, it } from 'vitest';
 import { env } from '../src/config/env.js';
 import { app, criarAdmin, criarUsuario, entrarComo, SENHA_PADRAO } from './ajudantes.js';
 
-/** Cookie de sessão devolvido por uma resposta (login, troca de senha...). */
 function cookieDaSessao(resposta: Response): string {
   const cabecalho = resposta.headers['set-cookie'] as unknown as string[] | undefined;
   const cookie = cabecalho?.find((valor) => valor.startsWith('fersa_sessao='));
@@ -16,7 +15,6 @@ async function entrar(email: string, senha = SENHA_PADRAO) {
   return cookieDaSessao(await request(app).post('/api/auth/entrar').send({ email, senha }).expect(200));
 }
 
-/** Quem a API reconhece com este cookie (null = visitante). */
 async function quemE(cookie: string): Promise<string | null> {
   const resposta = await request(app).get('/api/auth/eu').set('Cookie', cookie).expect(200);
   return (resposta.body as { usuario: { email: string } | null }).usuario?.email ?? null;
@@ -75,7 +73,6 @@ describe('Sessões: tokens antigos deixam de valer', () => {
     await admin.patch(`/api/admin/usuarios/${cliente.id}/status`).send({ status: 'ATIVO' }).expect(200);
 
     expect(await quemE(sessao)).toBeNull();
-    // Também pelo cabeçalho Authorization (apps): o mesmo token, recusado.
     const token = sessao.replace('fersa_sessao=', '');
     const pelaApi = await request(app).get('/api/auth/eu').set('Authorization', `Bearer ${token}`).expect(200);
     expect(pelaApi.body.usuario).toBeNull();

@@ -1,20 +1,13 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
 
-/** Tipos enumerados: viram ENUMs no PostgreSQL. */
+// Espelhados à mão em frontend/src/api/tipos.ts.
 
-/** ADMIN cadastra e gerencia tudo; USUARIO é o cliente com login. */
 export const perfilUsuario = pgEnum('perfil_usuario', ['ADMIN', 'USUARIO']);
 
 /** Quem pede acesso começa PENDENTE e só entra depois que um admin aprova. */
 export const statusUsuario = pgEnum('status_usuario', ['PENDENTE', 'ATIVO', 'INATIVO']);
 
-/**
- * Quem pode ver cada documento:
- * - PUBLICO: qualquer pessoa, mesmo sem login;
- * - AUTENTICADO: qualquer usuário com login ativo;
- * - RESTRITO: só os usuários escolhidos pelo administrador (tabela documento_acessos).
- * Administradores veem todos.
- */
+/** RESTRITO: só os usuários liberados em documento_acessos. Admins veem todos. */
 export const visibilidadeDocumento = pgEnum('visibilidade_documento', [
   'PUBLICO',
   'AUTENTICADO',
@@ -38,10 +31,8 @@ export const segmentoProduto = pgEnum('segmento_produto', [
   'INDUSTRIAL',
 ]);
 
-/** Quem escreveu cada mensagem da conversa com o assistente. */
 export const papelMensagem = pgEnum('papel_mensagem', ['USUARIO', 'ASSISTENTE']);
 
-/** Andamento do chamado de suporte técnico aberto pelo assistente. */
 export const statusChamado = pgEnum('status_chamado', ['ABERTO', 'EM_ATENDIMENTO', 'RESOLVIDO']);
 
 export type Perfil = (typeof perfilUsuario.enumValues)[number];

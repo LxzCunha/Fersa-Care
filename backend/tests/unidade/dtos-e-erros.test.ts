@@ -133,7 +133,6 @@ describe('DTO do usuário', () => {
 });
 
 describe('Middleware de erros', () => {
-  /** Chama o middleware e devolve o status e o corpo da resposta. */
   function responder(erro: unknown) {
     const res = { headersSent: false, status: vi.fn(), json: vi.fn() };
     res.status.mockReturnValue(res);

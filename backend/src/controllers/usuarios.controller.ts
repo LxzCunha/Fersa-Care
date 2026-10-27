@@ -9,8 +9,6 @@ import {
   esquemaFiltrosUsuarios,
 } from '../validators/usuarios.validator.js';
 
-/** Gestão de usuários: /api/admin/usuarios/... */
-
 export async function listar(req: Request, res: Response) {
   const filtros = esquemaFiltrosUsuarios.parse(req.query);
   res.json(await usuariosService.listarUsuarios(filtros));

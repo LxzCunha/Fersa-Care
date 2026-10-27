@@ -7,7 +7,6 @@ import { garantirQueEhBancoDeTeste } from './ambiente.js';
 
 garantirQueEhBancoDeTeste(env.DATABASE_URL);
 
-// Cada teste começa com o banco e a pasta de uploads vazios.
 beforeEach(async () => {
   await db.execute(sql`
     TRUNCATE auditoria, chamados, assistente_mensagens, assistente_conversas,

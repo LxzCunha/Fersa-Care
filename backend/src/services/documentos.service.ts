@@ -12,16 +12,6 @@ import * as documentosRepository from '../repositories/documentos.repository.js'
 import * as visualizacoesRepository from '../repositories/visualizacoes.repository.js';
 import type { FiltrosDocumentos } from '../validators/documentos.validator.js';
 
-/**
- * Biblioteca de documentos do portal (visitantes, usuários e admins).
- * Toda função recebe o usuário da requisição; o repository aplica a regra de
- * visibilidade (repositories/visibilidade.ts) em cima dele.
- */
-
-/**
- * Página de documentos que `usuario` pode ver, já no formato de resposta.
- * Também usada pela página de produto e pela área do admin.
- */
 export async function listarPagina(
   filtros: Partial<FiltrosDocumentos> & { pagina: number; porPagina: number },
   usuario: UsuarioAutenticado | undefined,
@@ -40,11 +30,7 @@ export function listarDocumentosVisiveis(
   return listarPagina(filtros, usuario);
 }
 
-/**
- * Busca um documento respeitando as permissões.
- * - Visitante tentando abrir algo que exige login → 401 (o site manda para o login).
- * - Usuário logado sem permissão → 404, sem confirmar que o documento existe.
- */
+/** Visitante em documento que exige login: 401 (o site pede login). Sem permissão: 404, sem revelar que existe. */
 export async function buscarDocumentoVisivel(
   id: string,
   usuario: UsuarioAutenticado | undefined,
@@ -58,7 +44,6 @@ export async function buscarDocumentoVisivel(
   throw naoEncontrado('Documento não encontrado ou sem permissão de acesso.');
 }
 
-/** Detalhe do documento. Cada abertura é registrada para o painel do admin. */
 export async function abrirDocumento(id: string, usuario: UsuarioAutenticado | undefined) {
   const documento = await buscarDocumentoVisivel(id, usuario);
   const produtosRelacionados = await documentosRepository.produtosRelacionados([documento.id]);
@@ -66,7 +51,6 @@ export async function abrirDocumento(id: string, usuario: UsuarioAutenticado | u
   return paraDocumentoDto(documento, produtosRelacionados.get(documento.id) ?? []);
 }
 
-/** Visitas de administradores não contam. */
 async function registrarVisualizacao(documentoId: string, usuario: UsuarioAutenticado | undefined) {
   if (usuario?.perfil === 'ADMIN') return;
   await visualizacoesRepository.registrar(documentoId, usuario?.id ?? null);
@@ -76,7 +60,6 @@ export type ConteudoDoDocumento =
   | { origem: 'LINK'; url: string }
   | { origem: 'ARQUIVO'; caminho: string; nome: string; mime: string; exibirNoNavegador: boolean };
 
-/** Onde está o conteúdo do documento (arquivo no servidor ou link externo), depois de conferir a permissão. */
 export async function obterConteudoDoDocumento(
   id: string,
   usuario: UsuarioAutenticado | undefined,
@@ -99,10 +82,7 @@ export async function obterConteudoDoDocumento(
   };
 }
 
-/**
- * Capa do documento, com a mesma permissão do próprio documento. `publica`
- * diz se ela pode ficar em cache compartilhado (proxies, CDN).
- */
+/** `publica`: a capa pode ficar em cache compartilhado (proxies, CDN). */
 export async function obterCapa(id: string, usuario: UsuarioAutenticado | undefined) {
   const documento = await buscarDocumentoVisivel(id, usuario);
   const chave = documento.capaChave;
@@ -113,7 +93,6 @@ export async function obterCapa(id: string, usuario: UsuarioAutenticado | undefi
   };
 }
 
-/** Dados da página inicial: quantidade por tipo e materiais mais recentes. */
 export async function resumoDaBiblioteca(usuario: UsuarioAutenticado | undefined) {
   const linhasPorTipo = await documentosRepository.contarPorTipo(usuario);
   const porTipo = Object.fromEntries(tipoDocumento.enumValues.map((tipo) => [tipo, 0])) as Record<

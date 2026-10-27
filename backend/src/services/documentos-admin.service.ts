@@ -16,20 +16,13 @@ import { registrarEvento } from './auditoria.service.js';
 import { listarPagina } from './documentos.service.js';
 import { agendarIndexacao, situacaoDaIndexacao } from './indexacao.service.js';
 
-/**
- * Gestão de documentos pelo administrador: cadastrar, editar, excluir e
- * definir quem pode ver cada um.
- */
-
 type ArquivoRecebido = Express.Multer.File;
 
-/** Arquivos que podem vir no formulário: o do documento e uma capa própria. */
 export interface ArquivosDoDocumento {
   arquivo?: ArquivoRecebido;
   capa?: ArquivoRecebido;
 }
 
-/** O administrador vê tudo, inclusive rascunhos. */
 const TUDO = { incluirRascunhos: true };
 
 export function listarParaAdmin(filtros: FiltrosDocumentos, admin: UsuarioAutenticado) {
@@ -53,7 +46,6 @@ export async function detalharParaAdmin(id: string, admin: UsuarioAutenticado) {
     usuariosComAcesso,
     criadoPor: autor ? { id: autor.id, nome: autor.nome } : null,
     totalVisualizacoes,
-    /** Como o documento está na base do assistente. */
     indexacao: {
       situacao: situacaoDaIndexacao(documento),
       indexadoEm: documento.indexadoEm,
@@ -95,7 +87,6 @@ export async function criarDocumento(
     }),
   );
 
-  // O assistente passa a conhecer o documento (em segundo plano, sem esperar a IA).
   agendarIndexacao(id);
   return detalharParaAdmin(id, admin);
 }
@@ -137,7 +128,6 @@ export async function atualizarDocumento(
   return detalharParaAdmin(id, admin);
 }
 
-/** O admin pede para refazer a indexação (ex.: depois de uma falha). */
 export async function reindexarDocumento(id: string, admin: UsuarioAutenticado) {
   const documento = await documentosRepository.buscarPorId(id, admin, TUDO);
   if (!documento) throw naoEncontrado('Documento não encontrado.');
@@ -152,10 +142,6 @@ export async function excluirDocumento(id: string) {
   await removerArquivo(removido.capaChave);
 }
 
-/**
- * Gera a capa automática dos documentos que ainda não têm uma (cadastrados
- * antes das capas existirem). Usada pelo comando "npm run capas:gerar".
- */
 export async function gerarCapasPendentes() {
   const pendentes = await documentosRepository.listarSemCapa();
   let geradas = 0;
@@ -168,8 +154,6 @@ export async function gerarCapasPendentes() {
   return { pendentes: pendentes.length, geradas };
 }
 
-// ─── Funções auxiliares ─────────────────────────────────────────────────────
-
 function camposBasicos(dados: DadosDocumento) {
   return {
     titulo: dados.titulo,
@@ -181,10 +165,6 @@ function camposBasicos(dados: DadosDocumento) {
   };
 }
 
-/**
- * O que a edição mudou, para a auditoria: campos alterados, troca de arquivo
- * ou capa e, em documento restrito, quem ganhou ou perdeu o acesso.
- */
 function detalhesDaEdicao(
   atual: LinhaDocumento,
   dados: DadosDocumento,
@@ -204,7 +184,6 @@ function detalhesDaEdicao(
   };
 }
 
-/** Nomes de arquivo muito longos são encurtados preservando a extensão. */
 function nomeSeguro(nomeOriginal: string): string {
   if (nomeOriginal.length <= 255) return nomeOriginal;
   const ponto = nomeOriginal.lastIndexOf('.');
@@ -212,12 +191,6 @@ function nomeSeguro(nomeOriginal: string): string {
   return nomeOriginal.slice(0, 255 - extensao.length) + extensao;
 }
 
-/**
- * Decide o que gravar nas colunas de arquivo/link:
- * - LINK: grava o endereço e marca o arquivo antigo (se havia) para remoção;
- * - ARQUIVO com novo upload: grava o arquivo novo e marca o antigo para remoção;
- * - ARQUIVO sem upload: mantém o arquivo atual (só na edição).
- */
 function camposDeOrigem(dados: DadosDocumento, arquivo: ArquivoRecebido | undefined, arquivoAtual: string | null) {
   if (dados.origem === 'LINK') {
     if (arquivo) {
@@ -256,7 +229,6 @@ function camposDeOrigem(dados: DadosDocumento, arquivo: ArquivoRecebido | undefi
 }
 
 interface DecisaoDeCapa {
-  /** Colunas a gravar; vazio quando a capa continua a mesma. */
   campos: { capaChave?: string | null; capaPersonalizada?: boolean };
   /** Capa gerada nesta requisição: é apagada se a gravação no banco falhar. */
   capaNova: string | null;
@@ -264,13 +236,7 @@ interface DecisaoDeCapa {
   capaAntiga: string | null;
 }
 
-/**
- * Decide a capa do documento:
- * - o admin enviou uma capa: ela vale até ser removida, mesmo se o arquivo mudar;
- * - documento novo, "removerCapa" ou arquivo trocado (inclusive por um link): capa automática;
- * - nos demais casos, a capa atual continua. Documentos ainda sem capa ganham a automática.
- * A capa automática vem do arquivo novo ou, se não veio um, do arquivo atual.
- */
+/** A capa enviada pelo admin sobrevive à troca de arquivo até "removerCapa"; a automática segue o arquivo. */
 async function definirCapa(
   dados: DadosDocumento,
   arquivos: ArquivosDoDocumento,
@@ -300,10 +266,7 @@ async function definirCapa(
   return { campos: { capaChave: chave, capaPersonalizada: false }, capaNova: chave, capaAntiga };
 }
 
-/**
- * Capa tirada do próprio arquivo (1ª página do PDF ou a imagem). Se não der
- * para gerar, o documento fica sem capa: isso nunca impede o cadastro.
- */
+/** Falhar ao gerar a capa nunca impede o cadastro: o documento fica sem capa. */
 async function gerarCapaAutomatica(arquivo: { chave: string | null; nome: string | null }): Promise<string | null> {
   if (!arquivo.chave || !arquivo.nome || !temCapaAutomatica(arquivo.nome)) return null;
   try {
@@ -314,7 +277,7 @@ async function gerarCapaAutomatica(arquivo: { chave: string | null; nome: string
   }
 }
 
-/** Capa enviada pelo admin: guardamos só a versão reduzida, não a imagem original. */
+/** Guarda só a versão reduzida; o arquivo original enviado é apagado. */
 async function gerarCapaEnviada(capa: ArquivoRecebido): Promise<string> {
   try {
     return await gerarCapa(capa.filename, capa.originalname);
@@ -335,7 +298,6 @@ async function desfazendoCapaSeFalhar<T>(capa: DecisaoDeCapa, gravar: () => Prom
   }
 }
 
-/** Confere se os produtos e usuários escolhidos existem, com mensagem clara. */
 async function conferirReferencias(tx: Transacao, dados: DadosDocumento) {
   const produtoIds = [...new Set(dados.produtoIds)];
   if (produtoIds.length > 0) {
@@ -354,10 +316,6 @@ async function conferirReferencias(tx: Transacao, dados: DadosDocumento) {
   }
 }
 
-/**
- * Atualiza produtos relacionados e a lista de usuários com acesso.
- * A lista de acesso só existe para documentos RESTRITOS; nos demais ela é limpa.
- */
 async function sincronizarRelacionamentos(tx: Transacao, documentoId: string, dados: DadosDocumento) {
   await documentosRepository.substituirProdutos(documentoId, [...new Set(dados.produtoIds)], tx);
 

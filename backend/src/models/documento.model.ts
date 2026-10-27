@@ -15,7 +15,6 @@ import { datas } from './colunas.js';
 import { tipoDocumento, visibilidadeDocumento } from './enums.js';
 import { usuarios } from './usuario.model.js';
 
-/** Coluna de busca textual do PostgreSQL (full-text search). */
 const tsvector = customType<{ data: string }>({
   dataType: () => 'tsvector',
 });
@@ -32,37 +31,25 @@ export const documentos = pgTable(
     /** Rascunhos (false) ficam visíveis apenas para administradores. */
     publicado: boolean('publicado').notNull().default(true),
 
-    // O conteúdo é um arquivo enviado OU um link externo (YouTube, SharePoint...).
-    /** Nome do arquivo dentro da pasta de uploads (gerado pelo sistema). */
+    /** Nome gerado na pasta de uploads; o original, usado no download, fica em arquivoNome. */
     arquivoChave: varchar('arquivo_chave', { length: 120 }),
-    /** Nome original do arquivo, usado no download. */
     arquivoNome: varchar('arquivo_nome', { length: 255 }),
     arquivoMime: varchar('arquivo_mime', { length: 120 }),
     arquivoTamanho: bigint('arquivo_tamanho', { mode: 'number' }),
     urlExterna: text('url_externa'),
 
-    /**
-     * Capa (miniatura WebP) mostrada nos cartões. Gerada da 1ª página do PDF ou
-     * da própria imagem; o admin pode enviar uma capa própria (vídeos, links...).
-     */
     capaChave: varchar('capa_chave', { length: 120 }),
     /** A capa foi enviada pelo admin: trocar o arquivo do documento não a substitui. */
     capaPersonalizada: boolean('capa_personalizada').notNull().default(false),
 
-    // Base do assistente (RAG): quando o texto do documento foi dividido em trechos.
-    /** Última indexação concluída; null = ainda na fila. */
+    /** Última indexação para o assistente; null = ainda na fila. */
     indexadoEm: timestamp('indexado_em', { withTimezone: true }),
-    /** Motivo da última falha de indexação (null quando deu certo). */
     indexacaoErro: text('indexacao_erro'),
 
     criadoPor: uuid('criado_por').references(() => usuarios.id, { onDelete: 'set null' }),
     ...datas,
 
-    /**
-     * Vetor de busca calculado pelo próprio PostgreSQL a partir do título e da
-     * descrição (em português e sem acentos). A função f_unaccent é criada na
-     * primeira migração (drizzle/0000_extensoes.sql).
-     */
+    // f_unaccent é criada à mão em drizzle/0000_extensoes.sql.
     busca: tsvector('busca').generatedAlwaysAs(
       sql`to_tsvector('portuguese'::regconfig, f_unaccent(coalesce(titulo, '') || ' ' || coalesce(descricao, '')))`,
     ),
@@ -80,5 +67,4 @@ export const documentos = pgTable(
 export type Documento = typeof documentos.$inferSelect;
 export type NovoDocumento = typeof documentos.$inferInsert;
 
-/** Um documento como vem das consultas, sem a coluna interna de busca. */
 export type LinhaDocumento = Omit<Documento, 'busca'>;

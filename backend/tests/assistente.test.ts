@@ -17,12 +17,6 @@ import {
 import { MENSAGEM_FORA_DO_AR } from '../src/services/assistente.service.js';
 import { app, criarAdmin, criarDocumento, criarProduto, criarUsuario, entrarComo } from './ajudantes.js';
 
-/**
- * Assistente técnico (RAG) de ponta a ponta, com a IA simulada:
- * indexação, busca respeitando o nível de acesso, respostas em streaming,
- * encaminhamento ao suporte técnico e a gestão dos chamados.
- */
-
 vi.mock('../src/lib/ia.js', async (original) => ({
   ...(await original<typeof ModuloIa>()),
   gerarEmbeddings: vi.fn(),
@@ -30,10 +24,7 @@ vi.mock('../src/lib/ia.js', async (original) => ({
   iaDisponivel: vi.fn(),
 }));
 
-/**
- * Embedding de teste: cada assunto conhecido ocupa uma posição do vetor.
- * Textos sobre o mesmo assunto ficam próximos; assuntos diferentes, distantes.
- */
+/** Cada assunto ocupa uma posição do vetor: mesmo assunto fica próximo, assuntos diferentes, distantes. */
 const ASSUNTOS = ['folga', 'torque', 'ruido', 'embreagem', 'comercia'];
 function vetorDeTeste(texto: string): number[] {
   const simples = texto.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
@@ -45,7 +36,6 @@ function vetorDeTeste(texto: string): number[] {
   return vetor;
 }
 
-/** Faz o modelo "responder" com os pedaços informados. */
 function modeloResponde(...pedacos: string[]) {
   vi.mocked(ia.conversar).mockImplementation(async function* () {
     for (const pedaco of pedacos) {
@@ -60,7 +50,6 @@ interface Evento {
   [campo: string]: unknown;
 }
 
-/** Envia a pergunta e devolve os eventos SSE recebidos. */
 async function perguntar(agente: ReturnType<typeof request.agent> | typeof request, pergunta: string, conversaId?: string) {
   const cliente = typeof agente === 'function' ? agente(app) : agente;
   const resposta = await cliente
@@ -369,7 +358,6 @@ describe('Encaminhamento ao suporte técnico', () => {
       '• Meu cubo de roda faz ruído depois da troca do rolamento.\n• Não ajudou, continua com o ruído.\n• Você não está ajudando.',
     );
 
-    // Reclamar de novo não abre outro: lembra o número.
     const terceira = await perguntar(agente, 'não resolveu nada', inicio.conversaId);
     expect(terceira.texto).toContain('chamado nº 1 já está com a equipe');
     expect(await db.select().from(chamados)).toHaveLength(1);
@@ -395,7 +383,6 @@ describe('Encaminhamento ao suporte técnico', () => {
     expect(conversa.body.chamado).toEqual({ numero: 1 });
     expect(conversa.body.mensagens.at(-1).conteudo).toContain('Abri o chamado nº 1');
 
-    // Enviar de novo não duplica.
     await request(app).post('/api/assistente/chamados').send({ conversaId, nome: 'Rafael', email: 'r@x.com' }).expect(201);
     expect(await db.select().from(chamados)).toHaveLength(1);
   });

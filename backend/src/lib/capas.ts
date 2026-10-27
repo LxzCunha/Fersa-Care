@@ -2,17 +2,8 @@ import { createCanvas, loadImage, type Canvas } from '@napi-rs/canvas';
 import { caminhoDoArquivo, EXTENSOES_DE_IMAGEM, extensaoDe, gerarChave, gravarArquivo } from './armazenamento.js';
 import { comPdf } from './pdf.js';
 
-/**
- * Capas dos documentos: miniaturas WebP mostradas nos cartões da biblioteca.
- * - PDF: a primeira página, desenhada com o pdf.js (o mesmo leitor do Firefox);
- * - imagem: a própria imagem, reduzida.
- * Vídeos, links e arquivos do Office não têm capa automática: o admin pode
- * enviar uma, e sem ela o site mostra uma capa com o ícone do tipo.
- */
-
-/** Largura em pixels: o dobro do cartão no desktop, para ficar nítida em telas retina. */
+/** Em px: o dobro do cartão no desktop, para ficar nítida em telas retina. */
 const LARGURA = 480;
-/** Corta imagens muito compridas (um banner vertical, por exemplo). */
 const ALTURA_MAXIMA = 960;
 const QUALIDADE_WEBP = 80;
 
@@ -21,10 +12,6 @@ export function temCapaAutomatica(nomeArquivo: string): boolean {
   return extensao === '.pdf' || EXTENSOES_DE_IMAGEM.includes(extensao);
 }
 
-/**
- * Gera a capa de um arquivo já gravado e devolve a chave dela.
- * Lança erro se o arquivo não puder ser lido (PDF corrompido, imagem inválida...).
- */
 export async function gerarCapa(chaveDoArquivo: string, nomeArquivo: string): Promise<string> {
   const caminho = caminhoDoArquivo(chaveDoArquivo);
   const canvas =

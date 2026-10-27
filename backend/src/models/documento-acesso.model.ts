@@ -2,7 +2,6 @@ import { index, pgTable, primaryKey, timestamp, uuid } from 'drizzle-orm/pg-core
 import { documentos } from './documento.model.js';
 import { usuarios } from './usuario.model.js';
 
-/** Usuários com acesso a documentos RESTRITOS (N:N). */
 export const documentoAcessos = pgTable(
   'documento_acessos',
   {

@@ -10,8 +10,6 @@ import type { DadosProduto, FiltrosProdutos } from '../validators/produtos.valid
 import { registrarEvento } from './auditoria.service.js';
 import { listarPagina as listarDocumentos } from './documentos.service.js';
 
-/** Catálogo de peças. Peças são públicas; os documentos ligados a elas seguem a regra de acesso. */
-
 type ImagemRecebida = Express.Multer.File;
 
 export async function listarProdutos(filtros: FiltrosProdutos, opcoes: { incluirInativos: boolean }) {
@@ -25,7 +23,6 @@ async function buscarOuFalhar(id: string, opcoes: { incluirInativos: boolean }) 
   return produto;
 }
 
-/** Página do produto no portal: dados da peça + documentos que o usuário pode ver. */
 export async function detalharProdutoNoPortal(id: string, usuario: UsuarioAutenticado | undefined) {
   const produto = await buscarOuFalhar(id, { incluirInativos: false });
   const documentosVisiveis = await listarDocumentos({ produtoId: id, pagina: 1, porPagina: 100 }, usuario);
@@ -38,10 +35,6 @@ export async function detalharProdutoParaAdmin(id: string) {
   return { ...paraProdutoDto(produto), totalDocumentos };
 }
 
-/**
- * Foto da peça. Peças fora do catálogo só mostram a foto para administradores
- * (é o caso da pré-visualização no formulário).
- */
 export async function obterImagem(id: string, usuario: UsuarioAutenticado | undefined) {
   const produto = await produtosRepository.buscarPorId(id, { incluirInativos: usuario?.perfil === 'ADMIN' });
   const chave = produto?.imagemChave;
@@ -61,10 +54,6 @@ export async function criarProduto(dados: DadosProduto, imagem: ImagemRecebida |
   return detalharProdutoParaAdmin(produto.id);
 }
 
-/**
- * Foto na edição: uma nova substitui a atual; `removerImagem` apaga a atual;
- * sem nenhum dos dois, a foto atual continua.
- */
 export async function atualizarProduto(id: string, dados: DadosProduto, imagem: ImagemRecebida | undefined) {
   const atual = await buscarOuFalhar(id, { incluirInativos: true });
   const { removerImagem, ...valores } = dados;

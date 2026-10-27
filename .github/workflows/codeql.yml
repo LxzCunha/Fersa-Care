@@ -1,5 +1,3 @@
-# Análise estática de segurança (CodeQL) do código TypeScript da API e do site.
-# Os alertas aparecem em Security → Code scanning no GitHub.
 name: CodeQL
 
 on:

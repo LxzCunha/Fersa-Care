@@ -1,11 +1,4 @@
-# FERSA CARE — serviços para desenvolvimento e demonstração.
-#
-#   Só o banco (para programar com npm run dev):   docker compose up -d db
-#   Portal completo em http://localhost:3000:       docker compose up --build
-#
-# O banco usa a imagem do PostgreSQL com a extensão pgvector já instalada.
-# As migrações a habilitam (0002) e criam a base vetorial do assistente com RAG
-# (tabela documento_trechos, 0003), então um PostgreSQL comum não serve.
+# As migrações exigem a extensão pgvector: um PostgreSQL comum não serve.
 
 services:
   db:
@@ -16,12 +9,10 @@ services:
       POSTGRES_PASSWORD: fersa
       POSTGRES_DB: fersa_care
     ports:
-      # Porta 5432 ocupada por outro PostgreSQL na máquina? Suba com outra:
-      #   DB_PORTA=5433 docker compose up -d db   (e ajuste a porta no DATABASE_URL)
       - "${DB_PORTA:-5432}:5432"
     volumes:
       - dados-postgres:/var/lib/postgresql/data
-      # Scripts executados só na primeira inicialização (cria o banco de testes).
+      # Só na primeira inicialização do volume: cria o banco de testes.
       - ./docker/postgres:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U fersa -d fersa_care"]
@@ -48,21 +39,15 @@ services:
       UPLOAD_LIMITE_MB: "200"
       ADMIN_EMAIL: admin@fersacare.com.br
       ADMIN_SENHA: ${ADMIN_SENHA:-Admin@123}
-      # Cria clientes, produtos e documentos fictícios para demonstração.
       SEED_EXEMPLOS: ${SEED_EXEMPLOS:-true}
-      # Onde o assistente encontra os modelos de IA (serviço "ollama" ou o Ollama do Mac).
       OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
     ports:
       - "3000:3000"
     volumes:
       - arquivos:/app/uploads
 
-  # Modelos de IA do assistente técnico (bolinha de chat). Depois de subir, baixe os modelos:
-  #   docker compose exec ollama ollama pull bge-m3
-  #   docker compose exec ollama ollama pull qwen2.5:14b
-  # No Mac, o Ollama dentro do Docker não usa a GPU e fica bem lento: prefira o app
-  # do Ollama instalado no Mac e rode o portal com
-  #   OLLAMA_URL=http://host.docker.internal:11434 docker compose up app
+  # No Mac, o Ollama no Docker não usa a GPU: prefira o app nativo com
+  # OLLAMA_URL=http://host.docker.internal:11434 docker compose up app
   ollama:
     image: ollama/ollama
     restart: unless-stopped

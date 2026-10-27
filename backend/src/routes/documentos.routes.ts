@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import * as documentosController from '../controllers/documentos.controller.js';
 
-/** Biblioteca pública: /api/documentos/... (cada um recebe só o que pode ver) */
 export const documentosRotas = Router();
 
 documentosRotas.get('/', documentosController.listar);

@@ -4,7 +4,6 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { env } from '../src/config/env.js';
 import { app, criarAdmin, criarCategoria, criarProduto, criarUsuario, entrarComo } from './ajudantes.js';
 
-/** Menor PNG válido (1×1 px). */
 const PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
   'base64',
@@ -151,7 +150,6 @@ describe('Foto da peça', () => {
     expect(depois).toHaveLength(1);
     expect(depois[0]).not.toBe(primeira);
 
-    // Editar sem foto nova mantém a atual; removerImagem apaga.
     await admin.put(`/api/admin/produtos/${criado.body.id}`).send(dados).expect(200);
     expect(await arquivosNaPasta()).toEqual(depois);
     const semFoto = await admin

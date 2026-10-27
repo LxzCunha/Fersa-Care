@@ -5,18 +5,6 @@ import * as assistenteService from '../services/assistente.service.js';
 import { esquemaPergunta } from '../validators/assistente.validator.js';
 import { esquemaAbrirChamado } from '../validators/chamados.validator.js';
 
-/**
- * Assistente técnico: /api/assistente/...
- * Aberto a visitantes; cada um só encontra o que pode ver no portal.
- */
-
-/**
- * Pergunta ao assistente. A resposta chega aos pedaços (Server-Sent Events):
- *   event: conversa → { conversaId }        (guarde para continuar a conversa)
- *   event: texto    → { texto }             (um pedaço da resposta)
- *   event: fim      → { fontes, encaminhamento, chamado }
- *   event: erro     → { mensagem }          (falha no meio da resposta)
- */
 export async function perguntar(req: Request, res: Response) {
   const dados = esquemaPergunta.parse(req.body);
   const interromper = new AbortController();

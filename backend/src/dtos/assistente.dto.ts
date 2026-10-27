@@ -1,6 +1,5 @@
 import type { AssistenteMensagem, Chamado } from '../models/index.js';
 
-/** Formato das mensagens da conversa com o assistente nas respostas da API. */
 export function paraMensagemDto(mensagem: AssistenteMensagem) {
   return {
     id: mensagem.id,
@@ -22,7 +21,6 @@ export function paraChamadoDto(chamado: Chamado) {
     resumo: chamado.resumo,
     status: chamado.status,
     observacao: chamado.observacao,
-    /** Aberto por um cliente com login (false = visitante). */
     clienteCadastrado: chamado.usuarioId !== null,
     criadoEm: chamado.criadoEm,
     atualizadoEm: chamado.atualizadoEm,

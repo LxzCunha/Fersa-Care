@@ -2,11 +2,6 @@ import request from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { app, criarAdmin, criarDocumento, criarProduto, criarUsuario, entrarComo } from './ajudantes.js';
 
-/**
- * CRUD de documentos e usuários pela API do admin, campo a campo, e como os
- * documentos aparecem no portal (lista, detalhe, download e resumo).
- */
-
 const UUID_INEXISTENTE = '3f1c2a9e-8b7d-4c6e-9f00-123456789abc';
 const PDF = Buffer.from('%PDF-1.4 arquivo de teste');
 const BASE = { titulo: 'Guia de montagem', tipo: 'MANUAL', visibilidade: 'PUBLICO', origem: 'ARQUIVO' };
@@ -40,7 +35,6 @@ describe('Documentos: cadastrar e ler', () => {
       totalVisualizacoes: 0,
     });
 
-    // O cliente liberado abre duas vezes; o admin abre uma (não conta).
     const comAcesso = await entrarComo(cliente);
     await comAcesso.get(`/api/documentos/${criado.body.id}`).expect(200);
     await comAcesso.get(`/api/documentos/${criado.body.id}`).expect(200);
@@ -202,7 +196,6 @@ describe('Usuários: editar e validar', () => {
       .expect(400);
     const detalhes: { campo: string; mensagem: string }[] = resposta.body.erro.detalhes;
     expect([...new Set(detalhes.map((detalhe) => detalhe.campo))].sort()).toEqual(['email', 'nome', 'perfil', 'senha']);
-    // A senha "fraca" tem dois problemas, e os dois são informados.
     expect(detalhes.filter((detalhe) => detalhe.campo === 'senha').map((detalhe) => detalhe.mensagem)).toEqual([
       'A senha precisa ter pelo menos 8 caracteres.',
       'A senha precisa ter pelo menos um número.',

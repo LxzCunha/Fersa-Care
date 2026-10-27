@@ -9,16 +9,12 @@ export const esquemaFiltrosChamados = esquemaPaginacao.extend({
 
 export type FiltrosChamados = z.infer<typeof esquemaFiltrosChamados>;
 
-/** Admin: andamento do chamado e anotação interna. */
 export const esquemaAtualizarChamado = z.object({
   status: z.enum(statusChamado.enumValues, { error: 'Situação inválida.' }),
   observacao: textoOpcional(5000),
 });
 
-/**
- * Pedido de chamado vindo do chat. Quem está logado não precisa informar o
- * contato (vem da conta); visitante informa nome e e-mail ou telefone.
- */
+/** Contato opcional aqui: quem tem login usa o da conta; o service exige nome e contato do visitante. */
 export const esquemaAbrirChamado = z.object({
   conversaId: z.uuid('Conversa inválida.'),
   nome: textoOpcional(120),

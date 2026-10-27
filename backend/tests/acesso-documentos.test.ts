@@ -3,14 +3,11 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { app, criarAdmin, criarDocumento, criarUsuario, entrarComo } from './ajudantes.js';
 
 /**
- * O coração do requisito: cada nível de acesso enxerga só o que pode.
- *
  *                       PUBLICO  AUTENTICADO  RESTRITO  RASCUNHO
  *   visitante             200        401         401       404
  *   usuário               200        200         404       404
  *   usuário liberado      200        200         200       404
  *   admin                 200        200         200       200
- *
  * 401 = "entre com sua conta"; 404 = não existe ou sem permissão (não revela).
  */
 

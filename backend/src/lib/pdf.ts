@@ -3,14 +3,9 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { PDFDocumentProxy } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
-/** Fontes padrão do PDF (Helvetica, Times...) que o arquivo pode não trazer embutidas. */
+// Fontes padrão (Helvetica, Times...) e cmaps vêm do pacote: o PDF pode não trazê-los embutidos.
 const PASTA_PDFJS = path.dirname(createRequire(import.meta.url).resolve('pdfjs-dist/package.json'));
 
-/**
- * Abre um PDF do disco com o pdf.js (o mesmo leitor do Firefox), entrega o
- * documento para `usar` e libera a memória no fim. Usado para desenhar a
- * capa e para extrair o texto que vai para o assistente.
- */
 export async function comPdf<T>(caminho: string, usar: (documento: PDFDocumentProxy) => Promise<T>): Promise<T> {
   // Importado só quando preciso: o pdf.js é grande e a API sobe sem ele.
   const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');

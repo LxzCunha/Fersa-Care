@@ -25,13 +25,11 @@ const camposComuns = {
   status: z.enum(statusUsuario.enumValues, { error: 'Escolha a situação.' }),
 };
 
-/** Usuário cadastrado pelo administrador (já pode nascer ATIVO). */
 export const esquemaCriarUsuario = z.object({
   ...camposComuns,
   senha: campoSenhaNova,
 });
 
-/** Edição: a senha só muda se `novaSenha` vier preenchida. */
 export const esquemaAtualizarUsuario = z.object({
   ...camposComuns,
   novaSenha: z.union([campoSenhaNova, z.literal(''), z.null()]).optional(),

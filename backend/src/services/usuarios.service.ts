@@ -13,12 +13,9 @@ import type {
 } from '../validators/usuarios.validator.js';
 import { registrarEvento } from './auditoria.service.js';
 
-/** Gestão de usuários pelo administrador (aprovar, criar, editar, desativar). */
-
 export async function listarUsuarios(filtros: FiltrosUsuarios) {
   const { linhas, total } = await usuariosRepository.listar(filtros);
 
-  // Quantidade por situação (para as abas da tela), respeitando busca e perfil.
   const linhasPorStatus = await usuariosRepository.contarPorStatus(filtros);
   const porStatus = Object.fromEntries(statusUsuario.enumValues.map((s) => [s, 0])) as Record<
     StatusUsuario,
@@ -54,7 +51,6 @@ export async function atualizarUsuario(id: string, dados: DadosAtualizarUsuario,
   await protegerAcessoDeAdmin(atual, { perfil: dados.perfil, status: dados.status }, adminId);
 
   const { novaSenha, ...resto } = dados;
-  // Senha redefinida ou conta fora de uso: os logins abertos caem na hora.
   const encerrarSessoes = Boolean(novaSenha) || (resto.status !== 'ATIVO' && atual.status === 'ATIVO');
   const usuario = await usuariosRepository.atualizar(
     id,
@@ -76,7 +72,6 @@ export async function atualizarUsuario(id: string, dados: DadosAtualizarUsuario,
   return paraUsuarioDto(usuario!);
 }
 
-/** Aprovar (ATIVO), recusar/desativar (INATIVO) ou voltar para PENDENTE. */
 export async function alterarStatus(id: string, status: StatusUsuario, adminId: string) {
   const atual = await buscarOuFalhar(id);
   await protegerAcessoDeAdmin(atual, { perfil: atual.perfil, status }, adminId);
@@ -108,19 +103,12 @@ function alvoDoUsuario(usuario: Pick<Usuario, 'id' | 'nome' | 'email'>) {
   return { tipo: 'USUARIO' as const, id: usuario.id, rotulo: `${usuario.nome} <${usuario.email}>` };
 }
 
-// ─── Regras de proteção ─────────────────────────────────────────────────────
-
 async function buscarOuFalhar(id: string): Promise<Usuario> {
   const usuario = await usuariosRepository.buscarPorId(id);
   if (!usuario) throw naoEncontrado('Usuário não encontrado.');
   return usuario;
 }
 
-/**
- * Evita que o portal fique sem administrador:
- * - ninguém tira o próprio acesso de admin (perfil ou situação);
- * - o último administrador ativo não pode ser rebaixado, desativado nem excluído.
- */
 async function protegerAcessoDeAdmin(
   atual: { id: string; perfil: Perfil; status: StatusUsuario },
   novo: { perfil: Perfil; status: StatusUsuario },

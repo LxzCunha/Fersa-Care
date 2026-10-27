@@ -11,12 +11,7 @@ import type {
 } from '../validators/auth.validator.js';
 import { registrarEvento } from './auditoria.service.js';
 
-/**
- * Descobre quem está chamando a partir do token de sessão (usado pelo middleware
- * identificarUsuario). O token guarda só o id e a versão da sessão: perfil e
- * situação são lidos do banco a cada requisição, então quem for desativado
- * perde o acesso na hora, e um token de antes de uma troca de senha não vale mais.
- */
+/** Lê perfil e situação do banco a cada requisição: desativação e troca de senha valem na hora. */
 export async function usuarioDaSessao(token: string): Promise<UsuarioAutenticado | undefined> {
   const sessao = await lerToken(token);
   if (!sessao) return undefined;
@@ -54,7 +49,6 @@ export async function entrar(email: string, senha: string) {
     throw new ErroHttp(403, 'CONTA_INATIVA', 'Esta conta está desativada. Fale com o suporte FERSA.');
   }
 
-  // Senha certa em mãos: se o hash é de um custo antigo, refaz com o atual.
   const novoHash = hashDesatualizado(usuario.senhaHash) ? await gerarHashSenha(senha) : undefined;
   const atualizado = (await usuariosRepository.registrarAcesso(usuario.id, novoHash)) ?? usuario;
 
@@ -66,7 +60,7 @@ export async function entrar(email: string, senha: string) {
   return { usuario: paraUsuarioDto(atualizado), token: await tokenDe(atualizado) };
 }
 
-/** Registra a tentativa recusada (o e-mail digitado ajuda a reconhecer ataques de adivinhação). */
+/** O e-mail digitado vai para a auditoria: ajuda a reconhecer ataques de adivinhação. */
 function recusarLogin(email: string, usuario: Usuario | undefined, motivo: string) {
   return registrarEvento({
     acao: 'LOGIN_RECUSADO',
@@ -79,7 +73,6 @@ function alvoDoUsuario(usuario: Pick<Usuario, 'id' | 'nome' | 'email'>) {
   return { tipo: 'USUARIO' as const, id: usuario.id, rotulo: `${usuario.nome} <${usuario.email}>` };
 }
 
-/** Cadastro feito pelo próprio cliente: entra como PENDENTE e aguarda aprovação. */
 export async function solicitarAcesso(dados: DadosSolicitarAcesso) {
   const existente = await usuariosRepository.buscarPorEmail(dados.email);
   if (existente) throw conflito('Já existe um cadastro com este e-mail.');
@@ -110,11 +103,7 @@ export async function atualizarPerfil(usuarioId: string, dados: DadosAtualizarPe
   return paraUsuarioDto(usuario);
 }
 
-/**
- * Troca a senha e derruba os logins nos outros dispositivos (quem trocou a
- * senha por desconfiança não fica com uma sessão roubada aberta). Devolve um
- * token novo para a sessão atual continuar.
- */
+/** Derruba as outras sessões (uma sessão roubada não fica aberta) e devolve um token novo para esta. */
 export async function trocarSenha(usuarioId: string, dados: DadosTrocarSenha): Promise<string> {
   const usuario = await usuariosRepository.buscarPorId(usuarioId);
   if (!usuario) throw naoEncontrado('Usuário não encontrado.');
@@ -134,7 +123,6 @@ export async function trocarSenha(usuarioId: string, dados: DadosTrocarSenha): P
   return tokenDe(atualizado!);
 }
 
-/** "Sair dos outros dispositivos": invalida todos os tokens e devolve um novo para a sessão atual. */
 export async function encerrarOutrasSessoes(usuarioId: string): Promise<string> {
   const usuario = await usuariosRepository.encerrarSessoes(usuarioId);
   if (!usuario) throw naoEncontrado('Usuário não encontrado.');

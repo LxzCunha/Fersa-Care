@@ -6,7 +6,6 @@ import { esquemaDocumento, esquemaFiltrosDocumentosAdmin } from '../../src/valid
 import { esquemaFiltrosProdutosAdmin, esquemaProduto } from '../../src/validators/produtos.validator.js';
 import { esquemaAtualizarUsuario, esquemaCriarUsuario } from '../../src/validators/usuarios.validator.js';
 
-/** Mensagens de erro por campo, como a API devolve em `detalhes`. */
 function errosDe(esquema: z.ZodType, dados: unknown): Record<string, string> {
   const resultado = esquema.safeParse(dados);
   if (resultado.success) return {};

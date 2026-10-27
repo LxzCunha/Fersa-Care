@@ -162,7 +162,6 @@ describe('Auditoria: o que mudou', () => {
 });
 
 describe('Limite de tentativas de login por conta', () => {
-  /** App mínimo: o "login" dá certo só com a senha "certa". */
   function appDeLogin() {
     const app = express();
     app.use(express.json());

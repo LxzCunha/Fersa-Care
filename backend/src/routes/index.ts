@@ -7,14 +7,6 @@ import { categoriasRotas } from './categorias.routes.js';
 import { documentosRotas } from './documentos.routes.js';
 import { produtosRotas } from './produtos.routes.js';
 
-/**
- * Todas as rotas da API, montadas em /api pelo app.ts.
- *
- * Cada requisição atravessa as camadas nesta ordem:
- *   routes → controllers → services → repositories → banco (models)
- * Os arquivos *.routes.ts só ligam método + caminho + middlewares a uma
- * função do controller; não há lógica aqui.
- */
 export const rotasDaApi = Router();
 
 rotasDaApi.get('/saude', saudeController.vivo);

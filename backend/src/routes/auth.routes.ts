@@ -3,7 +3,6 @@ import * as authController from '../controllers/auth.controller.js';
 import { exigirLogin } from '../middlewares/autenticacao.js';
 import { limiteDeCadastro, limiteDeLogin, limiteDeLoginPorConta } from '../middlewares/limites.js';
 
-/** Login e conta: /api/auth/... */
 export const authRotas = Router();
 
 authRotas.post('/entrar', limiteDeLogin, limiteDeLoginPorConta, authController.entrar);

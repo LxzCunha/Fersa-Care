@@ -31,25 +31,14 @@ import type { DadosAbrirChamado } from '../validators/chamados.validator.js';
 import type { DadosPergunta } from '../validators/assistente.validator.js';
 import { abrirChamadoDaConversa } from './chamados.service.js';
 
-/**
- * Assistente técnico (a bolinha de chat do portal), com RAG:
- * 1. busca os trechos de documentos mais parecidos com a pergunta, só entre
- *    os que a pessoa pode abrir, e a ficha das peças citadas pelo código;
- * 2. o modelo responde com base nessas fontes, citando [1], [2]...;
- * 3. se a pessoa reclama duas vezes que não ajudou (ou pede um humano), o
- *    assistente para de tentar e abre um chamado de suporte técnico.
- */
-
 /** Trechos com distância maior que isso não têm a ver com a pergunta (cosseno, bge-m3). */
 const DISTANCIA_MAXIMA = 0.62;
 const TRECHOS_BUSCADOS = 10;
 const DOCUMENTOS_NO_CONTEXTO = 4;
 const TRECHOS_POR_DOCUMENTO = 3;
 
-/** Como a conversa segue depois da resposta (o site mostra o botão ou o formulário certo). */
 export type Encaminhamento = 'NENHUM' | 'SUGERIR_CHAMADO' | 'PEDIR_CONTATO' | 'CHAMADO_ABERTO';
 
-/** Eventos enviados ao site enquanto a resposta é gerada (Server-Sent Events). */
 export type EventoDoAssistente =
   | { tipo: 'conversa'; conversaId: string }
   | { tipo: 'texto'; texto: string }
@@ -64,10 +53,7 @@ export type EventoDoAssistente =
 export const MENSAGEM_FORA_DO_AR =
   'O assistente está fora do ar agora. Se precisar de ajuda, abra um chamado com a equipe técnica da FERSA.';
 
-/**
- * A conversa, se `usuario` pode usá-la: a dele, ou uma de visitante (quem tem
- * o id, que é aleatório e só o navegador que começou conhece).
- */
+/** Conversa de visitante vale para quem tem o id (aleatório; só o navegador que começou conhece). */
 async function conversaAcessivel(id: string, usuario: UsuarioAutenticado | undefined): Promise<AssistenteConversa> {
   const conversa = await assistenteRepository.buscarConversa(id);
   if (!conversa || (conversa.usuarioId !== null && conversa.usuarioId !== usuario?.id)) {
@@ -76,7 +62,6 @@ async function conversaAcessivel(id: string, usuario: UsuarioAutenticado | undef
   return conversa;
 }
 
-/** A conversa com as mensagens, para o chat continuar de onde parou depois de recarregar a página. */
 export async function obterConversa(id: string, usuario: UsuarioAutenticado | undefined) {
   const conversa = await conversaAcessivel(id, usuario);
   const [mensagens, chamado] = await Promise.all([
@@ -90,7 +75,6 @@ export async function obterConversa(id: string, usuario: UsuarioAutenticado | un
   };
 }
 
-/** Responde a pergunta, entregando a resposta aos pedaços. */
 export async function* responder(
   dados: DadosPergunta,
   usuario: UsuarioAutenticado | undefined,
@@ -110,7 +94,6 @@ export async function* responder(
     insatisfacao: insatisfeito,
   });
 
-  // ── Encaminhamento ao suporte técnico ────────────────────────────────────
   const chamado = await chamadosRepository.buscarPorConversa(conversa.id);
   const pediuAtendimento = pedeAtendimento(dados.pergunta);
   const reclamacoes = anteriores.filter((mensagem) => mensagem.insatisfacao).length + (insatisfeito ? 1 : 0);
@@ -141,7 +124,6 @@ export async function* responder(
     return;
   }
 
-  // ── Resposta com RAG ─────────────────────────────────────────────────────
   try {
     const consulta = textoParaBusca(dados.pergunta, anteriores);
     const [vetor] = await gerarEmbeddings([consulta]);
@@ -180,11 +162,6 @@ export async function* responder(
   }
 }
 
-/**
- * Chamado pedido pelo botão "Abrir chamado" ou pelo formulário de contato do
- * chat. Quem tem login usa os dados da conta; visitante precisa informar nome
- * e e-mail ou telefone.
- */
 export async function abrirChamadoPeloChat(dados: DadosAbrirChamado, usuario: UsuarioAutenticado | undefined) {
   const conversa = await conversaAcessivel(dados.conversaId, usuario);
 
@@ -213,9 +190,6 @@ export async function abrirChamadoPeloChat(dados: DadosAbrirChamado, usuario: Us
   return { numero: chamado.numero, mensagem: textoDeChamadoAberto(chamado) };
 }
 
-// ─── Auxiliares ─────────────────────────────────────────────────────────────
-
-/** Resposta pronta (sem chamar o modelo), gravada na conversa como as outras. */
 async function* responderSemModelo(
   conversaId: string,
   texto: string,
@@ -246,16 +220,12 @@ async function contatoDaConta(usuario: UsuarioAutenticado) {
   return { usuarioId: usuario.id, nome: usuario.nome, email: usuario.email, telefone: conta?.telefone ?? null };
 }
 
-/**
- * Texto usado na busca. Perguntas curtas de continuação ("e o torque?") levam
- * junto a pergunta anterior, senão a busca não sabe de qual peça se trata.
- */
+/** Perguntas curtas de continuação ("e o torque?") levam junto a anterior, senão a busca perde a peça. */
 export function textoParaBusca(pergunta: string, anteriores: Pick<AssistenteMensagem, 'papel' | 'conteudo'>[]): string {
   const ultimaPergunta = anteriores.filter((mensagem) => mensagem.papel === 'USUARIO').at(-1)?.conteudo;
   return pergunta.length < 60 && ultimaPergunta ? `${ultimaPergunta}\n${pergunta}` : pergunta;
 }
 
-/** Agrupa os trechos por documento (os mais parecidos primeiro), com limite de documentos e de trechos. */
 function fontesDosTrechos(
   trechos: Awaited<ReturnType<typeof trechosRepository.buscarParecidos>>,
 ): FonteDoContexto[] {
@@ -278,7 +248,6 @@ function fontesDosTrechos(
 
 const numeroBr = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 3 });
 
-/** Ficha de uma peça do catálogo, como fonte para o modelo. */
 function fonteDaPeca(produto: LinhaProduto): FonteDoContexto {
   const medida = (rotulo: string, valor: number | null, unidade: string) =>
     valor === null ? null : `${rotulo}: ${numeroBr.format(valor)} ${unidade}`;

@@ -4,8 +4,6 @@ import { escaparLike, termosDaBusca } from '../lib/validacao.js';
 import { categorias, produtos, type Categoria, type NovaCategoria } from '../models/index.js';
 import type { FiltrosCategorias } from '../validators/categorias.validator.js';
 
-/** Acesso à tabela categorias. */
-
 function condicaoDeBusca(busca: string | undefined): SQL | undefined {
   const termos = termosDaBusca(busca ?? '');
   if (termos.length === 0) return undefined;
@@ -14,11 +12,6 @@ function condicaoDeBusca(busca: string | undefined): SQL | undefined {
   );
 }
 
-/**
- * Categorias com a quantidade de peças de cada uma.
- * - Portal: conta só peças ativas e omite categorias sem nenhuma (evita listas vazias).
- * - Admin: conta todas as peças e mostra todas as categorias.
- */
 export function listar(filtros: FiltrosCategorias, opcoes: { somenteComPecasAtivas: boolean }) {
   const totalProdutos = opcoes.somenteComPecasAtivas
     ? sql<number>`count(${produtos.id}) filter (where ${produtos.ativo})`.mapWith(Number)
@@ -58,7 +51,7 @@ export async function atualizar(id: string, valores: Partial<NovaCategoria>): Pr
   return categoria;
 }
 
-/** As peças da categoria ficam sem categoria (ON DELETE SET NULL). Devolve o nome, ou undefined se não existia. */
+/** As peças ficam sem categoria (ON DELETE SET NULL). */
 export async function excluir(id: string): Promise<{ nome: string } | undefined> {
   const [removida] = await db.delete(categorias).where(eq(categorias.id, id)).returning({ nome: categorias.nome });
   return removida;

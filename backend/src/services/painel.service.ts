@@ -4,8 +4,6 @@ import * as produtosRepository from '../repositories/produtos.repository.js';
 import * as usuariosRepository from '../repositories/usuarios.repository.js';
 import * as visualizacoesRepository from '../repositories/visualizacoes.repository.js';
 
-/** Números do painel do administrador. */
-
 const FUSO = 'America/Sao_Paulo';
 const DIAS_NO_GRAFICO = 14;
 
@@ -30,7 +28,6 @@ export async function obterPainel() {
   };
 }
 
-/** Aberturas de documentos por dia nos últimos 14 dias (dias sem acesso aparecem com 0). */
 async function visualizacoesPorDia() {
   const linhas = await visualizacoesRepository.contarPorDia(DIAS_NO_GRAFICO, FUSO);
   const porDia = new Map(linhas.map((linha) => [linha.dia, linha.total]));

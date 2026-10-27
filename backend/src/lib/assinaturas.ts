@@ -1,21 +1,10 @@
 import fs from 'node:fs/promises';
 
-/**
- * Confere se o conteúdo do arquivo é mesmo do tipo que a extensão diz, pelos
- * primeiros bytes (a "assinatura" ou magic number do formato). Sem isso, um
- * executável renomeado para "manual.pdf" seria aceito e distribuído aos
- * clientes pelo portal.
- *
- * Os formatos do Office novos (.docx, .xlsx, .pptx) são arquivos ZIP e os
- * antigos (.doc, .xls, .ppt) usam o contêiner OLE: a assinatura confirma o
- * contêiner, não o programa. Texto (.txt, .csv) não tem assinatura: basta não
- * ter bytes nulos, que só aparecem em arquivos binários (aceita UTF-8 e o
- * Latin-1 que o Excel usa ao exportar CSV no Brasil).
- */
+// Magic numbers: sem isso, um executável renomeado para "manual.pdf" seria distribuído aos clientes.
+// Office só confirma o contêiner (ZIP/OLE); texto só não pode ter bytes nulos (aceita o Latin-1 do Excel).
 
 type Conferencia = (inicio: Buffer) => boolean;
 
-/** Bytes lidos do começo do arquivo. */
 export const TAMANHO_DA_AMOSTRA = 4096;
 
 const comecaCom =
@@ -57,7 +46,6 @@ const CONFERENCIAS: Record<string, Conferencia> = {
 
 export const EXTENSOES_CONFERIDAS = Object.keys(CONFERENCIAS);
 
-/** Versão pura (recebe os primeiros bytes), usada nos testes. Extensão desconhecida nunca confere. */
 export function inicioConfereComExtensao(inicio: Buffer, extensao: string): boolean {
   const conferir = CONFERENCIAS[extensao.toLowerCase()];
   return conferir ? conferir(inicio) : false;

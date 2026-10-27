@@ -8,8 +8,6 @@ import {
   esquemaTrocarSenha,
 } from '../validators/auth.validator.js';
 
-/** Login e conta: /api/auth/... */
-
 export async function entrar(req: Request, res: Response) {
   const { email, senha } = esquemaEntrar.parse(req.body);
   const { usuario, token } = await authService.entrar(email, senha);
@@ -33,7 +31,6 @@ export async function solicitarAcesso(req: Request, res: Response) {
   });
 }
 
-/** Quem está logado agora. Visitantes recebem { usuario: null } (não é erro). */
 export async function eu(req: Request, res: Response) {
   if (!req.usuario) {
     res.json({ usuario: null });
@@ -47,7 +44,6 @@ export async function atualizarPerfil(req: Request, res: Response) {
   res.json({ usuario: await authService.atualizarPerfil(usuarioLogado(req).id, dados) });
 }
 
-/** Troca a senha. Os outros logins da conta caem; esta sessão recebe um cookie novo. */
 export async function trocarSenha(req: Request, res: Response) {
   const dados = esquemaTrocarSenha.parse(req.body);
   const token = await authService.trocarSenha(usuarioLogado(req).id, dados);

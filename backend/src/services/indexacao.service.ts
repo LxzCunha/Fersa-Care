@@ -9,16 +9,8 @@ import type { LinhaDocumento } from '../models/index.js';
 import * as documentosRepository from '../repositories/documentos.repository.js';
 import * as trechosRepository from '../repositories/trechos.repository.js';
 
-/**
- * Indexação dos documentos para o assistente: extrai o texto, divide em
- * trechos, gera os embeddings e grava tudo em documento_trechos.
- * Roda numa fila em segundo plano: salvar um documento nunca espera a IA.
- */
-
-/** Quantos trechos vão de uma vez para o modelo de embeddings. */
 const TRECHOS_POR_LOTE = 16;
 
-/** Indexa um documento agora. Devolve quantos trechos gravou (undefined se ele não existe mais). */
 export async function indexarDocumento(id: string): Promise<{ trechos: number } | undefined> {
   const documento = await documentosRepository.dadosParaIndexar(id);
   if (!documento) return undefined;
@@ -55,11 +47,7 @@ export async function indexarDocumento(id: string): Promise<{ trechos: number } 
   }
 }
 
-/**
- * Texto do arquivo, quando dá para ler. Arquivo corrompido ou que o leitor não
- * entende não impede a indexação: o documento entra só com a ficha (título,
- * tipo, peças e descrição) e continua sendo encontrado pelo assistente.
- */
+/** Arquivo ilegível não impede a indexação: o documento entra só com a ficha. */
 async function textoDoArquivo(chave: string | null, nome: string | null) {
   if (!chave || !nome || !temTextoLegivel(nome) || !(await arquivoExiste(chave))) return [];
   try {
@@ -70,17 +58,11 @@ async function textoDoArquivo(chave: string | null, nome: string | null) {
   }
 }
 
-// ─── Fila em segundo plano ──────────────────────────────────────────────────
-
 let indexarAoSalvar = env.IA_INDEXAR_AO_SALVAR;
 const naFila = new Set<string>();
 let fila: Promise<void> = Promise.resolve();
 
-/**
- * Põe o documento na fila (um de cada vez, na ordem de chegada). Se ele já
- * está esperando, não entra de novo. `forcar` vale mesmo com a indexação
- * automática desligada (o admin pediu).
- */
+/** `forcar` (pedido do admin) vale mesmo com a indexação ao salvar desligada. */
 export function agendarIndexacao(id: string, { forcar = false } = {}) {
   if ((!indexarAoSalvar && !forcar) || naFila.has(id)) return;
   naFila.add(id);
@@ -94,17 +76,14 @@ export function agendarIndexacao(id: string, { forcar = false } = {}) {
   });
 }
 
-/** Espera a fila esvaziar (testes e comandos). */
 export function aguardarFilaDeIndexacao(): Promise<void> {
   return fila;
 }
 
-/** Liga ou desliga a indexação ao salvar (os testes ligam só onde precisam). */
 export function definirIndexacaoAoSalvar(ligada: boolean) {
   indexarAoSalvar = ligada;
 }
 
-/** Indexa os documentos pendentes (ou todos), um por vez. Usado pelo comando "npm run ia:indexar". */
 export async function indexarPendentes({ todos = false } = {}) {
   const ids = await documentosRepository.listarParaIndexar(todos);
   let trechos = 0;
@@ -121,7 +100,6 @@ export async function indexarPendentes({ todos = false } = {}) {
 
 export type SituacaoDaIndexacao = 'INDEXADO' | 'NA_FILA' | 'FALHOU';
 
-/** Como o documento está para o assistente (mostrado ao admin). */
 export function situacaoDaIndexacao(documento: Pick<LinhaDocumento, 'indexadoEm' | 'indexacaoErro' | 'atualizadoEm'>): SituacaoDaIndexacao {
   if (documento.indexacaoErro) return 'FALHOU';
   if (!documento.indexadoEm || documento.indexadoEm < documento.atualizadoEm) return 'NA_FILA';

@@ -15,11 +15,7 @@ export const usuarios = pgTable(
     perfil: perfilUsuario('perfil').notNull().default('USUARIO'),
     status: statusUsuario('status').notNull().default('PENDENTE'),
     ultimoAcessoEm: timestamp('ultimo_acesso_em', { withTimezone: true }),
-    /**
-     * Vai no token de sessão e é conferida a cada requisição. Somar 1 derruba
-     * todos os logins da conta (troca de senha, desativação, "sair dos outros
-     * dispositivos"), mesmo com o JWT ainda dentro da validade.
-     */
+    /** Vai no token e é conferida a cada requisição: somar 1 derruba todos os logins da conta. */
     versaoSessao: integer('versao_sessao').notNull().default(0),
     ...datas,
   },
@@ -29,7 +25,6 @@ export const usuarios = pgTable(
 export type Usuario = typeof usuarios.$inferSelect;
 export type NovoUsuario = typeof usuarios.$inferInsert;
 
-/** Quem fez a requisição, quando há um login válido de um usuário ATIVO. */
 export interface UsuarioAutenticado {
   id: string;
   nome: string;

@@ -10,13 +10,12 @@ import { app, criarAdmin, criarDocumento, criarUsuario, entrarComo } from './aju
 /** PDF de verdade (o seed usa o mesmo), para o pdf.js conseguir desenhar a 1ª página. */
 const PDF = await fs.readFile(new URL('../seed/arquivos/ficha-tecnica-30205.pdf', import.meta.url));
 const PDF_ILEGIVEL = Buffer.from('%PDF-1.4 sem conteúdo de verdade');
-/** Menor PNG válido (1×1 px). */
 const PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
   'base64',
 );
 
-/** Só o cabeçalho de um MP4 (caixa "ftyp"): passa na conferência de conteúdo, mas não tem capa automática. */
+/** Só o cabeçalho de um MP4: passa na conferência de conteúdo, mas não tem capa automática. */
 const MP4 = Buffer.concat([Buffer.from([0, 0, 0, 0x18]), Buffer.from('ftypmp42'), Buffer.alloc(16)]);
 
 const BASE = { titulo: 'Ficha técnica 30205', tipo: 'FICHA_TECNICA', visibilidade: 'PUBLICO', origem: 'ARQUIVO' };
@@ -27,7 +26,6 @@ async function arquivosNaPasta() {
 
 const capas = async () => (await arquivosNaPasta()).filter((nome) => nome.endsWith('.webp'));
 
-/** Espera o evento "finish" que limpa os uploads de uma requisição recusada. */
 const esperarLimpeza = () => new Promise((resolver) => setTimeout(resolver, 50));
 
 describe('Capas dos documentos', () => {

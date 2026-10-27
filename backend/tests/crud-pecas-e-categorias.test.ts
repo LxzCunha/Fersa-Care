@@ -2,11 +2,6 @@ import request from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { app, criarAdmin, criarCategoria, criarDocumento, criarProduto, entrarComo } from './ajudantes.js';
 
-/**
- * CRUD completo de peças e categorias pela API do admin, campo a campo,
- * e como cada item aparece no portal (exibição pública).
- */
-
 const UUID_INEXISTENTE = '3f1c2a9e-8b7d-4c6e-9f00-123456789abc';
 
 let admin: Awaited<ReturnType<typeof entrarComo>>;

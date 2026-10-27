@@ -2,7 +2,6 @@ import { index, pgTable, primaryKey, uuid } from 'drizzle-orm/pg-core';
 import { documentos } from './documento.model.js';
 import { produtos } from './produto.model.js';
 
-/** Produtos relacionados a cada documento (N:N). */
 export const documentoProdutos = pgTable(
   'documento_produtos',
   {

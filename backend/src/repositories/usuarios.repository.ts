@@ -5,8 +5,6 @@ import { usuarios, type NovoUsuario, type Usuario } from '../models/index.js';
 import type { FiltrosUsuarios } from '../validators/usuarios.validator.js';
 import { contarSe } from './sql.js';
 
-/** Acesso à tabela usuarios. */
-
 function condicaoDeBusca(busca: string | undefined): SQL | undefined {
   const termos = termosDaBusca(busca ?? '');
   if (termos.length === 0) return undefined;
@@ -39,7 +37,6 @@ export async function buscarPorEmail(email: string): Promise<Usuario | undefined
   return usuario;
 }
 
-/** Uma página de usuários; solicitações pendentes aparecem primeiro. */
 export async function listar(filtros: FiltrosUsuarios): Promise<{ linhas: Usuario[]; total: number }> {
   const onde = and(
     condicaoDosFiltros(filtros),
@@ -58,7 +55,6 @@ export async function listar(filtros: FiltrosUsuarios): Promise<{ linhas: Usuari
   return { linhas, total: contagem?.total ?? 0 };
 }
 
-/** Quantidade por situação, respeitando busca e perfil (para as abas da tela). */
 export function contarPorStatus(filtros: Pick<FiltrosUsuarios, 'busca' | 'perfil'>) {
   return db
     .select({ status: usuarios.status, total: count() })
@@ -67,7 +63,6 @@ export function contarPorStatus(filtros: Pick<FiltrosUsuarios, 'busca' | 'perfil
     .groupBy(usuarios.status);
 }
 
-/** Administradores ativos, tirando o usuário informado. */
 export async function contarOutrosAdminsAtivos(usuarioId: string): Promise<number> {
   const [contagem] = await db
     .select({ total: count() })
@@ -76,7 +71,6 @@ export async function contarOutrosAdminsAtivos(usuarioId: string): Promise<numbe
   return contagem?.total ?? 0;
 }
 
-/** Quantos dos ids informados existem (para conferir referências antes de gravar). */
 export async function contarExistentes(ids: string[], tx: Transacao): Promise<number> {
   const encontrados = await tx.select({ id: usuarios.id }).from(usuarios).where(inArray(usuarios.id, ids));
   return encontrados.length;
@@ -87,10 +81,7 @@ export async function inserir(valores: NovoUsuario): Promise<Usuario> {
   return usuario!;
 }
 
-/**
- * Atualiza o cadastro. Com `encerrarSessoes`, soma 1 à versão da sessão no
- * mesmo UPDATE: todo token emitido antes deixa de valer.
- */
+/** `encerrarSessoes` soma 1 à versaoSessao no mesmo UPDATE: todo token emitido antes deixa de valer. */
 export async function atualizar(
   id: string,
   valores: Partial<Omit<NovoUsuario, 'versaoSessao'>>,
@@ -108,7 +99,7 @@ export async function atualizar(
   return usuario;
 }
 
-/** Derruba todos os logins da conta (sem mexer em `atualizadoEm`: não é edição do cadastro). */
+/** Não mexe em atualizadoEm: não é edição do cadastro. */
 export async function encerrarSessoes(id: string): Promise<Usuario | undefined> {
   const [usuario] = await db
     .update(usuarios)
@@ -118,10 +109,7 @@ export async function encerrarSessoes(id: string): Promise<Usuario | undefined> 
   return usuario;
 }
 
-/**
- * Marca o horário do login (não conta como edição do cadastro). Com
- * `novoHashDaSenha`, aproveita para regravar a senha com o custo atual do bcrypt.
- */
+/** Login não é edição do cadastro, então não mexe em atualizadoEm. */
 export async function registrarAcesso(id: string, novoHashDaSenha?: string): Promise<Usuario | undefined> {
   const [usuario] = await db
     .update(usuarios)
@@ -135,7 +123,6 @@ export async function excluir(id: string): Promise<void> {
   await db.delete(usuarios).where(eq(usuarios.id, id));
 }
 
-/** Totais para o painel do administrador. */
 export async function resumoParaPainel() {
   const [resumo] = await db
     .select({
@@ -148,7 +135,6 @@ export async function resumoParaPainel() {
   return resumo;
 }
 
-/** Solicitações de acesso mais antigas primeiro. */
 export function listarPendentes(limite: number) {
   return db
     .select()

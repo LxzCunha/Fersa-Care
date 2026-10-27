@@ -6,7 +6,6 @@ export const GRUPOS_DE_AUDITORIA = ['ACESSOS', 'ALTERACOES'] as const;
 
 export const esquemaFiltrosAuditoria = esquemaPaginacao.extend({
   busca: opcionalNaUrl(z.string().trim().max(120)),
-  /** Abas da tela: logins e senhas (ACESSOS) ou mudanças feitas no cadastro (ALTERACOES). */
   grupo: opcionalNaUrl(z.enum(GRUPOS_DE_AUDITORIA)),
   acao: opcionalNaUrl(z.enum(ACOES_DE_AUDITORIA)),
   autorId: opcionalNaUrl(z.uuid('Autor inválido.')),

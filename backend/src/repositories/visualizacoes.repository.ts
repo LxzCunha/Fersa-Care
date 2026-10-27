@@ -3,9 +3,6 @@ import { db } from '../db/index.js';
 import { documentos, documentoVisualizacoes } from '../models/index.js';
 import { contarSe } from './sql.js';
 
-/** Acesso à tabela documento_visualizacoes (cada abertura de documento). */
-
-/** `usuarioId` null = visitante sem login. */
 export async function registrar(documentoId: string, usuarioId: string | null): Promise<void> {
   await db.insert(documentoVisualizacoes).values({ documentoId, usuarioId });
 }
@@ -47,7 +44,7 @@ export function maisAcessadosDesde(data: Date, limite: number) {
     .limit(limite);
 }
 
-/** Aberturas por dia (AAAA-MM-DD no fuso informado) nos últimos `dias` dias. Dias sem acesso não aparecem. */
+/** Dia em AAAA-MM-DD no fuso informado; dias sem acesso não aparecem. */
 export async function contarPorDia(dias: number, fuso: string): Promise<{ dia: string; total: number }[]> {
   const resultado = await db.execute<{ dia: string; total: number }>(sql`
     select to_char(date_trunc('day', ${documentoVisualizacoes.criadoEm} at time zone ${fuso}), 'YYYY-MM-DD') as dia,

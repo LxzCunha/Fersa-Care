@@ -7,13 +7,6 @@ import { ACOES_DE_AUDITORIA, type AcaoDeAuditoria, type AlvoDeAuditoria } from '
 import * as auditoriaRepository from '../repositories/auditoria.repository.js';
 import type { FiltrosAuditoria } from '../validators/auditoria.validator.js';
 
-/**
- * Trilha de auditoria. Os services chamam `registrarEvento` depois de cada ação
- * que importa para a segurança (login, senha, mudanças feitas pelo admin).
- * Quem fez, o IP e o id da requisição vêm do contexto da requisição, então quem
- * chama informa só o que aconteceu.
- */
-
 export interface Evento {
   acao: AcaoDeAuditoria;
   alvo?: { tipo: AlvoDeAuditoria; id: string; rotulo: string };
@@ -22,7 +15,6 @@ export interface Evento {
   autor?: { id: string; nome: string };
 }
 
-/** Abas da tela: logins e senhas de um lado, mudanças no cadastro do outro. */
 const ACESSOS: readonly AcaoDeAuditoria[] = [
   'LOGIN',
   'LOGIN_RECUSADO',
@@ -32,7 +24,6 @@ const ACESSOS: readonly AcaoDeAuditoria[] = [
 ];
 const ALTERACOES = ACOES_DE_AUDITORIA.filter((acao) => !ACESSOS.includes(acao));
 
-/** Grava o evento. Com `tx`, entra na mesma transação da alteração (tudo ou nada). */
 export async function registrarEvento(evento: Evento, tx?: Transacao): Promise<void> {
   const contexto = contextoAtual();
   const autor = evento.autor ?? contexto?.usuario;

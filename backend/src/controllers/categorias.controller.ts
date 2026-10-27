@@ -3,15 +3,9 @@ import { esquemaParametroId } from '../lib/validacao.js';
 import * as categoriasService from '../services/categorias.service.js';
 import { esquemaCategoria, esquemaFiltrosCategorias } from '../validators/categorias.validator.js';
 
-/** Categorias no portal (/api/categorias) e na administração (/api/admin/categorias/...). */
-
-// ─── Portal ─────────────────────────────────────────────────────────────────
-
 export async function listar(_req: Request, res: Response) {
   res.json(await categoriasService.listarCategoriasDoPortal());
 }
-
-// ─── Administração ──────────────────────────────────────────────────────────
 
 export async function listarParaAdmin(req: Request, res: Response) {
   const filtros = esquemaFiltrosCategorias.parse(req.query);

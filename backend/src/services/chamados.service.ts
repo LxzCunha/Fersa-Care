@@ -8,8 +8,6 @@ import * as chamadosRepository from '../repositories/chamados.repository.js';
 import type { DadosAtualizarChamado, FiltrosChamados } from '../validators/chamados.validator.js';
 import { registrarEvento } from './auditoria.service.js';
 
-/** Chamados de suporte técnico: abertura (pelo assistente) e acompanhamento (admin). */
-
 export interface ContatoDoChamado {
   usuarioId: string | null;
   nome: string;
@@ -17,10 +15,6 @@ export interface ContatoDoChamado {
   telefone: string | null;
 }
 
-/**
- * Abre o chamado da conversa, com as perguntas da pessoa como resumo.
- * Cada conversa vira no máximo um chamado: se já existe, devolve o mesmo.
- */
 export async function abrirChamadoDaConversa(conversaId: string, contato: ContatoDoChamado): Promise<Chamado> {
   const existente = await chamadosRepository.buscarPorConversa(conversaId);
   if (existente) return existente;
@@ -38,7 +32,6 @@ export async function listarChamados(filtros: FiltrosChamados) {
   return { ...montarPagina(linhas.map(paraChamadoDto), total, filtros.pagina, filtros.porPagina), porStatus };
 }
 
-/** Chamado com a conversa inteira, para o técnico ler o que já foi respondido. */
 export async function detalharChamado(id: string) {
   const chamado = await chamadosRepository.buscarPorId(id);
   if (!chamado) throw naoEncontrado('Chamado não encontrado.');

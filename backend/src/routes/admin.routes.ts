@@ -9,11 +9,6 @@ import * as usuariosController from '../controllers/usuarios.controller.js';
 import { exigirAdmin } from '../middlewares/autenticacao.js';
 import { uploadDeDocumento, uploadDeImagem } from '../middlewares/upload.js';
 
-/**
- * Área do administrador: /api/admin/...
- * Tudo aqui exige perfil ADMIN. Visitante recebe 401 (não autenticado) e
- * usuário comum recebe 403 (proibido).
- */
 export const adminRotas = Router();
 
 adminRotas.use(exigirAdmin);

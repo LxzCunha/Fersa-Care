@@ -8,8 +8,6 @@ import {
   type NovaAssistenteMensagem,
 } from '../models/index.js';
 
-/** Conversas com o assistente técnico e suas mensagens. */
-
 export async function criarConversa(usuarioId: string | null): Promise<AssistenteConversa> {
   const [conversa] = await db.insert(assistenteConversas).values({ usuarioId }).returning();
   return conversa!;
@@ -20,7 +18,6 @@ export async function buscarConversa(id: string): Promise<AssistenteConversa | u
   return conversa;
 }
 
-/** Mensagens da conversa, da mais antiga para a mais nova. */
 export function listarMensagens(conversaId: string): Promise<AssistenteMensagem[]> {
   return db
     .select()
@@ -29,7 +26,6 @@ export function listarMensagens(conversaId: string): Promise<AssistenteMensagem[
     .orderBy(asc(assistenteMensagens.criadoEm), asc(assistenteMensagens.papel));
 }
 
-/** Grava a mensagem e marca a conversa como atualizada. */
 export async function adicionarMensagem(mensagem: NovaAssistenteMensagem): Promise<AssistenteMensagem> {
   const [nova] = await db.insert(assistenteMensagens).values(mensagem).returning();
   await db

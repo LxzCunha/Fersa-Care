@@ -2,10 +2,7 @@ import { iaDisponivel } from '../lib/ia.js';
 import { log, mensagemDoErro } from '../lib/log.js';
 import * as saudeRepository from '../repositories/saude.repository.js';
 
-/**
- * Prontidão para receber tráfego (readiness): o banco é indispensável; o
- * assistente (Ollama) não, então sem ele a API fica "degradada", mas pronta.
- */
+/** Sem o Ollama a API fica "degradada", mas pronta: só o banco é indispensável. */
 export async function verificarProntidao() {
   const [banco, assistente] = await Promise.all([
     saudeRepository.bancoPronto().catch((erro: unknown) => {

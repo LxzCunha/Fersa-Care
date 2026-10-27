@@ -2,7 +2,6 @@ import { z } from 'zod';
 import { esquemaPaginacao, opcionalNaUrl, textoOpcional } from '../lib/validacao.js';
 import { segmentoProduto } from '../models/index.js';
 
-/** Medida no filtro da URL (?internoMin=20): número positivo, em mm. */
 const medidaNaUrl = opcionalNaUrl(z.coerce.number('Informe um número.').nonnegative().max(100_000));
 
 export const esquemaFiltrosProdutos = esquemaPaginacao.extend({
@@ -23,7 +22,6 @@ export const esquemaFiltrosProdutosAdmin = esquemaFiltrosProdutos.extend({
 
 export type FiltrosProdutos = z.infer<typeof esquemaFiltrosProdutosAdmin>;
 
-/** Medida opcional da peça: vazio vira null. */
 function medida(rotulo: string, maximo: number) {
   return z
     .number({ error: `${rotulo}: informe um número.` })

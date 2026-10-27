@@ -12,18 +12,11 @@ import {
 import type { FiltrosProdutos } from '../validators/produtos.validator.js';
 import { contarSe } from './sql.js';
 
-/** Acesso à tabela produtos (catálogo de peças). */
-
-/** Colunas do produto + id e nome da categoria (null quando a peça não tem categoria). */
 const colunasDoProduto = {
   ...getTableColumns(produtos),
   categoria: { id: categorias.id, nome: categorias.nome },
 };
 
-/**
- * Cada termo precisa aparecer no código (sem espaços/hífens), nome, aplicação,
- * descrição ou no nome da categoria ("esferas" encontra "Rolamentos de Esferas").
- */
 function condicaoDeBusca(busca: string | undefined): SQL | undefined {
   const termos = termosDaBusca(busca ?? '');
   if (termos.length === 0) return undefined;
@@ -45,7 +38,7 @@ function condicaoDeBusca(busca: string | undefined): SQL | undefined {
   );
 }
 
-/** Faixa de medida (mín./máx. em mm). Peças sem a medida cadastrada ficam de fora. */
+/** Peças sem a medida cadastrada ficam de fora. */
 function entre(coluna: typeof produtos.diametroInternoMm, minimo?: number, maximo?: number) {
   return and(
     minimo !== undefined ? gte(coluna, minimo) : undefined,
@@ -103,10 +96,7 @@ export async function buscarPorId(id: string, opcoes: OpcoesDeListagem): Promise
   return produto;
 }
 
-/**
- * Peças do catálogo (ativas) cujo código, sem espaços e hífens, é um dos
- * informados. O assistente usa para trazer a ficha da peça citada na pergunta.
- */
+/** Os códigos chegam como codigosCitados devolve: maiúsculas, só letras e números. */
 export function buscarAtivosPorCodigos(codigosSemEspacos: string[]): Promise<LinhaProduto[]> {
   if (codigosSemEspacos.length === 0) return Promise.resolve([]);
   return db
@@ -123,7 +113,7 @@ export function buscarAtivosPorCodigos(codigosSemEspacos: string[]): Promise<Lin
     .limit(5);
 }
 
-/** Quantos documentos estão ligados ao produto (sem filtro de acesso: uso do admin). */
+/** Sem regra de visibilidade: só o admin usa. */
 export async function contarDocumentosRelacionados(id: string): Promise<number> {
   const [contagem] = await db
     .select({ total: count() })
@@ -132,7 +122,6 @@ export async function contarDocumentosRelacionados(id: string): Promise<number> 
   return contagem?.total ?? 0;
 }
 
-/** Quantos dos ids informados existem (para conferir referências antes de gravar). */
 export async function contarExistentes(ids: string[], tx: Transacao): Promise<number> {
   const encontrados = await tx.select({ id: produtos.id }).from(produtos).where(inArray(produtos.id, ids));
   return encontrados.length;
@@ -152,7 +141,6 @@ export async function atualizar(id: string, valores: Partial<NovoProduto>): Prom
   return produto;
 }
 
-/** Exclui e devolve a chave da foto (para apagá-la do disco), ou undefined se não existia. */
 export async function excluir(
   id: string,
 ): Promise<{ codigo: string; nome: string; imagemChave: string | null } | undefined> {
@@ -163,7 +151,6 @@ export async function excluir(
   return removido;
 }
 
-/** Totais para o painel do administrador. */
 export async function resumoParaPainel() {
   const [resumo] = await db
     .select({ total: count(), ativos: contarSe(sql`${produtos.ativo}`) })

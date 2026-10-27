@@ -1,11 +1,7 @@
 import type { Request, Response } from 'express';
 import * as saudeService from '../services/saude.service.js';
 
-/**
- * Verificações de saúde, para Docker, Kubernetes e balanceadores:
- *   GET /api/saude         → o processo está de pé (liveness); não toca no banco.
- *   GET /api/saude/pronto  → pode receber tráfego (readiness): 503 sem banco.
- */
+// /saude: liveness, não toca no banco. /saude/pronto: readiness, 503 sem banco.
 
 export function vivo(_req: Request, res: Response) {
   res.json({ status: 'ok', horario: new Date().toISOString() });

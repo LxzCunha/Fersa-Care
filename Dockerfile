@@ -1,11 +1,7 @@
-# Imagem única do FERSA CARE: a API Node.js também entrega o site React.
-# Usada pelo docker-compose.yml (serviço "app"). Build: docker compose up --build
-
-# ─── 1. Build do front-end ────────────────────────────────────────────────────
 FROM node:24-alpine AS frontend
 WORKDIR /app/frontend
 
-# Contatos do suporte entram no build do site (variáveis VITE_ são fixadas aqui).
+# Variáveis VITE_ são fixadas no build do site.
 ARG VITE_SUPORTE_WHATSAPP=5541999999999
 ARG VITE_SUPORTE_EMAIL=suporte@fersacare.com.br
 ARG VITE_UPLOAD_LIMITE_MB=200
@@ -18,7 +14,6 @@ RUN npm ci
 COPY frontend/ ./
 RUN npm run build
 
-# ─── 2. Build da API ──────────────────────────────────────────────────────────
 FROM node:24-alpine AS backend
 WORKDIR /app/backend
 COPY backend/package.json backend/package-lock.json ./
@@ -26,7 +21,6 @@ RUN npm ci
 COPY backend/ ./
 RUN npm run build && npm prune --omit=dev
 
-# ─── 3. Imagem final, só com o necessário para rodar ──────────────────────────
 FROM node:24-alpine
 LABEL org.opencontainers.image.title="FERSA CARE" \
       org.opencontainers.image.description="Portal de pós-venda FERSA: API Node.js que também entrega o site React" \
@@ -53,6 +47,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s \
   CMD wget -qO- http://127.0.0.1:3000/api/saude/pronto > /dev/null || exit 1
 
-# Aplica migrações, garante o administrador inicial (e os exemplos, se
-# SEED_EXEMPLOS=true), gera as capas que faltam e sobe o servidor.
 CMD ["sh", "-c", "node dist/db/migrar.js && node dist/db/seed.js && node dist/db/gerar-capas.js && node dist/server.js"]

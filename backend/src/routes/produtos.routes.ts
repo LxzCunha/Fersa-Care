@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import * as produtosController from '../controllers/produtos.controller.js';
 
-/** Catálogo público: /api/produtos/... */
 export const produtosRotas = Router();
 
 produtosRotas.get('/', produtosController.listar);

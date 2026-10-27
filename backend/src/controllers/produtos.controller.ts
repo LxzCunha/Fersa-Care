@@ -8,10 +8,6 @@ import {
   esquemaProduto,
 } from '../validators/produtos.validator.js';
 
-/** Catálogo público (/api/produtos/...) e gestão do catálogo (/api/admin/produtos/...). */
-
-// ─── Portal ─────────────────────────────────────────────────────────────────
-
 export async function listar(req: Request, res: Response) {
   const filtros = esquemaFiltrosProdutos.parse(req.query);
   res.json(await produtosService.listarProdutos(filtros, { incluirInativos: false }));
@@ -22,7 +18,7 @@ export async function detalhar(req: Request, res: Response) {
   res.json(await produtosService.detalharProdutoNoPortal(id, req.usuario));
 }
 
-/** Foto da peça. A URL muda a cada edição (?v=), então peças do catálogo podem ficar em cache. */
+/** A URL muda a cada edição (?v=), então a foto de peça ativa pode ficar em cache. */
 export async function imagem(req: Request, res: Response) {
   const { id } = esquemaParametroId.parse(req.params);
   const foto = await produtosService.obterImagem(id, req.usuario);
@@ -30,10 +26,6 @@ export async function imagem(req: Request, res: Response) {
   res.setHeader('Cache-Control', foto.publica ? 'public, max-age=31536000, immutable' : 'private, no-cache');
   res.sendFile(foto.caminho, { cacheControl: false });
 }
-
-// ─── Administração ──────────────────────────────────────────────────────────
-// Cadastro e edição aceitam multipart/form-data (campo "imagem" + campo "dados"
-// em JSON) ou application/json direto no corpo, quando não há foto nova.
 
 export async function listarParaAdmin(req: Request, res: Response) {
   const filtros = esquemaFiltrosProdutosAdmin.parse(req.query);

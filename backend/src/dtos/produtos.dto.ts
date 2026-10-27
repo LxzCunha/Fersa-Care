@@ -1,11 +1,6 @@
 import type { LinhaProduto } from '../models/index.js';
 
-/**
- * Formato público de uma peça do catálogo. A chave interna da foto (nome no
- * disco) não sai da API: a imagem é entregue por /api/produtos/:id/imagem.
- * O `?v=` muda sempre que a peça é editada, para o navegador não mostrar uma
- * foto antiga do cache.
- */
+/** A chave da foto não sai da API; o `?v=` muda a cada edição para o navegador não mostrar foto antiga. */
 export function paraProdutoDto(produto: LinhaProduto) {
   return {
     id: produto.id,

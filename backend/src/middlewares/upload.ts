@@ -20,13 +20,6 @@ interface CampoDeArquivo {
 
 const MB = 1024 * 1024;
 
-/**
- * Recebe os arquivos de um formulário multipart (no máximo um por campo) e
- * grava direto na pasta de uploads com nome gerado pelo sistema. Depois confere
- * tamanho e conteúdo de cada um (a extensão precisa bater com os primeiros
- * bytes do arquivo). Se a requisição terminar com erro (validação,
- * permissão...), os arquivos gravados são apagados para não deixar lixo.
- */
 function criarUpload(campos: CampoDeArquivo[]) {
   const campoPorNome = new Map(campos.map((campo) => [campo.nome, campo]));
 
@@ -81,7 +74,6 @@ function criarUpload(campos: CampoDeArquivo[]) {
   };
 }
 
-/** Recusa arquivo vazio ou com conteúdo de outro tipo (ex.: executável renomeado para .pdf). */
 async function conferirConteudo(req: Request): Promise<ErroHttp | undefined> {
   for (const arquivo of todosOsArquivos(req)) {
     if (arquivo.size === 0) {
@@ -113,17 +105,14 @@ function todosOsArquivos(req: Request): Express.Multer.File[] {
   return Array.isArray(req.files) ? req.files : Object.values(req.files).flat();
 }
 
-/** O arquivo recebido no campo `campo`, se veio um. */
 export function arquivoEnviado(req: Request, campo: string): Express.Multer.File | undefined {
   if (!req.files || Array.isArray(req.files)) return undefined;
   return req.files[campo]?.[0];
 }
 
-/** Documento: o arquivo (campo "arquivo") e, se o admin quiser, uma capa própria (campo "capa"). */
 export const uploadDeDocumento = criarUpload([
   { nome: 'arquivo', extensoes: EXTENSOES_PERMITIDAS, limiteMb: env.UPLOAD_LIMITE_MB },
   { nome: 'capa', extensoes: EXTENSOES_DE_IMAGEM, limiteMb: IMAGEM_LIMITE_MB },
 ]);
 
-/** Foto de uma peça do catálogo, no campo "imagem". */
 export const uploadDeImagem = criarUpload([{ nome: 'imagem', extensoes: EXTENSOES_DE_IMAGEM, limiteMb: IMAGEM_LIMITE_MB }]);

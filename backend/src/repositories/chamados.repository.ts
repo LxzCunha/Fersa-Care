@@ -4,8 +4,6 @@ import { escaparLike, termosDaBusca } from '../lib/validacao.js';
 import { chamados, statusChamado, type Chamado, type NovoChamado, type StatusChamado } from '../models/index.js';
 import type { FiltrosChamados } from '../validators/chamados.validator.js';
 
-/** Chamados de suporte técnico abertos a partir do assistente. */
-
 export async function inserir(chamado: NovoChamado): Promise<Chamado> {
   const [novo] = await db.insert(chamados).values(chamado).returning();
   return novo!;
@@ -21,7 +19,7 @@ export async function buscarPorConversa(conversaId: string): Promise<Chamado | u
   return chamado;
 }
 
-/** Busca no nome, e-mail, telefone, resumo e pelo número ("12" ou "#12"). */
+/** Também aceita o número do chamado ("12" ou "#12"). */
 function condicaoDeBusca(busca: string | undefined): SQL | undefined {
   const termos = termosDaBusca(busca ?? '');
   if (termos.length === 0) return undefined;
@@ -40,7 +38,6 @@ function condicaoDeBusca(busca: string | undefined): SQL | undefined {
   );
 }
 
-/** Página de chamados, mais novos primeiro, com a contagem por situação (para as abas). */
 export async function listar(filtros: FiltrosChamados) {
   const busca = condicaoDeBusca(filtros.busca);
   const onde = and(busca, filtros.status ? eq(chamados.status, filtros.status) : undefined);

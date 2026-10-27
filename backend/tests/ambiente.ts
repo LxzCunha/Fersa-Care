@@ -4,14 +4,10 @@ import path from 'node:path';
 try {
   process.loadEnvFile();
 } catch {
-  // Sem arquivo .env: usa as variáveis já definidas no ambiente.
+  // sem .env: usa as variáveis do ambiente
 }
 
-/**
- * Configuração dos testes automatizados. Os testes usam um banco SEPARADO
- * (fersa_care_teste), que é apagado e recriado a cada execução.
- * Para usar outro endereço, defina DATABASE_URL_TESTE (no .env ou no terminal).
- */
+/** Banco SEPARADO, apagado e recriado a cada execução (troque com DATABASE_URL_TESTE). */
 export const URL_BANCO_TESTE =
   process.env.DATABASE_URL_TESTE ?? 'postgres://fersa:fersa@localhost:5432/fersa_care_teste';
 

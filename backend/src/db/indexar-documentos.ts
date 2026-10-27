@@ -3,13 +3,7 @@ import { env } from '../config/env.js';
 import { indexarPendentes } from '../services/indexacao.service.js';
 import { pool } from './index.js';
 
-/**
- * Indexa os documentos para o assistente: os novos, os editados e os que
- * falharam. Com --todos, refaz todos (ex.: depois de trocar o modelo de embeddings).
- *
- * Uso: npm run ia:indexar            (pendentes)
- *      npm run ia:indexar -- --todos (todos)
- */
+// --todos refaz também os já indexados (ex.: depois de trocar o modelo de embeddings).
 const todos = process.argv.includes('--todos');
 
 try {
