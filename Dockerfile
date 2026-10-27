@@ -1,4 +1,4 @@
-FROM node:24-alpine AS frontend
+FROM node:26-alpine AS frontend
 WORKDIR /app/frontend
 
 # Variáveis VITE_ são fixadas no build do site.
@@ -14,14 +14,14 @@ RUN npm ci
 COPY frontend/ ./
 RUN npm run build
 
-FROM node:24-alpine AS backend
+FROM node:26-alpine AS backend
 WORKDIR /app/backend
 COPY backend/package.json backend/package-lock.json ./
 RUN npm ci
 COPY backend/ ./
 RUN npm run build && npm prune --omit=dev
 
-FROM node:24-alpine
+FROM node:26-alpine
 LABEL org.opencontainers.image.title="FERSA CARE" \
       org.opencontainers.image.description="Portal de pós-venda FERSA: API Node.js que também entrega o site React" \
       org.opencontainers.image.authors="Alexandre Breus da Cunha" \
