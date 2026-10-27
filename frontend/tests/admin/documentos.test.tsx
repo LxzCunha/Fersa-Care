@@ -53,7 +53,6 @@ beforeEach(() => {
   vi.mocked(api.listarUsuarios).mockResolvedValue(umaPaginaDeUsuarios([cliente]));
 });
 
-/** "Novo documento": a janela de cadastro vazia. */
 async function abrirCadastro() {
   const tela = abrir('/admin/documentos/novo');
   return { ...tela, janela: await esperarJanela('Novo documento') };

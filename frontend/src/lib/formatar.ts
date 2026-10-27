@@ -1,7 +1,5 @@
 import type { Documento } from '../api/tipos';
 
-/** Formatação de valores para exibição. */
-
 const formatoData = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
 const formatoDataHora = new Intl.DateTimeFormat('pt-BR', {
   day: '2-digit',
@@ -32,13 +30,11 @@ export function tamanhoDeArquivo(bytes: number | null | undefined): string {
   return `${valor.toLocaleString('pt-BR', { maximumFractionDigits: valor < 10 ? 1 : 0 })} ${unidades[indice]}`;
 }
 
-/** "Manual de montagem.pdf" → "PDF" */
 export function formatoDoArquivo(nome: string | null | undefined): string {
   const extensao = nome?.split('.').pop();
   return extensao && extensao !== nome ? extensao.toUpperCase() : 'Arquivo';
 }
 
-/** Descrição curta do conteúdo: "PDF, 2,6 MB", "Vídeo MP4" ou "Link externo". */
 export function resumoDoConteudo(documento: Documento): string {
   if (documento.origem === 'LINK') return 'Link externo';
   const formato = formatoDoArquivo(documento.arquivo?.nome);
@@ -50,7 +46,6 @@ export function numero(valor: number): string {
   return valor.toLocaleString('pt-BR');
 }
 
-/** Plural simples: plural(1, 'documento') → "1 documento"; plural(3, ...) → "3 documentos". */
 export function plural(quantidade: number, singular: string, formaPlural = `${singular}s`): string {
   return `${numero(quantidade)} ${quantidade === 1 ? singular : formaPlural}`;
 }

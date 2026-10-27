@@ -21,7 +21,6 @@ import { useRecarregarTudo } from './acoes';
 import { Janela } from './Cadastro';
 import { rolarJanelaParaTopo, useVoltarParaLista } from './navegacao';
 
-/** Cadastro (/admin/usuarios/novo) e edição (/admin/usuarios/:id), numa janela sobre a lista. */
 export function FormUsuario() {
   const { id } = useParams();
   const fechar = useVoltarParaLista('/admin/usuarios');

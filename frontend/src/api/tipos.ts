@@ -1,4 +1,4 @@
-/** Tipos das respostas da API (espelham os DTOs do back-end). */
+/** Tipos das respostas da API: espelham à mão os DTOs do back-end (mude os dois juntos). */
 
 export type Perfil = 'ADMIN' | 'USUARIO';
 export type StatusUsuario = 'PENDENTE' | 'ATIVO' | 'INATIVO';
@@ -38,12 +38,10 @@ export interface Produto extends ProdutoResumo {
   categoria: { id: string; nome: string } | null;
   descricao: string | null;
   aplicacoes: string | null;
-  /** Medidas em mm (peso em kg); null quando não se aplicam à peça. */
   diametroInternoMm: number | null;
   diametroExternoMm: number | null;
   larguraMm: number | null;
   pesoKg: number | null;
-  /** Endereço da foto (/api/produtos/:id/imagem?v=...), ou null sem foto. */
   imagemUrl: string | null;
   ativo: boolean;
   criadoEm: string;
@@ -71,9 +69,7 @@ export interface Documento {
   origem: 'ARQUIVO' | 'LINK';
   arquivo: { nome: string; mime: string | null; tamanho: number | null } | null;
   urlExterna: string | null;
-  /** Miniatura WebP para os cartões, ou null (vídeos, links e Office sem capa enviada). */
   capaUrl: string | null;
-  /** A capa foi enviada pelo admin (senão, veio da 1ª página do PDF ou da imagem). */
   capaPersonalizada: boolean;
   produtos: ProdutoResumo[];
   criadoEm: string;
@@ -155,9 +151,6 @@ export interface Painel {
   solicitacoesPendentes: Usuario[];
 }
 
-// ─── Assistente técnico e chamados ──────────────────────────────────────────
-
-/** Documento ou peça usado na resposta do assistente. */
 export interface FonteDaResposta {
   tipo: 'DOCUMENTO' | 'PRODUTO';
   id: string;
@@ -166,7 +159,6 @@ export interface FonteDaResposta {
   numero: number;
 }
 
-/** O que o chat mostra depois da resposta. */
 export type Encaminhamento = 'NENHUM' | 'SUGERIR_CHAMADO' | 'PEDIR_CONTATO' | 'CHAMADO_ABERTO';
 
 export interface MensagemDoAssistente {
@@ -184,7 +176,6 @@ export interface ConversaDoAssistente {
   chamado: { numero: number } | null;
 }
 
-/** Eventos que chegam enquanto a resposta é gerada. */
 export type EventoDoAssistente =
   | { tipo: 'conversa'; conversaId: string }
   | { tipo: 'texto'; texto: string }
@@ -221,7 +212,7 @@ export interface PaginaChamados extends Pagina<Chamado> {
   porStatus: Record<StatusChamado, number>;
 }
 
-// ─── Trilha de auditoria (espelha backend/src/models/auditoria.model.ts) ─────
+// Espelha backend/src/models/auditoria.model.ts.
 
 export type AcaoDeAuditoria =
   | 'LOGIN'
@@ -246,7 +237,6 @@ export type AcaoDeAuditoria =
 
 export type AlvoDeAuditoria = 'USUARIO' | 'DOCUMENTO' | 'PRODUTO' | 'CATEGORIA' | 'CHAMADO';
 
-/** Abas da tela: logins e senhas (ACESSOS) ou mudanças no cadastro (ALTERACOES). */
 export type GrupoDeAuditoria = 'ACESSOS' | 'ALTERACOES';
 
 export interface EventoDeAuditoria {
@@ -256,7 +246,6 @@ export interface EventoDeAuditoria {
   autor: { id: string | null; nome: string } | null;
   /** O registro afetado, com o título/nome que tinha no momento. */
   alvo: { tipo: AlvoDeAuditoria; id: string; rotulo: string } | null;
-  /** Campos alterados, situação de/para, acesso liberado/retirado, motivo da recusa... */
   detalhes: Record<string, unknown>;
   ip: string | null;
   requisicaoId: string | null;

@@ -2,8 +2,6 @@ import { CircleAlert, LoaderCircle } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { mensagemDeErro } from '../api/cliente';
 
-/** Estados comuns das telas: carregando, erro e lista vazia. */
-
 export function Carregando({ texto = 'Carregando...' }: { texto?: string }) {
   return (
     <div className="carregando conteiner" role="status">

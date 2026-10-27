@@ -15,7 +15,6 @@ import { fichaTecnica } from '../lib/medidas';
 import { SEGMENTOS } from '../lib/rotulos';
 import './ProdutoDetalhe.css';
 
-/** Página da peça: foto, ficha técnica e os materiais que a pessoa pode ver. */
 export function ProdutoDetalhe() {
   const { id = '' } = useParams();
   const { usuario } = useAutenticacao();

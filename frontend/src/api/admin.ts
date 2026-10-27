@@ -24,13 +24,9 @@ import type {
   Visibilidade,
 } from './tipos';
 
-/** Chamadas da área do administrador (/api/admin). */
-
 export function obterPainel() {
   return api<Painel>('/admin/painel');
 }
-
-// ─── Documentos ─────────────────────────────────────────────────────────────
 
 export interface FiltrosDocumentosAdmin {
   busca?: string;
@@ -56,7 +52,6 @@ export interface DadosDocumento {
   removerCapa: boolean;
 }
 
-/** Arquivos do formulário de documento: o conteúdo e uma capa própria (os dois opcionais na edição). */
 export interface ArquivosDocumento {
   arquivo: File | null;
   capa: File | null;
@@ -70,10 +65,7 @@ export function detalharDocumentoAdmin(id: string) {
   return api<DocumentoAdmin>(`/admin/documentos/${id}`);
 }
 
-/**
- * Envia o formulário com arquivo informando o progresso do upload.
- * O fetch ainda não informa progresso de envio, por isso aqui usamos XMLHttpRequest.
- */
+/** O fetch ainda não informa o progresso do envio; por isso XMLHttpRequest. */
 function enviarComProgresso<T>(
   caminho: string,
   metodo: 'POST' | 'PUT',
@@ -109,10 +101,6 @@ function enviarComProgresso<T>(
   });
 }
 
-/**
- * Com arquivo, envia multipart: o arquivo no campo "arquivo" e os demais
- * campos em JSON no campo "dados". Sem arquivo, envia JSON normal.
- */
 function salvarDocumento(
   caminho: string,
   metodo: 'POST' | 'PUT',
@@ -148,8 +136,6 @@ export function atualizarDocumento(
 export function excluirDocumento(id: string) {
   return api<void>(`/admin/documentos/${id}`, { metodo: 'DELETE' });
 }
-
-// ─── Usuários ───────────────────────────────────────────────────────────────
 
 export interface FiltrosUsuarios {
   busca?: string;
@@ -192,8 +178,6 @@ export function excluirUsuario(id: string) {
   return api<void>(`/admin/usuarios/${id}`, { metodo: 'DELETE' });
 }
 
-// ─── Produtos ───────────────────────────────────────────────────────────────
-
 export interface FiltrosProdutosAdmin {
   busca?: string;
   segmento?: Segmento;
@@ -215,11 +199,9 @@ export interface DadosProduto {
   larguraMm: number | null;
   pesoKg: number | null;
   ativo: boolean;
-  /** Na edição: apaga a foto atual. */
   removerImagem: boolean;
 }
 
-/** Com foto nova, vai como multipart (campo "imagem" + "dados" em JSON); sem foto, JSON puro. */
 function corpoDoProduto(dados: DadosProduto, imagem: File | null) {
   if (!imagem) return { corpo: dados };
   const formulario = new FormData();
@@ -248,14 +230,11 @@ export function excluirProduto(id: string) {
   return api<void>(`/admin/produtos/${id}`, { metodo: 'DELETE' });
 }
 
-// ─── Categorias ─────────────────────────────────────────────────────────────
-
 export interface DadosCategoria {
   nome: string;
   descricao: string;
 }
 
-/** Todas as categorias, com a quantidade de peças (inclusive fora do catálogo). */
 export function listarCategoriasAdmin(busca?: string) {
   return api<Categoria[]>('/admin/categorias', { parametros: { busca } });
 }
@@ -276,12 +255,9 @@ export function excluirCategoria(id: string) {
   return api<void>(`/admin/categorias/${id}`, { metodo: 'DELETE' });
 }
 
-/** Refaz a indexação do documento para o assistente (em segundo plano). */
 export function reindexarDocumento(id: string) {
   return api<{ mensagem: string }>(`/admin/documentos/${id}/indexar`, { metodo: 'POST' });
 }
-
-// ─── Chamados de suporte técnico ────────────────────────────────────────────
 
 export interface FiltrosChamados {
   busca?: string;
@@ -301,8 +277,6 @@ export function detalharChamado(id: string) {
 export function atualizarChamado(id: string, dados: { status: StatusChamado; observacao: string }) {
   return api<ChamadoDetalhado>(`/admin/chamados/${id}`, { metodo: 'PATCH', corpo: dados });
 }
-
-// ─── Trilha de auditoria ────────────────────────────────────────────────────
 
 export interface FiltrosAuditoria {
   busca?: string;

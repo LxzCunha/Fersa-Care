@@ -20,13 +20,11 @@ import { useAbrirAoClicarNaLinha, useFiltrosNaUrl } from './navegacao';
 
 const POR_PAGINA = 20;
 
-/** Lista de documentos; o cadastro abre numa janela por cima (rotas filhas no <Outlet />). */
 export function AdminDocumentos() {
   const [parametros, setParametros] = useSearchParams();
   const { search } = useLocation();
   const alterar = useFiltrosNaUrl(parametros, setParametros);
   const abrirLinha = useAbrirAoClicarNaLinha();
-  // A busca consulta a API sozinha, depois de uma pequena pausa na digitação.
   const [busca, setBusca] = useState('');
   const buscaAtrasada = useValorAtrasado(busca.trim());
 

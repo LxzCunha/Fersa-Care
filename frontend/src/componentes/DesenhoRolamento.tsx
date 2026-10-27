@@ -1,12 +1,6 @@
 import type { CSSProperties } from 'react';
 import './DesenhoRolamento.css';
 
-/**
- * Desenho técnico de um rolamento (vista frontal + corte lateral) com as cotas
- * d, D e B — as medidas que o mecânico confere no catálogo. Puramente
- * decorativo: fica escondido de leitores de tela.
- */
-
 const CENTRO_X = 150;
 const CENTRO_Y = 150;
 const RAIO_PRIMITIVO = 75;
@@ -44,11 +38,10 @@ export function DesenhoRolamento({ className = '' }: { className?: string }) {
         </pattern>
       </defs>
 
-      {/* Linhas de centro (traço-ponto) */}
       <line className="desenho-centro" x1="18" y1={CENTRO_Y} x2="428" y2={CENTRO_Y} />
       <line className="desenho-centro" x1={CENTRO_X} y1="22" x2={CENTRO_X} y2="278" />
 
-      {/* Vista frontal: anel externo, anel interno, gaiola e esferas */}
+      {/* Vista frontal */}
       <g className="desenho-peca">
         <circle cx={CENTRO_X} cy={CENTRO_Y} r="110" />
         <circle cx={CENTRO_X} cy={CENTRO_Y} r="92" />
@@ -60,7 +53,7 @@ export function DesenhoRolamento({ className = '' }: { className?: string }) {
         ))}
       </g>
 
-      {/* Corte lateral: seções dos anéis hachuradas e as esferas */}
+      {/* Corte lateral */}
       <g className="desenho-peca">
         {[40, 242, 92, 190].map((y) => (
           <rect key={y} x="330" y={y} width="40" height="18" fill="url(#hachura)" />
@@ -69,7 +62,6 @@ export function DesenhoRolamento({ className = '' }: { className?: string }) {
         <circle className="desenho-esfera" cx="350" cy="225" r="14.5" />
       </g>
 
-      {/* Cota D (diâmetro externo) */}
       <g className="desenho-cota-grupo" style={variaveis({ '--atraso': '0.2s' })}>
         <line className="desenho-extensao" x1="40" y1="158" x2="40" y2="292" />
         <line className="desenho-extensao" x1="260" y1="158" x2="260" y2="292" />
@@ -81,7 +73,6 @@ export function DesenhoRolamento({ className = '' }: { className?: string }) {
         </text>
       </g>
 
-      {/* Cota d (diâmetro interno), medida no corte */}
       <g className="desenho-cota-grupo" style={variaveis({ '--atraso': '0.45s' })}>
         <line className="desenho-extensao" x1="374" y1="110" x2="404" y2="110" />
         <line className="desenho-extensao" x1="374" y1="190" x2="404" y2="190" />
@@ -93,7 +84,6 @@ export function DesenhoRolamento({ className = '' }: { className?: string }) {
         </text>
       </g>
 
-      {/* Cota B (largura) */}
       <g className="desenho-cota-grupo" style={variaveis({ '--atraso': '0.7s' })}>
         <line className="desenho-extensao" x1="330" y1="36" x2="330" y2="14" />
         <line className="desenho-extensao" x1="370" y1="36" x2="370" y2="14" />

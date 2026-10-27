@@ -16,7 +16,7 @@ import './Produtos.css';
 
 const POR_PAGINA = 24;
 
-/** Filtros de medida na URL (mm), na ordem em que aparecem no painel. */
+/** Parâmetros na URL, em mm; os nomes acompanham o validator de produtos da API e api/portal.ts. */
 const MEDIDAS = [
   { rotulo: 'Ø interno', minimo: 'internoMin', maximo: 'internoMax' },
   { rotulo: 'Ø externo', minimo: 'externoMin', maximo: 'externoMax' },
@@ -25,11 +25,6 @@ const MEDIDAS = [
 
 type ChaveDeMedida = (typeof MEDIDAS)[number]['minimo' | 'maximo'];
 
-/**
- * Catálogo de peças no modelo do site FERSA: filtros em acordeão (lateral no
- * desktop, gaveta no celular) e cartões com as medidas principais.
- * Os filtros ficam na URL; o texto buscado vem da busca do cabeçalho.
- */
 export function Produtos() {
   const [parametros, setParametros] = useSearchParams();
   const gaveta = useRef<HTMLDialogElement>(null);
@@ -62,7 +57,6 @@ export function Produtos() {
     setParametros(novos);
   }
 
-  // Pílulas dos filtros em uso (cada uma remove o próprio filtro).
   const ativos: { rotulo: string; remover: Record<string, undefined> }[] = [];
   if (busca) ativos.push({ rotulo: `“${busca}”`, remover: { busca: undefined } });
   if (categoriaId) ativos.push({ rotulo: categoria?.nome ?? 'Categoria', remover: { categoria: undefined } });
@@ -191,7 +185,6 @@ export function Produtos() {
         </section>
       </div>
 
-      {/* Gaveta de filtros do celular: os resultados atualizam por trás enquanto a pessoa escolhe. */}
       {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- clique no fundo fecha a gaveta; pelo teclado, o Esc do <dialog> e o botão "Fechar filtros" fazem o mesmo */}
       <dialog ref={gaveta} className="gaveta" aria-labelledby="titulo-gaveta" onClick={(e) => e.target === gaveta.current && gaveta.current.close()}>
         <div className="gaveta-conteudo">
@@ -213,7 +206,6 @@ export function Produtos() {
   );
 }
 
-/** Acordeões de filtro: Categoria, Linha e Medidas (como "Dimensões" no catálogo FERSA). */
 function PainelFiltros({
   categorias,
   categoriaId,
@@ -233,8 +225,7 @@ function PainelFiltros({
   // O painel aparece duas vezes (lateral e gaveta): cada um com seus grupos de rádio.
   const prefixo = useId();
 
-  // Se os filtros mudarem por fora (pílula removida, "Limpar tudo"), o formulário
-  // acompanha. O ajuste acontece na própria renderização, e não num efeito.
+  // Filtros mudados por fora (pílula, "Limpar tudo"): ajuste na renderização, não num efeito.
   const assinatura = JSON.stringify(medidas);
   const [assinaturaAnterior, setAssinaturaAnterior] = useState(assinatura);
   if (assinatura !== assinaturaAnterior) {

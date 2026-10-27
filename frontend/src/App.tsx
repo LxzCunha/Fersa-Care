@@ -15,18 +15,9 @@ import { ProdutoDetalhe } from './paginas/ProdutoDetalhe';
 import { Produtos } from './paginas/Produtos';
 import { SolicitarAcesso } from './paginas/SolicitarAcesso';
 
-/**
- * A área do administrador é carregada sob demanda: clientes no celular
- * não baixam o código das telas de gestão.
- */
+// Carregada sob demanda: clientes no celular não baixam o código das telas de gestão.
 const AreaAdmin = lazy(() => import('./paginas/admin/AreaAdmin'));
 
-/**
- * Mapa de rotas do portal.
- *   Visitante: início, busca, catálogo (produtos e categorias), documentos, entrar e solicitar acesso
- *   Usuário logado: + minha conta (e documentos exclusivos nas mesmas telas)
- *   Administrador: + /admin
- */
 export function App() {
   return (
     <Routes>

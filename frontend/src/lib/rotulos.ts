@@ -22,8 +22,6 @@ import type {
   Visibilidade,
 } from '../api/tipos';
 
-/** Textos em português para os valores que a API devolve em código. */
-
 export const TIPOS: Record<TipoDocumento, { singular: string; plural: string; icone: LucideIcon }> = {
   MANUAL: { singular: 'Manual', plural: 'Manuais de montagem', icone: BookOpen },
   VIDEO: { singular: 'Vídeo', plural: 'Vídeos', icone: CirclePlay },
@@ -34,7 +32,7 @@ export const TIPOS: Record<TipoDocumento, { singular: string; plural: string; ic
   OUTRO: { singular: 'Outro material', plural: 'Outros materiais', icone: FileText },
 };
 
-/** Ordem de exibição dos tipos (mais procurados primeiro). */
+/** A ordem das chaves de TIPOS é a de exibição (mais procurados primeiro). */
 export const ORDEM_DOS_TIPOS = Object.keys(TIPOS) as TipoDocumento[];
 
 export const VISIBILIDADES: Record<

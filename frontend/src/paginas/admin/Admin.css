@@ -1,13 +1,8 @@
-/* Área do administrador: ferramenta de trabalho, densa e calma. */
-
-/* ─── Estrutura: menu lateral escuro, barra do topo e conteúdo ─────────────── */
-
 .admin {
   min-height: 100dvh;
   background: var(--fundo);
 }
 
-/* Menu lateral: gaveta no celular, coluna fixa no desktop */
 .lateral {
   position: fixed;
   inset: 0 auto 0 0;
@@ -77,7 +72,6 @@
   height: 1.4rem;
 }
 
-/* Celular: o botão fecha a gaveta. Desktop: recolhe o menu até ficar só com os ícones. */
 .lateral-recolher {
   display: none;
 }
@@ -89,7 +83,6 @@
   white-space: nowrap;
 }
 
-/* Expandir / Recolher todos os grupos */
 .lateral-ferramentas {
   display: flex;
   flex-shrink: 0;
@@ -125,7 +118,6 @@
   height: 1rem;
 }
 
-/* Busca de página, em pílula como a do portal */
 .lateral-busca {
   position: relative;
   flex-shrink: 0;
@@ -164,7 +156,6 @@
   outline: none;
 }
 
-/* Lista de páginas */
 .lateral-menu {
   flex: 1;
   overflow-y: auto;
@@ -228,7 +219,6 @@
   transform: rotate(180deg);
 }
 
-/* Grupo da página atual: ícone azul-claro */
 .lateral-grupo.contem-atual > .lateral-item {
   color: var(--lateral-texto-forte);
 }
@@ -237,7 +227,6 @@
   color: var(--lateral-destaque);
 }
 
-/* Páginas do grupo, com uma linha-guia saindo do ícone */
 .lateral-subitens {
   position: relative;
   padding-bottom: var(--e-2);
@@ -270,7 +259,6 @@
   color: var(--lateral-texto-forte);
 }
 
-/* Página atual: texto e marcador azul-claro sobre um fundo um pouco mais claro */
 .lateral-item.ativo,
 .lateral-subitem.ativo {
   background: var(--lateral-selecionado);
@@ -279,7 +267,6 @@
   font-weight: 700;
 }
 
-/* Usuários aguardando aprovação (âmbar = pede atenção) */
 .lateral-alerta {
   display: inline-grid;
   flex-shrink: 0;
@@ -334,11 +321,9 @@
   flex: 0 1 auto;
 }
 
-/* ─── Barra do topo ──────────────────────────────────────────────────────── */
-
 .admin-principal {
   min-width: 0;
-  /* Rede de proteção: nada do conteúdo alarga a página (no celular, isso afastaria o zoom). */
+  /* Nada do conteúdo alarga a página (no celular, isso afastaria o zoom). */
   overflow-x: clip;
 }
 
@@ -378,10 +363,11 @@
   text-decoration: none;
 }
 
-/* Onde estou: "Catálogo › Peças" */
 .admin-topo-trilha {
+  flex: 0 1 auto;
   align-items: center;
-  gap: var(--e-2);
+  min-width: 0;
+  overflow: hidden;
   margin: 0 0 0 var(--e-2);
   padding-left: var(--e-4);
   border-left: 1px solid var(--linha);
@@ -389,17 +375,80 @@
   font-size: var(--texto-sm);
 }
 
+.admin-topo-trilha ol {
+  display: flex;
+  align-items: center;
+  gap: var(--e-2);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-topo-trilha li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-2);
+  white-space: nowrap;
+}
+
+/* Sem espaço, o último item encolhe com reticências em vez de empurrar os botões da direita. */
+.admin-topo-trilha li:last-child {
+  min-width: 0;
+}
+
+.admin-topo-trilha li:last-child span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Em telas médias o "Painel" sai da trilha: o logotipo ao lado já leva ao painel. */
+@media (max-width: 80rem) {
+  .admin-topo-trilha li:first-child:not(:last-child) {
+    display: none;
+  }
+
+  .admin-topo-trilha li:nth-child(2) svg {
+    display: none;
+  }
+
+  /* Só o ícone; o texto continua para leitores de tela. */
+  .admin-topo-link-texto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
 .admin-topo-trilha svg {
+  flex-shrink: 0;
   width: 0.9rem;
   height: 0.9rem;
 }
 
-.admin-topo-trilha strong {
+.admin-topo-trilha a {
+  color: var(--texto-suave);
+  text-decoration: none;
+  border-radius: var(--raio-etiqueta);
+}
+
+.admin-topo-trilha a:hover {
+  color: var(--marca);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.admin-topo-trilha [aria-current='page'] {
   color: var(--tinta);
+  font-weight: 700;
 }
 
 .admin-topo-acoes {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   gap: var(--e-2);
   margin-left: auto;
@@ -407,6 +456,7 @@
 
 .admin-topo-link {
   align-items: center;
+  white-space: nowrap;
   gap: var(--e-2);
   min-height: 2.5rem;
   padding: 0 var(--e-3);
@@ -427,7 +477,6 @@
   height: 1.05rem;
 }
 
-/* Menu da conta (nome ▾) */
 .menu-conta {
   position: relative;
 }
@@ -515,13 +564,7 @@
   border-radius: 0 0 var(--raio-controle) var(--raio-controle);
 }
 
-/* ─── Conteúdo ───────────────────────────────────────────────────────────── */
-
-/*
- * O conteúdo ocupa toda a largura ao lado do menu. As telas se ajustam ao
- * espaço que sobra para elas (container queries), e não à largura da janela:
- * assim respondem também ao menu aberto ou recolhido.
- */
+/* Container queries, não @media: as telas reagem ao espaço ao lado do menu (aberto ou recolhido). */
 .admin-conteudo {
   container: conteudo-admin / inline-size;
   width: 100%;
@@ -568,7 +611,7 @@
     padding: var(--e-6) var(--e-6) var(--e-8);
   }
 
-  /* Menu recolhido: só os ícones (os nomes continuam para leitores de tela) */
+  /* Menu recolhido: só os ícones; os rótulos continuam para leitores de tela (abaixo). */
   .admin-recolhido .lateral-titulo,
   .admin-recolhido .lateral-ferramentas,
   .admin-recolhido .lateral-busca,
@@ -610,7 +653,6 @@
   }
 }
 
-/* Cabeçalho do painel */
 .admin-cabecalho {
   display: flex;
   flex-wrap: wrap;
@@ -657,8 +699,6 @@
     justify-content: flex-start;
   }
 }
-
-/* ─── Painel ─────────────────────────────────────────────────────────────── */
 
 .painel-numeros {
   display: grid;
@@ -836,7 +876,6 @@ a.painel-numero:hover {
   font-variant-numeric: tabular-nums;
 }
 
-/* Gráfico de aberturas por dia (HTML + CSS: textos legíveis em qualquer largura) */
 .grafico {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -893,18 +932,16 @@ a.painel-numero:hover {
   cursor: default;
 }
 
-/* Barras finas (até 24px, nunca ocupando a faixa toda), ponta arredondada de 4px e base reta */
 .grafico-barra {
   position: relative;
   width: min(62%, 24px);
   height: var(--altura);
   min-height: 0;
   border-radius: 4px 4px 0 0;
-  background: #6f88aa; /* azul médio: dias anteriores (contraste 3:1 sobre o branco) */
+  background: #6f88aa; /* contraste 3:1 sobre o branco */
   transition: opacity 0.15s;
 }
 
-/* Hoje em azul-marinho (cor da marca) + rótulo "Hoje" no eixo */
 .grafico-coluna-hoje .grafico-barra {
   background: var(--marca);
 }
@@ -989,10 +1026,6 @@ a.painel-numero:hover {
   margin-top: var(--e-2);
 }
 
-/* ─── Cadastros: listas ──────────────────────────────────────────────────── */
-/* Modelo minimalista de sistema de gestão: título e "+", abas numa barra
-   cinza, busca cinza, tabela sem moldura e rodapé fixo com a contagem. */
-
 .lista-cabecalho {
   display: flex;
   align-items: center;
@@ -1006,7 +1039,6 @@ a.painel-numero:hover {
   font-weight: 600;
 }
 
-/* Frase curta sob o título da lista (ex.: auditoria somente leitura) */
 .lista-aviso {
   max-width: 48rem;
   margin: calc(-1 * var(--e-2)) 0 var(--e-4);
@@ -1035,7 +1067,6 @@ a.painel-numero:hover {
   stroke-width: 1.5;
 }
 
-/* Abas: a escolhida fica branca com contorno azul */
 .abas {
   display: flex;
   gap: var(--e-1);
@@ -1087,7 +1118,6 @@ a.painel-numero:hover {
   font-variant-numeric: tabular-nums;
 }
 
-/* Busca de largura total, com filtros compactos à direita */
 .barra-busca-admin {
   display: flex;
   flex-wrap: wrap;
@@ -1184,7 +1214,6 @@ a.painel-numero:hover {
   }
 }
 
-/* Tabela: linhas finas; a linha sob o mouse ganha um traço azul e abre o cadastro */
 .linha-clicavel {
   cursor: pointer;
 }
@@ -1197,7 +1226,6 @@ a.painel-numero:hover {
   text-align: center;
 }
 
-/* Datas, formatos, linhas e códigos não quebram no meio */
 .tabela .celula-curta,
 .tabela .codigo {
   white-space: nowrap;
@@ -1249,7 +1277,6 @@ a.painel-numero:hover {
   max-width: 28rem;
 }
 
-/* Detalhes de um evento da auditoria: uma frase por linha */
 .lista-detalhes {
   display: grid;
   gap: var(--e-1);
@@ -1258,7 +1285,6 @@ a.painel-numero:hover {
   list-style: none;
 }
 
-/* Sim/não: quadrado azul com ✓, ou vazio */
 .marcador {
   display: inline-grid;
   place-items: center;
@@ -1296,7 +1322,6 @@ a.painel-numero:hover {
   }
 }
 
-/* Rodapé fixo na parte de baixo da tela: "1–20 de 135 usuários" */
 .lista-rodape {
   position: sticky;
   bottom: 0;
@@ -1344,8 +1369,6 @@ a.painel-numero:hover {
   width: 1.2rem;
   height: 1.2rem;
 }
-
-/* ─── Cadastros: janela (modal) ──────────────────────────────────────────── */
 
 :root:has(.janela[open]) {
   overflow: hidden;
@@ -1444,7 +1467,6 @@ a.painel-numero:hover {
   padding: var(--e-4) var(--e-6) var(--e-7);
 }
 
-/* "Ver no portal" e "Excluir" logo abaixo do topo, discretos */
 .janela-links {
   display: flex;
   flex-wrap: wrap;
@@ -1508,8 +1530,6 @@ a.painel-numero:hover {
     padding: var(--e-4) var(--e-4) var(--e-7);
   }
 }
-
-/* ─── Cadastros: campos (rótulo pequeno em cinza e linha embaixo) ────────── */
 
 .cadastro {
   display: grid;
@@ -1583,7 +1603,6 @@ a.painel-numero:hover {
   border-width: 1px;
 }
 
-/* Grupo de campos com um título em negrito, separado por uma linha fina */
 .cadastro-secao {
   display: grid;
   gap: var(--e-4);
@@ -1602,7 +1621,6 @@ a.painel-numero:hover {
   font-size: var(--texto-xs);
 }
 
-/* Caixa de seleção azul: "Aparece no catálogo", "Publicado no portal" */
 .caixa {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -1629,7 +1647,6 @@ a.painel-numero:hover {
   font-weight: 400;
 }
 
-/* Opções de rádio sem cartão: uma por linha, a escolhida em azul */
 .cadastro .opcoes {
   gap: 0;
 }
@@ -1660,7 +1677,6 @@ a.painel-numero:hover {
   opacity: 0.6;
 }
 
-/* Arquivo ou link: duas abas, como as da lista */
 .alternancia-origem {
   display: inline-flex;
   justify-self: start;
@@ -1706,8 +1722,7 @@ a.painel-numero:hover {
   height: 1.05rem;
 }
 
-/* Arquivo e imagem numa linha: rótulo, nome do arquivo e ›. O <input> cobre a
-   linha (invisível), então clicar ou soltar o arquivo em cima já escolhe. */
+/* O <input> invisível cobre a linha: clicar ou soltar o arquivo em cima já escolhe. */
 .linha-arquivo {
   position: relative;
   display: flex;
@@ -1807,7 +1822,6 @@ a.painel-numero:hover {
   text-underline-offset: 0.2em;
 }
 
-/* Capa gerada do arquivo, mostrada antes do campo para enviar outra */
 .capa-automatica {
   display: flex;
   align-items: center;
@@ -1826,7 +1840,6 @@ a.painel-numero:hover {
   filter: drop-shadow(0 1px 3px rgb(16 35 63 / 0.18));
 }
 
-/* Seletor de peças e pessoas: busca cinza e lista com caixas de seleção */
 .seletor {
   display: grid;
   gap: var(--e-3);
@@ -1937,7 +1950,6 @@ a.painel-numero:hover {
   font-size: var(--texto-sm);
 }
 
-/* Senha com "Gerar senha" ao lado */
 .senha-gerada {
   display: flex;
   flex-wrap: wrap;
@@ -1961,8 +1973,6 @@ a.painel-numero:hover {
   padding: var(--e-2) 0;
   border-bottom: 1px solid var(--linha);
 }
-
-/* ─── Chamado de suporte: contato e conversa com o assistente ─────────────── */
 
 .chamado-contato {
   display: grid;
@@ -2052,7 +2062,6 @@ a.painel-numero:hover {
   height: 0.9rem;
 }
 
-/* Situação do documento na base do assistente (janela do documento) */
 .indexacao {
   display: flex;
   flex-wrap: wrap;

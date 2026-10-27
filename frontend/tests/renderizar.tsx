@@ -8,13 +8,7 @@ import { ProvedorAssistente } from '../src/contexto/Assistente';
 import { CHAVE_USUARIO_ATUAL, ProvedorAutenticacao } from '../src/contexto/Autenticacao';
 import { ProvedorNotificacoes } from '../src/contexto/Notificacoes';
 
-/**
- * Renderiza uma tela como no site: React Query, login, notificações e rotas.
- * - `rotas`: a árvore de rotas do teste (ou um único elemento, servido em "*");
- * - `caminho`: o endereço inicial, ex.: "/admin/produtos/123?ativo=true";
- * - `usuario`: quem está logado (null = visitante). Nada é buscado na API.
- * Devolve o roteador (para conferir o endereço) e o `usuario` do user-event.
- */
+/** Renderiza com os mesmos provedores do site; `usuario` já vem logado, sem chamar a API. */
 export function renderizar(
   rotas: RouteObject[] | ReactNode,
   { caminho = '/', usuario = null }: { caminho?: string; usuario?: Usuario | null } = {},
@@ -44,15 +38,11 @@ export function renderizar(
     roteador,
     clienteQuery,
     pessoa: userEvent.setup(),
-    /** Endereço atual com a consulta, ex.: "/admin/produtos?ativo=true". */
     endereco: () => `${roteador.state.location.pathname}${roteador.state.location.search}`,
   };
 }
 
-/**
- * Espera a janela de cadastro com o formulário já carregado e a devolve.
- * (Enquanto busca os dados, a janela tem o mesmo título mas ainda sem "Salvar".)
- */
+/** Enquanto carrega, a janela tem o mesmo título mas ainda sem "Salvar": espera o formulário. */
 export async function esperarJanela(titulo: string) {
   await screen.findByRole('button', { name: 'Salvar' }, { timeout: 3000 });
   return screen.getByRole('dialog', { name: titulo });

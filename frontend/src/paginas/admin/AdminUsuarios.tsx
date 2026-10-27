@@ -21,7 +21,6 @@ import { useAbrirAoClicarNaLinha, useFiltrosNaUrl } from './navegacao';
 
 const POR_PAGINA = 20;
 
-/** Lista de usuários; o cadastro abre numa janela por cima (rotas filhas no <Outlet />). */
 export function AdminUsuarios() {
   const { usuario: eu } = useAutenticacao();
   const [parametros, setParametros] = useSearchParams();

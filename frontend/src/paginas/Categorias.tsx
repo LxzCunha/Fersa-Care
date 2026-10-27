@@ -8,7 +8,6 @@ import { Trilha } from '../componentes/Trilha';
 import { plural } from '../lib/formatar';
 import './Categorias.css';
 
-/** Todas as categorias com peças no catálogo, em colunas como no site FERSA. */
 export function Categorias() {
   const consulta = useQuery({ queryKey: ['categorias'], queryFn: listarCategorias });
 
@@ -39,7 +38,6 @@ export function Categorias() {
   );
 }
 
-/** Lista de categorias: uma coluna com setas no celular, três colunas no desktop. */
 export function ListaCategorias({ categorias }: { categorias: Categoria[] }) {
   return (
     <ul className="lista-categorias">

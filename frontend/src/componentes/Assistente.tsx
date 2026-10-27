@@ -8,11 +8,6 @@ import { useAssistente, type MensagemNoChat } from '../contexto/Assistente';
 import { useAutenticacao } from '../contexto/Autenticacao';
 import './Assistente.css';
 
-/**
- * Assistente técnico: a bolinha no canto inferior direito e o painel de
- * conversa. Responde só sobre peças e produtos FERSA, citando os materiais do
- * portal; quando não resolve, abre um chamado com a equipe técnica.
- */
 export function Assistente() {
   const { aberto, abrir, fechar } = useAssistente();
   const bolinha = useRef<HTMLButtonElement>(null);
@@ -54,7 +49,6 @@ function PainelDoAssistente({ aoFechar }: { aoFechar: () => void }) {
     campo.current?.focus();
   }, []);
 
-  // Acompanha a resposta enquanto ela chega.
   useEffect(() => {
     lista.current?.scrollTo({ top: lista.current.scrollHeight });
   }, [mensagens, encaminhamento]);
@@ -141,7 +135,6 @@ function PainelDoAssistente({ aoFechar }: { aoFechar: () => void }) {
           value={rascunho}
           onChange={(evento) => setRascunho(evento.target.value)}
           onKeyDown={(evento) => {
-            // Enter envia; Shift+Enter quebra a linha.
             if (evento.key === 'Enter' && !evento.shiftKey) {
               evento.preventDefault();
               aoEnviar();
@@ -196,11 +189,7 @@ function Fontes({ fontes }: { fontes: FonteDaResposta[] }) {
   );
 }
 
-/**
- * O texto do modelo com o mínimo de formatação: parágrafos, listas
- * (1. / - ), **negrito** e as citações [1] em destaque. Nada de HTML vindo do
- * modelo é interpretado.
- */
+/** Formatação mínima (parágrafos, listas, **negrito**, citações [n]); nenhum HTML do modelo é interpretado. */
 export function TextoFormatado({ texto }: { texto: string }) {
   const marcadorDeLista = /^\s*(\d+[.)]|[-•*])\s+/;
   const blocos: ReactNode[] = [];
@@ -262,10 +251,6 @@ function formatarLinha(linha: string): ReactNode[] {
   });
 }
 
-/**
- * Quando o assistente não resolve: com login, um botão abre o chamado com os
- * dados da conta; visitante deixa nome e e-mail ou telefone.
- */
 function PedidoDeChamado({ pedirContato }: { pedirContato: boolean }) {
   const { pedirChamado } = useAssistente();
   const { usuario } = useAutenticacao();

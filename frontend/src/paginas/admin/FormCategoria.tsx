@@ -19,7 +19,6 @@ import { useRecarregarTudo } from './acoes';
 import { Janela } from './Cadastro';
 import { rolarJanelaParaTopo, useVoltarParaLista } from './navegacao';
 
-/** Cadastro (/admin/categorias/nova) e edição (/admin/categorias/:id), numa janela sobre a lista. */
 export function FormCategoria() {
   const { id } = useParams();
   const fechar = useVoltarParaLista('/admin/categorias');

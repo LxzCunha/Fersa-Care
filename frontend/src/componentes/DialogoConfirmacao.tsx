@@ -1,9 +1,5 @@
 import { useEffect, useId, useRef } from 'react';
 
-/**
- * Confirmação antes de ações que não têm volta (excluir, recusar...).
- * Usa o elemento <dialog> nativo: foco preso no diálogo e Esc para cancelar.
- */
 export function DialogoConfirmacao({
   aberto,
   titulo,

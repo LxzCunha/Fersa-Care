@@ -6,11 +6,6 @@ import { mensagemDeErro } from '../api/cliente';
 import type { Usuario } from '../api/tipos';
 import { useNotificar } from './Notificacoes';
 
-/**
- * Guarda quem está logado e expõe entrar/sair para qualquer tela.
- * A fonte da verdade é a API (GET /api/auth/eu); aqui só mantemos em memória.
- */
-
 interface ValorAutenticacao {
   usuario: Usuario | null;
   carregando: boolean;
@@ -80,11 +75,7 @@ export function useAutenticacao(): ValorAutenticacao {
   return contexto;
 }
 
-/**
- * O botão "Sair" (portal, Minha conta e administração): encerra a sessão, avisa
- * e volta para o início. Se a API não responder, a pessoa continua logada, então
- * avisamos em vez de fingir que saiu.
- */
+/** Se a API não responder, a pessoa continua logada: avisamos em vez de fingir que saiu. */
 export function useSairDaConta() {
   const { sair } = useAutenticacao();
   const notificar = useNotificar();

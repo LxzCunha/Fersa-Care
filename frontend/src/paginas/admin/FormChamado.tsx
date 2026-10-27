@@ -15,7 +15,6 @@ import { useRecarregarTudo } from './acoes';
 import { Janela } from './Cadastro';
 import { rolarJanelaParaTopo, useVoltarParaLista } from './navegacao';
 
-/** Chamado de suporte (/admin/chamados/:id): contato, conversa com o assistente, situação e anotação. */
 export function FormChamado() {
   const { id = '' } = useParams();
   const fechar = useVoltarParaLista('/admin/chamados');

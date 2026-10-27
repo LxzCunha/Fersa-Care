@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
 
-/**
- * Devolve o valor só depois que ele para de mudar por `atraso` ms.
- * Usado nas buscas que consultam a API enquanto a pessoa digita.
- */
+/** Debounce: devolve o valor só depois que ele para de mudar por `atraso` ms. */
 export function useValorAtrasado<T>(valor: T, atraso = 300): T {
   const [atrasado, setAtrasado] = useState(valor);
   useEffect(() => {

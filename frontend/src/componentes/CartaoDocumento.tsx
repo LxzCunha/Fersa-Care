@@ -9,11 +9,7 @@ import './CartaoDocumento.css';
 
 const MAXIMO_DE_CODIGOS = 3;
 
-/**
- * Capa do documento (miniatura gerada pela API). Sem capa, ou se ela não
- * carregar, uma capa desenhada com o ícone do tipo: uma folha para documentos
- * e uma tela para vídeos. Decorativa: o título já está no cartão.
- */
+/** Decorativa: o título já está no cartão. */
 export function CapaDocumento({ documento, className = '' }: { documento: Documento; className?: string }) {
   const [falhou, setFalhou] = useState(false);
   const ehVideo = documento.tipo === 'VIDEO';
@@ -39,11 +35,6 @@ export function CapaDocumento({ documento, className = '' }: { documento: Docume
   );
 }
 
-/**
- * Cartão de documento, no modelo de portal de pós-venda: título em cima com o
- * atalho para baixar, a capa em destaque e o tipo, o formato e as peças embaixo.
- * O cartão inteiro abre o documento; o botão de baixar fica por cima.
- */
 export function CartaoDocumento({ documento }: { documento: Documento }) {
   const codigos = documento.produtos.slice(0, MAXIMO_DE_CODIGOS);
   const restantes = documento.produtos.length - codigos.length;

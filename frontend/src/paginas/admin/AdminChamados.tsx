@@ -12,10 +12,6 @@ import { useAbrirAoClicarNaLinha, useFiltrosNaUrl } from './navegacao';
 
 const POR_PAGINA = 20;
 
-/**
- * Chamados de suporte técnico abertos pelo assistente (quando ele não resolve).
- * O chamado abre numa janela por cima da lista, com a conversa inteira.
- */
 export function AdminChamados() {
   const [parametros, setParametros] = useSearchParams();
   const { search } = useLocation();

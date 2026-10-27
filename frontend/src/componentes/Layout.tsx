@@ -9,14 +9,8 @@ import { CampoBusca } from './CampoBusca';
 import { Marca } from './Marca';
 import './Layout.css';
 
-/** Telas sem a busca global logo abaixo do cabeçalho (têm a própria ou são formulários). */
 const SEM_BUSCA_GLOBAL = ['/', '/busca', '/entrar', '/solicitar-acesso', '/minha-conta'];
 
-/**
- * Estrutura comum a todas as telas, no modelo do site FERSA: cabeçalho branco
- * com a seção atual em pílula azul, busca em pílula logo abaixo, rodapé cinza e,
- * no celular, a barra de navegação inferior (alcance do polegar).
- */
 export function Layout() {
   return (
     <ProvedorAssistente>
@@ -30,7 +24,6 @@ function EstruturaDoPortal() {
   const assistente = useAssistente();
   const { pathname } = useLocation();
 
-  // Ao trocar de página, volta para o topo.
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
@@ -133,7 +126,6 @@ function EstruturaDoPortal() {
         </div>
       </footer>
 
-      {/* Navegação de polegar no celular (some no desktop). */}
       <nav className="nav-inferior" aria-label="Navegação rápida">
         <NavLink to="/" end>
           <House aria-hidden />
@@ -164,17 +156,11 @@ function EstruturaDoPortal() {
         )}
       </nav>
 
-      {/* Assistente técnico: a bolinha de chat no canto inferior direito. */}
       <Assistente />
     </div>
   );
 }
 
-/**
- * Busca do cabeçalho. No catálogo ela filtra as peças e em "Manuais e vídeos"
- * filtra os materiais (mantendo os outros filtros); nas demais telas abre a
- * busca geral, que procura nos dois ao mesmo tempo.
- */
 function BuscaGlobal() {
   const navegar = useNavigate();
   const { pathname } = useLocation();

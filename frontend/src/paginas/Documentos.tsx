@@ -13,10 +13,6 @@ import './Documentos.css';
 
 const POR_PAGINA = 20;
 
-/**
- * Biblioteca de documentos ("Manuais e vídeos"). Os filtros ficam na URL: dá
- * para compartilhar uma busca. O texto buscado vem da busca do cabeçalho.
- */
 export function Documentos() {
   const [parametros, setParametros] = useSearchParams();
   const { usuario } = useAutenticacao();
@@ -33,7 +29,6 @@ export function Documentos() {
     placeholderData: keepPreviousData,
   });
 
-  /** Atualiza um filtro na URL e volta para a primeira página. */
   function alterar(chave: string, valor: string | undefined) {
     const novos = new URLSearchParams(parametros);
     if (valor) novos.set(chave, valor);

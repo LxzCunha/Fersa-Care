@@ -1,7 +1,5 @@
 import type { Produto } from '../api/tipos';
 
-/** Medidas das peças no padrão brasileiro: vírgula decimal, mm com a polegada de referência. */
-
 const decimal = (casas: number) =>
   new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: casas });
 
@@ -9,7 +7,6 @@ export function milimetros(valor: number): string {
   return `${decimal(2).format(valor)} mm`;
 }
 
-/** 25,4 mm → "1 pol" (muitos rolamentos da linha pesada são especificados em polegadas). */
 export function polegadas(valorMm: number): string {
   return `${decimal(3).format(valorMm / 25.4)} pol`;
 }
@@ -21,11 +18,9 @@ export function quilos(valor: number): string {
 export interface ItemDaFicha {
   rotulo: string;
   valor: string;
-  /** Equivalente em polegadas (só para medidas lineares). */
   equivalente?: string;
 }
 
-/** Ficha técnica da peça, só com as medidas cadastradas (na ordem do catálogo FERSA). */
 export function fichaTecnica(produto: Produto): ItemDaFicha[] {
   const ficha: ItemDaFicha[] = [];
   const linear = (rotulo: string, valor: number | null) => {
@@ -38,7 +33,6 @@ export function fichaTecnica(produto: Produto): ItemDaFicha[] {
   return ficha;
 }
 
-/** Texto digitado num campo de medida ("25,4") → número, ou null se vazio/inválido. */
 export function lerMedida(texto: string): number | null {
   const normalizado = texto.trim().replace(/\s/g, '').replace(',', '.');
   if (normalizado === '') return null;
@@ -46,7 +40,6 @@ export function lerMedida(texto: string): number | null {
   return Number.isFinite(valor) ? valor : null;
 }
 
-/** Número → texto para um campo de medida ("25.4" → "25,4"). */
 export function escreverMedida(valor: number | null | undefined): string {
   return valor === null || valor === undefined ? '' : String(valor).replace('.', ',');
 }

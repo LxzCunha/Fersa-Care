@@ -1,10 +1,4 @@
-/**
- * Logotipo do portal.
- *
- * O logotipo oficial da FERSA é usado automaticamente quando o arquivo existe
- * em src/assets/marca/ (fersa.svg, fersa.png ou fersa.webp, versão azul sobre
- * fundo claro). Sem o arquivo, aparece o nome em texto com a cor da marca.
- */
+// Usa o logotipo oficial em src/assets/marca/ se existir (nunca redesenhar); sem ele, o nome em texto.
 const arquivosDoLogotipo = import.meta.glob<string>('../assets/marca/fersa.{svg,png,webp}', {
   eager: true,
   query: '?url',

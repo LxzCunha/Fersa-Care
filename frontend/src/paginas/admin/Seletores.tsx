@@ -7,10 +7,6 @@ import { useValorAtrasado } from '../../lib/ganchos';
 import { SEGMENTOS, STATUS_USUARIO } from '../../lib/rotulos';
 import '../../componentes/CampoBusca.css';
 
-/**
- * Lista com busca e caixas de seleção. Usada para escolher as peças
- * relacionadas e as pessoas com acesso a um documento restrito.
- */
 function SeletorComBusca<T extends { id: string }>({
   rotulo,
   placeholder,

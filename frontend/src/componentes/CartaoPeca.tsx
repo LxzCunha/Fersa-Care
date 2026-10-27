@@ -5,7 +5,6 @@ import { fichaTecnica } from '../lib/medidas';
 import { SEGMENTOS } from '../lib/rotulos';
 import './CartaoPeca.css';
 
-/** Foto da peça; sem foto, um desenho de rolamento no lugar (decorativo). */
 export function ImagemPeca({ produto, className = '' }: { produto: Produto; className?: string }) {
   return (
     <div className={`imagem-peca ${className}`}>
@@ -25,10 +24,6 @@ export function ImagemPeca({ produto, className = '' }: { produto: Produto; clas
   );
 }
 
-/**
- * Cartão de peça no modelo do catálogo FERSA: categoria, código em destaque,
- * nome, ficha com as medidas em cinza e a chamada para os materiais técnicos.
- */
 export function CartaoPeca({ produto }: { produto: Produto }) {
   const ficha = fichaTecnica(produto);
   return (

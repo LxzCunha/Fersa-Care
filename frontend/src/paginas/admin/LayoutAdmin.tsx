@@ -18,19 +18,17 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router';
 import { listarChamados, listarUsuarios } from '../../api/admin';
 import { Marca } from '../../componentes/Marca';
 import { useAutenticacao, useSairDaConta } from '../../contexto/Autenticacao';
-import { DESCRICAO_DO_CONTADOR, GRUPOS, PAINEL, paginaAtual, type Contador } from './menu';
+import { DESCRICAO_DO_CONTADOR, GRUPOS, PAINEL, paginaAtual, trilhaDaPagina, type Contador } from './menu';
 
 const CHAVE_PENDENTES = ['admin', 'pendentes'] as const;
 const CHAVE_CHAMADOS_ABERTOS = ['admin', 'chamados-abertos'] as const;
 
-/** "Catálogo" → "catalogo": a busca do menu ignora acentos e maiúsculas. */
 function normalizar(texto: string): string {
   return texto.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
 }
 
 const ehDesktop = () => window.matchMedia('(min-width: 64rem)').matches;
 
-/** Preferência de cada pessoa (menu recolhido no desktop); some sem problema se o navegador bloquear. */
 const CHAVE_MENU_RECOLHIDO = 'fersa-care:admin-menu-recolhido';
 
 function lerMenuRecolhido(): boolean {
@@ -49,12 +47,6 @@ function salvarMenuRecolhido(recolhido: boolean) {
   }
 }
 
-/**
- * Estrutura da administração, no modelo de um sistema de gestão: menu lateral
- * escuro com grupos que abrem e fecham, busca de página e "Sair" no rodapé;
- * barra branca no topo com a conta. No desktop o menu pode ser recolhido até
- * ficar só com os ícones; no celular ele vira uma gaveta.
- */
 export function LayoutAdmin() {
   const { usuario } = useAutenticacao();
   const navegar = useNavigate();
@@ -76,6 +68,7 @@ export function LayoutAdmin() {
 
   const atual = paginaAtual(pathname, search);
   const grupoAtual = GRUPOS.find((grupo) => atual && grupo.paginas.includes(atual));
+  const trilha = trilhaDaPagina(pathname, search);
 
   const [recolhido, setRecolhido] = useState(lerMenuRecolhido);
   const [gavetaAberta, setGavetaAberta] = useState(false);
@@ -84,8 +77,7 @@ export function LayoutAdmin() {
   const abrirGavetaRef = useRef<HTMLButtonElement>(null);
   const fecharGavetaRef = useRef<HTMLButtonElement>(null);
 
-  // Ao trocar de página: volta ao topo e fecha a gaveta do celular. A gaveta
-  // (estado do React) é ajustada na própria renderização, e não no efeito.
+  // Ao trocar de página: topo da tela (efeito) e gaveta fechada (ajuste na renderização, não no efeito).
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname, search]);
@@ -96,7 +88,6 @@ export function LayoutAdmin() {
     setGavetaAberta(false);
   }
 
-  // O grupo da página atual sempre aparece aberto.
   const [grupoAnterior, setGrupoAnterior] = useState(grupoAtual);
   if (grupoAtual !== grupoAnterior) {
     setGrupoAnterior(grupoAtual);
@@ -129,7 +120,6 @@ export function LayoutAdmin() {
   }
 
   function alternarGrupo(id: string) {
-    // Com o menu recolhido, clicar no ícone do grupo abre o menu já com o grupo aberto.
     if (recolhido && ehDesktop()) {
       setRecolhido(false);
       salvarMenuRecolhido(false);
@@ -155,7 +145,6 @@ export function LayoutAdmin() {
     : GRUPOS;
   const primeiroResultado = mostrarPainel ? PAINEL : gruposVisiveis[0]?.paginas[0];
 
-  /** Enter na busca abre a primeira página encontrada. */
   function irParaPrimeiroResultado(evento: FormEvent) {
     evento.preventDefault();
     if (!termo || !primeiroResultado) return;
@@ -304,20 +293,23 @@ export function LayoutAdmin() {
           <Link to="/admin" className="admin-topo-marca" aria-label="FERSA Care, painel da administração">
             <Marca tamanho="pequeno" />
           </Link>
-          {atual && (
-            <p className="admin-topo-trilha so-desktop">
-              {grupoAtual && (
-                <>
-                  {grupoAtual.rotulo}
-                  <ChevronRight aria-hidden />
-                </>
-              )}
-              <strong>{atual.rotulo}</strong>
-            </p>
-          )}
+          <nav className="admin-topo-trilha so-desktop" aria-label="Você está em">
+            <ol>
+              {trilha.map((item, indice) => (
+                <li key={`${item.rotulo}-${indice}`}>
+                  {indice > 0 && <ChevronRight aria-hidden />}
+                  {item.para ? (
+                    <Link to={item.para}>{item.rotulo}</Link>
+                  ) : (
+                    <span aria-current={indice === trilha.length - 1 ? 'page' : undefined}>{item.rotulo}</span>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </nav>
           <div className="admin-topo-acoes">
-            <Link to="/" className="admin-topo-link so-desktop">
-              <Globe aria-hidden /> Ver o portal
+            <Link to="/" className="admin-topo-link so-desktop" title="Ver o portal">
+              <Globe aria-hidden /> <span className="admin-topo-link-texto">Ver o portal</span>
             </Link>
             <MenuDaConta nome={usuario?.nome.split(' ')[0] ?? 'Conta'} aoSair={aoSair} />
           </div>
@@ -331,7 +323,6 @@ export function LayoutAdmin() {
   );
 }
 
-/** Nome de quem está logado, com a conta, o portal e "Sair" num menu que abre ao clicar. */
 function MenuDaConta({ nome, aoSair }: { nome: string; aoSair: () => void }) {
   const [aberto, setAberto] = useState(false);
   const caixaRef = useRef<HTMLDivElement>(null);
@@ -345,7 +336,6 @@ function MenuDaConta({ nome, aoSair }: { nome: string; aoSair: () => void }) {
     setAberto(false);
   }
 
-  // Fecha ao clicar fora ou com Esc.
   useEffect(() => {
     if (!aberto) return;
     const aoClicarFora = (evento: PointerEvent) => {

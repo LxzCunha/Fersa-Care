@@ -1,13 +1,6 @@
 import type { CSSProperties } from 'react';
 import { numero, plural } from '../../lib/formatar';
 
-/**
- * Colunas com as aberturas de documentos por dia (últimos 14 dias).
- * Série única: sem legenda, o título do bloco diz o que é. O dia de hoje fica
- * em destaque (cor + rótulo "Hoje"), passar o mouse ou focar mostra o valor,
- * e a tabela abaixo traz todos os números sem depender do gráfico.
- */
-
 function escalaArredondada(maximo: number): number {
   if (maximo <= 4) return 4;
   const ordem = 10 ** Math.floor(Math.log10(maximo));

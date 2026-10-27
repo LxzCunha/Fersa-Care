@@ -4,11 +4,7 @@ import type { Perfil } from '../api/tipos';
 import { useAutenticacao } from '../contexto/Autenticacao';
 import { Carregando, EstadoVazio } from './Estados';
 
-/**
- * Protege telas que exigem login (e, opcionalmente, perfil de administrador).
- * É só conforto de navegação: quem garante a segurança de verdade é a API,
- * que recusa qualquer requisição sem permissão.
- */
+/** Só conforto de navegação: quem garante a segurança é a API, que recusa requisições sem permissão. */
 export function RotaProtegida({ perfil, children }: { perfil?: Perfil; children: ReactNode }) {
   const { usuario, carregando } = useAutenticacao();
   const local = useLocation();

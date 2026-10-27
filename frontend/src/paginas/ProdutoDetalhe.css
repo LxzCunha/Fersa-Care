@@ -44,7 +44,6 @@
   font-size: var(--texto-lg);
 }
 
-/* Ficha cinza com mm e o equivalente em polegadas */
 .peca-ficha {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

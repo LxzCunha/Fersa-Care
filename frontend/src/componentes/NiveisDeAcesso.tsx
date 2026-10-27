@@ -1,6 +1,5 @@
 import { Globe, Lock, UserCheck } from 'lucide-react';
 
-/** Explica, em linguagem simples, o que cada tipo de conta enxerga no portal. */
 export function NiveisDeAcesso() {
   return (
     <section className="niveis" aria-labelledby="titulo-niveis">

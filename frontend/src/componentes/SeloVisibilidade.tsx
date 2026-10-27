@@ -2,11 +2,6 @@ import { Lock, PencilLine, UserCheck } from 'lucide-react';
 import type { Documento } from '../api/tipos';
 import { VISIBILIDADES } from '../lib/rotulos';
 
-/**
- * Mostra quem pode ver um documento, sempre com ícone + texto.
- * - No portal (clientes): só aparece nos materiais exclusivos.
- * - Na administração: aparece em todos, com o nome técnico do nível.
- */
 export function SeloVisibilidade({
   documento,
   visao,

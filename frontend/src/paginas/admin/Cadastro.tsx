@@ -4,15 +4,6 @@ import { Link } from 'react-router';
 import { DialogoConfirmacao } from '../../componentes/DialogoConfirmacao';
 import { numero } from '../../lib/formatar';
 
-/**
- * Peças das telas de cadastro, no modelo minimalista de um sistema de gestão:
- * listas com abas, busca e rodapé com a contagem; formulários numa janela
- * (modal) por cima da lista, com "Cancelar · Título · Salvar" no topo.
- */
-
-// ─── Listas ─────────────────────────────────────────────────────────────────
-
-/** Título da lista e o "+" para cadastrar. */
 export function CabecalhoLista({ titulo, novo }: { titulo: string; novo?: { para: string; rotulo: string } }) {
   return (
     <header className="lista-cabecalho">
@@ -33,7 +24,6 @@ export interface OpcaoDeAba {
   contagem?: number;
 }
 
-/** Abas de filtro numa barra cinza; a escolhida fica branca com contorno azul. */
 export function Abas({
   rotulo,
   opcoes,
@@ -62,7 +52,6 @@ export function Abas({
   );
 }
 
-/** Busca em barra cinza, com filtros extras (FiltroNaBusca) à direita. */
 export function BarraBusca({
   valor,
   aoMudar,
@@ -71,7 +60,6 @@ export function BarraBusca({
 }: {
   valor: string;
   aoMudar: (valor: string) => void;
-  /** Para leitores de tela e como dica, ex.: "Buscar por código, nome ou aplicação". */
   rotulo: string;
   children?: ReactNode;
 }) {
@@ -87,7 +75,6 @@ export function BarraBusca({
   );
 }
 
-/** Filtro compacto dentro da barra de busca: "Categoria: Todas ▾". */
 export function FiltroNaBusca({
   rotulo,
   valor,
@@ -116,7 +103,6 @@ export function FiltroNaBusca({
   );
 }
 
-/** Sim/não numa coluna da tabela: quadrado azul com ✓, ou vazio. */
 export function Marcador({ marcado, rotulo }: { marcado: boolean; rotulo: string }) {
   return (
     <span className={`marcador ${marcado ? 'marcado' : ''}`} role="img" aria-label={`${rotulo}: ${marcado ? 'sim' : 'não'}`}>
@@ -125,7 +111,6 @@ export function Marcador({ marcado, rotulo }: { marcado: boolean; rotulo: string
   );
 }
 
-/** Rodapé fixo com a contagem ("1–20 de 135 usuários") e as setas de página. */
 export function RodapeLista({
   total,
   nomes,
@@ -169,14 +154,7 @@ export function RodapeLista({
   );
 }
 
-// ─── Janela de cadastro ─────────────────────────────────────────────────────
-
-/**
- * Janela (modal) do cadastro, sobre a lista: "Cancelar" à esquerda, título no
- * centro e "Salvar" à direita, que envia o formulário `idFormulario`.
- * Usa o <dialog> nativo: o foco fica preso na janela e o resto da tela fica
- * inativo. Esc ou "Cancelar" com alterações não salvas pedem confirmação.
- */
+/** Modal em <dialog> nativo (foco preso, resto inerte); Esc ou Cancelar com alterações pede confirmação. */
 export function Janela({
   titulo,
   idFormulario,

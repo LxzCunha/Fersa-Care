@@ -12,7 +12,6 @@ import { renderizar } from '../renderizar';
 
 vi.mock('../../src/api/assistente');
 
-/** Faz a API "responder" com estes eventos, na ordem. */
 function apiResponde(...eventos: EventoDoAssistente[]) {
   vi.mocked(api.perguntarAoAssistente).mockImplementation((_dados, aoEvento) => {
     for (const evento of eventos) aoEvento(evento);

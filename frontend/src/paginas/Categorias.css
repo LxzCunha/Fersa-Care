@@ -49,7 +49,6 @@
   margin-top: var(--e-4);
 }
 
-/* Desktop: três colunas de nomes em negrito, sem divisórias (como no site FERSA) */
 @media (min-width: 48rem) {
   .lista-categorias {
     grid-template-columns: repeat(2, minmax(0, 1fr));

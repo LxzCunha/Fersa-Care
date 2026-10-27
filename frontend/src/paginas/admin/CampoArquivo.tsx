@@ -3,11 +3,6 @@ import { useId, useState } from 'react';
 import { EXTENSOES_ACEITAS, LIMITE_UPLOAD_MB } from '../../config';
 import { tamanhoDeArquivo } from '../../lib/formatar';
 
-/**
- * Arquivo do documento numa linha com o nome e ›: clicar (ou arrastar o
- * arquivo até a linha) escolhe outro. Na edição, mostra o arquivo atual;
- * o novo só substitui o atual ao salvar.
- */
 export function CampoArquivo({
   arquivo,
   arquivoAtual,

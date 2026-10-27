@@ -3,26 +3,18 @@ import { abrirChamado, obterConversa, perguntarAoAssistente, type ContatoDoChama
 import { ErroApi, mensagemDeErro } from '../api/cliente';
 import type { Encaminhamento, FonteDaResposta } from '../api/tipos';
 
-/**
- * Estado da conversa com o assistente técnico. Fica no Layout do portal, então
- * a conversa continua enquanto a pessoa navega; o id dela fica guardado na
- * aba do navegador (sessionStorage) para sobreviver a um recarregar de página.
- */
-
 export interface MensagemNoChat {
   id: string;
   papel: 'USUARIO' | 'ASSISTENTE';
   conteudo: string;
   fontes: FonteDaResposta[];
-  /** A resposta ainda está chegando. */
   emAndamento?: boolean;
-  /** A resposta falhou (o conteúdo é a mensagem de erro). */
+  /** O conteúdo é a mensagem de erro. */
   falhou?: boolean;
 }
 
 interface ValorAssistente {
   aberto: boolean;
-  /** Abre o chat; `rascunho` já deixa um começo de pergunta no campo. */
   abrir: (opcoes?: { rascunho?: string }) => void;
   fechar: () => void;
   mensagens: MensagemNoChat[];
@@ -33,7 +25,7 @@ interface ValorAssistente {
   rascunho: string;
   setRascunho: (texto: string) => void;
   enviar: (pergunta: string) => Promise<void>;
-  /** Abre o chamado de suporte (visitante informa o contato). Erros de campo vêm como ErroApi. */
+  /** Visitante informa o contato; erros de campo vêm como ErroApi. */
   pedirChamado: (contato?: ContatoDoChamado) => Promise<void>;
   novaConversa: () => void;
 }
@@ -74,7 +66,6 @@ export function ProvedorAssistente({ children }: { children: ReactNode }) {
   const restaurada = useRef(false);
   const emAndamento = useRef<AbortController | null>(null);
 
-  /** Na primeira abertura, traz de volta a conversa guardada (se ainda existir). */
   const restaurar = useCallback(async () => {
     if (restaurada.current || !conversaId.current) return;
     restaurada.current = true;

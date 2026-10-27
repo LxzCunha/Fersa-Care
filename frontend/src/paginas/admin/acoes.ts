@@ -4,10 +4,6 @@ import { mensagemDeErro } from '../../api/cliente';
 import type { StatusUsuario, Usuario } from '../../api/tipos';
 import { useNotificar } from '../../contexto/Notificacoes';
 
-/**
- * Depois de qualquer alteração feita pelo admin, recarregamos as consultas:
- * listas, painel e as telas do portal podem ter mudado.
- */
 export function useRecarregarTudo() {
   const clienteQuery = useQueryClient();
   return () => clienteQuery.invalidateQueries();
@@ -19,7 +15,6 @@ const MENSAGENS: Record<StatusUsuario, (nome: string) => string> = {
   PENDENTE: (nome) => `${nome} voltou para a fila de aprovação.`,
 };
 
-/** Aprovar, recusar ou desativar um usuário (usado no painel e na lista). */
 export function useAlterarStatus() {
   const notificar = useNotificar();
   const recarregar = useRecarregarTudo();

@@ -1,36 +1,28 @@
-/*
- * Tokens de design do FERSA Care, baseados na identidade do site da FERSA
- * (brasil.fersa.com): fundo branco, azul-marinho da marca nos botões e
- * destaques, cinza claro nos painéis e uma sans geométrica em tudo.
- * O resto do CSS só usa estas variáveis.
- */
+/* Tokens do FERSA Care (identidade de brasil.fersa.com). O resto do CSS só usa estas variáveis. */
 :root {
-  /* Azul-marinho FERSA: logotipo, botão "Catálogo", ações principais e foco */
   --marca: #1b365d;
   --marca-hover: #26497a;
   --marca-escura: #10233f; /* faixas e painéis de destaque */
   --marca-clara: #e9eef6; /* fundos suaves, seleção, item ativo */
   --marca-borda: #c5d2e4;
 
-  /* Neutros (cinzas frios, como os painéis do catálogo FERSA) */
   --tinta: #121a26; /* títulos e texto forte */
   --texto: #1d2430;
   --texto-suave: #5a6472;
   --aco: #6b7584; /* ícones e rótulos */
   --aco-claro: #a9b2be;
-  --fundo: #ffffff; /* fundo das páginas */
+  --fundo: #ffffff;
   --nevoa: #f3f4f6; /* painéis cinza: ficha técnica, filtros, rodapé */
   --superficie: #ffffff; /* cartões e campos */
   --linha: #e3e6ea; /* divisórias e bordas de cartões */
   --linha-forte: #c6ccd4; /* bordas de campos */
 
-  /* Atenção (âmbar): pendências e materiais restritos */
+  /* Âmbar só para o que pede atenção (pendências, restritos); nunca como cor de ação. */
   --atencao: #8a5a00;
   --atencao-forte: #d38f12;
   --atencao-fundo: #fff4dc;
   --atencao-borda: #efd29a;
 
-  /* Menu lateral da administração: painel azul-marinho escuro, como um sistema de gestão */
   --lateral-fundo: var(--marca-escura);
   --lateral-texto: #c6d1e1;
   --lateral-texto-suave: #8d9bb1;
@@ -40,7 +32,6 @@
   --lateral-selecionado: rgb(255 255 255 / 0.1);
   --lateral-linha: rgb(255 255 255 / 0.12);
 
-  /* Estados */
   --ok: #1d6f46;
   --ok-fundo: #e3f3ea;
   --erro: #b3261e;
@@ -48,12 +39,9 @@
   --info: #1b365d;
   --info-fundo: #e9eef6;
 
-  /* Tipografia: Plus Jakarta Sans, sans geométrica próxima à do site FERSA.
-   * Títulos e códigos de peça usam a mesma família, em peso alto. */
   --fonte-texto: 'Plus Jakarta Sans Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --fonte-titulo: var(--fonte-texto);
 
-  /* Escala tipográfica (razão 1,2) */
   --texto-xs: 0.8125rem;
   --texto-sm: 0.9375rem;
   --texto-md: 1rem;
@@ -63,7 +51,6 @@
   --texto-3xl: clamp(1.75rem, 1.35rem + 1.8vw, 2.375rem);
   --texto-4xl: clamp(2rem, 1.4rem + 2.8vw, 3rem);
 
-  /* Espaçamentos */
   --e-1: 0.25rem;
   --e-2: 0.5rem;
   --e-3: 0.75rem;
@@ -73,7 +60,6 @@
   --e-7: 3rem;
   --e-8: 4rem;
 
-  /* Raios: botões e busca em pílula (como no site FERSA), campos e cartões arredondados */
   --raio-etiqueta: 6px;
   --raio-controle: 10px;
   --raio-painel: 12px;

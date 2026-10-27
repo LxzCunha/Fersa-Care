@@ -1,5 +1,3 @@
-/* ─── Catálogo de peças ──────────────────────────────────────────────────── */
-
 .catalogo-grade {
   display: grid;
   gap: var(--e-5);
@@ -46,7 +44,6 @@
   font-size: 0.75rem;
 }
 
-/* Pílulas dos filtros em uso */
 .filtros-ativos {
   display: flex;
   flex-wrap: wrap;
@@ -83,8 +80,6 @@
   font-weight: 600;
   text-decoration: underline;
 }
-
-/* ─── Painel de filtros (acordeões, como no catálogo FERSA) ──────────────── */
 
 .painel-filtros {
   display: grid;
@@ -168,7 +163,6 @@
   font-weight: 600;
 }
 
-/* Medidas: painel cinza com mín./máx., como "Dimensões" no site FERSA */
 .filtro-medidas {
   display: grid;
   gap: var(--e-3);
@@ -203,8 +197,6 @@
   min-width: 60%;
   margin-top: var(--e-1);
 }
-
-/* ─── Gaveta de filtros (celular) ────────────────────────────────────────── */
 
 .gaveta {
   width: 100%;
@@ -263,8 +255,6 @@
     opacity: 0.4;
   }
 }
-
-/* ─── Desktop: filtros na lateral, como no catálogo FERSA ────────────────── */
 
 @media (min-width: 64rem) {
   .catalogo-grade {

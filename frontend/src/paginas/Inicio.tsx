@@ -16,7 +16,6 @@ import { ORDEM_DOS_TIPOS, SEGMENTOS, TIPOS } from '../lib/rotulos';
 import { ListaCategorias } from './Categorias';
 import './Inicio.css';
 
-/** Quantas categorias aparecem na página inicial (as demais em "Ver todas"). */
 const CATEGORIAS_NO_INICIO = 9;
 
 export function Inicio() {
@@ -37,7 +36,6 @@ export function Inicio() {
     <>
       <title>FERSA Care | Manuais, vídeos e suporte técnico das peças FERSA</title>
 
-      {/* Faixa azul no lugar do vídeo de abertura do site FERSA */}
       <section className="hero">
         <div className="conteiner hero-grade">
           <div className="hero-texto">

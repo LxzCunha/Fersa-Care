@@ -33,7 +33,6 @@ import { Janela } from './Cadastro';
 import { rolarJanelaParaTopo, useVoltarParaLista } from './navegacao';
 import { SeletorProdutos, SeletorUsuarios } from './Seletores';
 
-/** Cadastro (/admin/documentos/novo) e edição (/admin/documentos/:id), numa janela sobre a lista. */
 export function FormDocumento() {
   const { id } = useParams();
   const fechar = useVoltarParaLista('/admin/documentos');
@@ -53,7 +52,6 @@ export function FormDocumento() {
   return <FormularioDocumento key={id ?? 'novo'} documento={consulta.data} aoFechar={fechar} />;
 }
 
-/** "manual-de-montagem_v2.pdf" → "Manual de montagem v2" */
 function tituloPeloNomeDoArquivo(nome: string): string {
   const semExtensao = nome.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').trim();
   return semExtensao.charAt(0).toUpperCase() + semExtensao.slice(1);
@@ -372,7 +370,6 @@ function FormularioDocumento({ documento, aoFechar }: { documento?: DocumentoAdm
   );
 }
 
-/** Se o assistente técnico já "leu" o documento, com a opção de indexar de novo. */
 function SituacaoNoAssistente({ documento }: { documento: DocumentoAdmin }) {
   const notificar = useNotificar();
   const recarregar = useRecarregarTudo();

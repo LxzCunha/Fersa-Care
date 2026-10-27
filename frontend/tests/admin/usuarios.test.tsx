@@ -59,7 +59,6 @@ describe('Lista de usuários', () => {
     expect(within(linha('Ana Lima')).getByRole('img', { name: 'Ativo: não' })).toBeInTheDocument();
     expect(linha('Ana Lima')).toHaveTextContent('—');
 
-    // O próprio admin aparece marcado.
     expect(screen.getByRole('link', { name: 'Administrador FERSA (você)' })).toBeInTheDocument();
     expect(linha('Administrador FERSA (você)')).toHaveTextContent('Administrador');
   });

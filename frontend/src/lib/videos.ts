@@ -1,7 +1,3 @@
-/**
- * Converte links de YouTube e Vimeo no endereço do player incorporável.
- * Retorna null para outros links (que abrem numa nova aba).
- */
 export function enderecoDoPlayer(url: string | null | undefined): string | null {
   if (!url) return null;
   let endereco: URL;

@@ -1,6 +1,3 @@
-/* ─── Capa ───────────────────────────────────────────────────────────────── */
-
-/* Painel cinza com a capa por cima, como uma folha (a sombra segue a imagem). */
 .capa-documento {
   --capa-margem: var(--e-1);
 
@@ -23,7 +20,6 @@
   filter: drop-shadow(0 1px 2px rgb(16 35 63 / 0.16)) drop-shadow(0 4px 10px rgb(16 35 63 / 0.08));
 }
 
-/* Vídeo com capa: botão de play desenhado por cima da miniatura */
 .capa-documento-play {
   position: absolute;
   inset: 0;
@@ -45,7 +41,6 @@
   fill: currentColor;
 }
 
-/* Sem capa: uma folha com a faixa azul da marca e o ícone do tipo… */
 .capa-substituta {
   display: grid;
   place-items: center;
@@ -64,7 +59,6 @@
   stroke-width: 1.5;
 }
 
-/* …ou, nos vídeos, uma tela azul com o play. */
 .capa-substituta-video {
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -73,8 +67,6 @@
   background: var(--marca);
   color: #fff;
 }
-
-/* ─── Grade de cartões ───────────────────────────────────────────────────── */
 
 .grade-documentos {
   display: grid;
@@ -90,8 +82,6 @@
     gap: var(--e-4);
   }
 }
-
-/* ─── Cartão (celular: capa pequena à esquerda; tablet e desktop: título em cima e capa grande) ─ */
 
 .cartao-documento {
   position: relative;

@@ -81,8 +81,7 @@
   border: 0;
 }
 
-/* A pré-visualização de PDF só aparece em telas grandes: no celular o
-   navegador abre o PDF melhor em tela cheia, pelo botão "Abrir PDF". */
+/* No celular o navegador abre o PDF melhor em tela cheia, pelo botão "Abrir PDF". */
 .documento-pdf {
   display: none;
 }
@@ -133,7 +132,6 @@
   }
 }
 
-/* Lateral com dados e peças relacionadas */
 .documento-lateral {
   display: grid;
   gap: var(--e-4);

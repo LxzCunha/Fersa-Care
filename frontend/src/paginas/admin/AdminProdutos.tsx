@@ -19,7 +19,6 @@ import { useAbrirAoClicarNaLinha, useFiltrosNaUrl } from './navegacao';
 
 const POR_PAGINA = 25;
 
-/** Lista de peças; o cadastro abre numa janela por cima (rotas filhas no <Outlet />). */
 export function AdminProdutos() {
   const [parametros, setParametros] = useSearchParams();
   const { search } = useLocation();

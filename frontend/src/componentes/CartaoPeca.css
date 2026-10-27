@@ -1,5 +1,3 @@
-/* ─── Foto da peça ───────────────────────────────────────────────────────── */
-
 .imagem-peca {
   display: grid;
   place-items: center;
@@ -32,8 +30,6 @@
   stroke-width: 2;
 }
 
-/* ─── Grade de cartões ───────────────────────────────────────────────────── */
-
 .grade-pecas {
   display: grid;
   gap: var(--e-3);
@@ -48,8 +44,6 @@
     gap: var(--e-4);
   }
 }
-
-/* ─── Cartão (celular: foto à esquerda; tablet e desktop: vertical, como na FERSA) ─ */
 
 .cartao-peca {
   display: grid;
@@ -109,7 +103,6 @@
   line-height: 1.35;
 }
 
-/* Ficha cinza 2×2 (Ø interno, Ø externo, largura, peso) */
 .ficha-resumo {
   display: grid;
   grid-area: ficha;

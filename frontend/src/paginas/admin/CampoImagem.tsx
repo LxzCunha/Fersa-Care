@@ -1,16 +1,10 @@
 import { ChevronRight } from 'lucide-react';
 import { useEffect, useId, useMemo, useState } from 'react';
 
+// Iguais a EXTENSOES_DE_IMAGEM e IMAGEM_LIMITE_MB da API (backend/src/lib/armazenamento.ts).
 const EXTENSOES = '.png,.jpg,.jpeg,.webp';
-/** Mesmo limite da API (IMAGEM_LIMITE_MB). */
 const LIMITE_MB = 5;
 
-/**
- * Imagem opcional (foto da peça, capa do documento) numa linha com o nome do
- * arquivo e ›, como num cadastro de celular: clicar (ou arrastar a imagem até
- * a linha) escolhe outra; a prévia fica embaixo. O tipo e o tamanho são
- * conferidos antes de enviar.
- */
 export function CampoImagem({
   objeto,
   rotulo,
@@ -22,16 +16,13 @@ export function CampoImagem({
   aoRemoverAtual,
   erro,
 }: {
-  /** Nome da imagem nos textos: "Escolher foto", "Remover capa"... (os dois são femininos). */
+  /** Usado nos textos ("Escolher foto", "Remover capa"); os dois nomes são femininos. */
   objeto: 'foto' | 'capa';
-  /** Nome do campo para leitores de tela, ex.: "Foto da peça". */
   rotulo: string;
   /** Orientação depois dos formatos aceitos. */
   dica: string;
-  /** Imagem já salva (edição), ou null. */
   urlAtual: string | null;
   arquivo: File | null;
-  /** A imagem atual será apagada ao salvar. */
   removerAtual: boolean;
   aoEscolher: (arquivo: File | null) => void;
   aoRemoverAtual: (remover: boolean) => void;

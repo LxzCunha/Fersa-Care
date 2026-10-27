@@ -8,7 +8,6 @@ import { useValorAtrasado } from '../../lib/ganchos';
 import { BarraBusca, CabecalhoLista, RodapeLista } from './Cadastro';
 import { useAbrirAoClicarNaLinha } from './navegacao';
 
-/** Lista de categorias; o cadastro abre numa janela por cima (rotas filhas no <Outlet />). */
 export function AdminCategorias() {
   const [busca, setBusca] = useState('');
   const termo = useValorAtrasado(busca.trim());

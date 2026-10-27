@@ -1,12 +1,7 @@
 import { api, ErroApi, type CorpoDeErro } from './cliente';
 import type { ConversaDoAssistente, EventoDoAssistente } from './tipos';
 
-/**
- * Pergunta ao assistente técnico. A resposta chega aos pedaços
- * (Server-Sent Events) e cada evento é entregue a `aoEvento` na hora.
- * Erros antes do streaming (pergunta inválida, conversa que não existe,
- * limite de perguntas) viram ErroApi, como nas outras chamadas.
- */
+/** A resposta chega em SSE, evento a evento; erros antes do streaming viram ErroApi. */
 export async function perguntarAoAssistente(
   dados: { pergunta: string; conversaId?: string },
   aoEvento: (evento: EventoDoAssistente) => void,
@@ -63,7 +58,6 @@ export interface ContatoDoChamado {
   telefone?: string;
 }
 
-/** Abre o chamado de suporte técnico com a conversa (visitante informa o contato). */
 export function abrirChamado(conversaId: string, contato: ContatoDoChamado = {}) {
   return api<{ numero: number; mensagem: string }>('/assistente/chamados', {
     metodo: 'POST',

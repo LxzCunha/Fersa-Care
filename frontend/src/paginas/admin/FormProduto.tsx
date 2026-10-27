@@ -23,7 +23,6 @@ import { CampoImagem } from './CampoImagem';
 import { Janela } from './Cadastro';
 import { rolarJanelaParaTopo, useVoltarParaLista } from './navegacao';
 
-/** Campos de medida: digitados como texto ("16,25") e enviados como número. */
 const MEDIDAS = [
   { campo: 'diametroInternoMm', rotulo: 'Ø interno', unidade: 'mm', exemplo: '25' },
   { campo: 'diametroExternoMm', rotulo: 'Ø externo', unidade: 'mm', exemplo: '52' },
@@ -34,7 +33,6 @@ const MEDIDAS = [
 type CampoDeMedida = (typeof MEDIDAS)[number]['campo'];
 type DadosDoFormulario = Omit<DadosProduto, CampoDeMedida | 'removerImagem'> & Record<CampoDeMedida, string>;
 
-/** Cadastro (/admin/produtos/novo) e edição (/admin/produtos/:id) de peças, numa janela sobre a lista. */
 export function FormProduto() {
   const { id } = useParams();
   const fechar = useVoltarParaLista('/admin/produtos');

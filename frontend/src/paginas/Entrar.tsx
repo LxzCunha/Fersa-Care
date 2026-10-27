@@ -24,7 +24,6 @@ export function Entrar() {
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<{ mensagem: string; tipo: 'erro' | 'atencao' } | null>(null);
 
-  // Quem já está logado não precisa ver esta tela.
   if (usuario && !enviando) return <Navigate to={voltarPara ?? '/'} replace />;
 
   async function aoEnviar(evento: FormEvent) {

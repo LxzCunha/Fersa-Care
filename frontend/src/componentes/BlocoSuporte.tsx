@@ -3,11 +3,6 @@ import { SUPORTE } from '../config';
 import { useAssistente } from '../contexto/Assistente';
 import './BlocoSuporte.css';
 
-/**
- * Caminho para o suporte técnico: primeiro o assistente (que abre um chamado
- * com a equipe quando não resolve), e o e-mail como alternativa. O assunto
- * (ex.: "a peça 30205") já entra no começo da pergunta e no assunto do e-mail.
- */
 export function BlocoSuporte({
   titulo = 'Não encontrou o que precisava?',
   assunto,

@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { CampoArquivo } from '../../src/paginas/admin/CampoArquivo';
 import { CampoImagem } from '../../src/paginas/admin/CampoImagem';
 import { Abas, BarraBusca, FiltroNaBusca, Janela, Marcador, RodapeLista } from '../../src/paginas/admin/Cadastro';
-import { paginaAtual } from '../../src/paginas/admin/menu';
+import { paginaAtual, trilhaDaPagina } from '../../src/paginas/admin/menu';
 import { renderizar } from '../renderizar';
 
 describe('Abas de filtro', () => {
@@ -386,3 +386,53 @@ describe('Menu do admin: qual página está aberta', () => {
     expect(paginaAtual('/admin/qualquer-coisa', '')?.rotulo).toBeUndefined();
   });
 });
+
+describe('Trilha do admin (breadcrumb)', () => {
+  const PAINEL = { rotulo: 'Painel', para: '/admin' };
+
+  it('no painel, só o painel (sem link)', () => {
+    expect(trilhaDaPagina('/admin', '')).toEqual([{ rotulo: 'Painel' }]);
+  });
+
+  it('painel › grupo › página, com links para voltar', () => {
+    expect(trilhaDaPagina('/admin/auditoria', '?grupo=ACESSOS')).toEqual([
+      PAINEL,
+      { rotulo: 'Segurança', para: '/admin/auditoria' },
+      { rotulo: 'Acessos e senhas' },
+    ]);
+    expect(trilhaDaPagina('/admin/usuarios', '?status=PENDENTE')).toEqual([
+      PAINEL,
+      { rotulo: 'Usuários', para: '/admin/usuarios' },
+      { rotulo: 'Aguardando aprovação' },
+    ]);
+    expect(trilhaDaPagina('/admin/produtos/novo', '')).toEqual([
+      PAINEL,
+      { rotulo: 'Catálogo', para: '/admin/produtos' },
+      { rotulo: 'Cadastrar peça' },
+    ]);
+  });
+
+  it('o grupo não vira link quando leva para a própria página aberta', () => {
+    expect(trilhaDaPagina('/admin/auditoria', '')).toEqual([PAINEL, { rotulo: 'Segurança' }, { rotulo: 'Auditoria' }]);
+  });
+
+  it('com um registro aberto, a lista vira link (mantendo os filtros) e o registro é o último item', () => {
+    expect(trilhaDaPagina('/admin/produtos/123', '?ativo=true')).toEqual([
+      PAINEL,
+      { rotulo: 'Catálogo', para: '/admin/produtos' },
+      { rotulo: 'Peças', para: '/admin/produtos?ativo=true' },
+      { rotulo: 'Editar peça' },
+    ]);
+    expect(trilhaDaPagina('/admin/chamados/123', '?status=ABERTO')).toEqual([
+      PAINEL,
+      { rotulo: 'Suporte', para: '/admin/chamados' },
+      { rotulo: 'Chamados abertos', para: '/admin/chamados?status=ABERTO' },
+      { rotulo: 'Chamado' },
+    ]);
+  });
+
+  it('endereço fora do menu: só o link para o painel', () => {
+    expect(trilhaDaPagina('/admin/qualquer-coisa', '')).toEqual([PAINEL]);
+  });
+});
+

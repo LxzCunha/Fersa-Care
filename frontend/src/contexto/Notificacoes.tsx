@@ -1,8 +1,6 @@
 import { CircleAlert, CircleCheck } from 'lucide-react';
 import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
 
-/** Mensagens rápidas no rodapé da tela ("Documento salvo", "Usuário aprovado"...). */
-
 type TipoNotificacao = 'ok' | 'erro';
 type Notificar = (mensagem: string, tipo?: TipoNotificacao) => void;
 

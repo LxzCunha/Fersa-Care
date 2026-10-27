@@ -1,5 +1,3 @@
-/* Telas de entrar, solicitar acesso e minha conta. */
-
 .acesso {
   display: grid;
   gap: var(--e-6);
@@ -35,7 +33,6 @@
   font-weight: 700;
 }
 
-/* Explicação dos níveis de acesso */
 .niveis {
   display: grid;
   gap: var(--e-4);

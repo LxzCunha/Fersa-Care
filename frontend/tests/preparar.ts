@@ -2,11 +2,6 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterEach } from 'vitest';
 
-/**
- * Preparação de cada arquivo de teste: matchers do jest-dom
- * (toBeInTheDocument, toHaveAttribute...) e o que falta no jsdom.
- */
-
 afterEach(() => cleanup());
 
 // <dialog>: o jsdom não abre nem fecha a janela de verdade.
@@ -21,7 +16,6 @@ if (!HTMLDialogElement.prototype.close) {
   };
 }
 
-// Menu do admin pergunta se a tela é de desktop.
 if (!window.matchMedia) {
   window.matchMedia = (consulta: string) =>
     ({
@@ -36,10 +30,8 @@ if (!window.matchMedia) {
     }) as MediaQueryList;
 }
 
-// Pré-visualização de imagens escolhidas.
 URL.createObjectURL ??= () => 'blob:previa-de-teste';
 URL.revokeObjectURL ??= () => undefined;
 
-// Rolagens (ao trocar de página, ao mostrar um erro na janela).
 window.scrollTo = () => undefined;
 Element.prototype.scrollTo = () => undefined;

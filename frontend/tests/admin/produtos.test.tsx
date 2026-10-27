@@ -208,7 +208,6 @@ describe('Cadastro de peça', () => {
 
     expect(await within(janela).findByText('Informe o código da peça.')).toBeInTheDocument();
     expect(within(janela).getByLabelText('Código')).toHaveAttribute('aria-invalid', 'true');
-    // A janela continua aberta para corrigir.
     expect(screen.getByRole('dialog', { name: 'Nova peça' })).toBeInTheDocument();
   });
 

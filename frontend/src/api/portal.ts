@@ -11,8 +11,6 @@ import type {
   TipoDocumento,
 } from './tipos';
 
-/** Consultas públicas: a API devolve só o que o usuário atual pode ver. */
-
 export interface FiltrosDocumentos {
   busca?: string;
   tipo?: TipoDocumento;
@@ -58,7 +56,6 @@ export function detalharProduto(id: string) {
   return api<ProdutoComDocumentos>(`/produtos/${id}`);
 }
 
-/** Categorias com peças no catálogo (as vazias não aparecem). */
 export function listarCategorias() {
   return api<Categoria[]>('/categorias');
 }

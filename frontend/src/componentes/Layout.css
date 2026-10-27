@@ -20,8 +20,6 @@
   top: var(--e-2);
 }
 
-/* ─── Marca ──────────────────────────────────────────────────────────────── */
-
 .marca {
   display: inline-flex;
   align-items: center;
@@ -63,8 +61,6 @@
 .marca-pequeno .marca-care {
   font-size: 0.85rem;
 }
-
-/* ─── Cabeçalho ──────────────────────────────────────────────────────────── */
 
 .cabecalho {
   position: sticky;
@@ -137,21 +133,17 @@
   }
 }
 
-/* Busca logo abaixo do cabeçalho, como no site FERSA */
 .barra-busca {
   padding-block: var(--e-3);
   border-bottom: 1px solid var(--linha);
   background: var(--fundo);
 }
 
-/* ─── Conteúdo e rodapé ──────────────────────────────────────────────────── */
-
 .conteudo {
   flex: 1;
 }
 
 .rodape {
-  /* espaço para a barra inferior fixa no celular */
   margin-bottom: calc(var(--altura-nav-inferior) + env(safe-area-inset-bottom));
   background: var(--nevoa);
 }
@@ -208,8 +200,6 @@
   color: var(--marca);
 }
 
-/* ─── Barra inferior (celular) ───────────────────────────────────────────── */
-
 .nav-inferior {
   position: fixed;
   right: 0;
@@ -245,7 +235,6 @@
   transition: background-color 0.15s;
 }
 
-/* Item ativo: pílula azul atrás do ícone */
 .nav-inferior a.active {
   color: var(--marca);
 }
@@ -253,8 +242,6 @@
 .nav-inferior a.active svg {
   background: var(--marca-clara);
 }
-
-/* ─── Desktop ────────────────────────────────────────────────────────────── */
 
 @media (min-width: 64rem) {
   :root {
@@ -281,7 +268,6 @@
     text-decoration: none;
   }
 
-  /* "Suporte técnico" abre o assistente: um botão com a cara dos links. */
   .nav-principal button {
     border: 0;
     background: transparent;
@@ -294,8 +280,7 @@
     color: var(--marca);
   }
 
-  /* Seção atual em pílula azul-marinho, como o "Catálogo" no site FERSA.
-   * O peso da fonte não muda, para os itens vizinhos não pularem. */
+  /* O peso da fonte não muda, para os itens vizinhos não pularem. */
   .nav-principal a.active {
     background: var(--marca);
     color: #fff;

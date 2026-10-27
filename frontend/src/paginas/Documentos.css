@@ -19,7 +19,6 @@
     align-items: start;
   }
 
-  /* No desktop há espaço: as pílulas quebram linha em vez de rolar. */
   .filtros-linha .chips {
     flex-wrap: wrap;
     overflow: visible;

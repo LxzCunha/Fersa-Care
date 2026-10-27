@@ -43,8 +43,7 @@
   stroke-width: 1;
 }
 
-/* Cotas em âmbar: é o único movimento automático do portal — as linhas são
-   "traçadas" uma vez quando a página abre (desligado com movimento reduzido). */
+/* Único movimento automático do portal: as cotas são "traçadas" uma vez ao abrir a página. */
 .desenho-cota {
   stroke: var(--marca);
   stroke-width: 1.6;

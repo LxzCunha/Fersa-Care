@@ -6,11 +6,6 @@ import { reactRefresh } from 'eslint-plugin-react-refresh';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
-/**
- * ESLint do site (flat config). O typescript-eslint usa as informações de tipo
- * do tsconfig.json (projectService), então regras como no-floating-promises
- * enxergam o que cada função devolve.
- */
 export default defineConfig(
   globalIgnores(['dist/', 'coverage/']),
 
@@ -31,19 +26,14 @@ export default defineConfig(
       },
     },
     rules: {
-      // No recomendado ela é só aviso; aqui dependência faltando é erro.
       'react-hooks/exhaustive-deps': 'error',
-      // Handlers async no JSX (onSubmit={salvar}) são o padrão do React: o
-      // retorno é ignorado e cada um trata os próprios erros com try/catch.
-      // Promises passadas para outros lugares continuam sendo conferidas.
+      // Handlers async no JSX (onSubmit={salvar}) são o padrão do React; cada um trata os próprios erros.
       '@typescript-eslint/no-misused-promises': ['error', { checksVoidReturn: { attributes: false } }],
     },
   },
 
   {
-    // Cada contexto exporta o provedor e o hook que o lê (useAutenticacao…),
-    // um par que só faz sentido junto. Editar um desses arquivos recarrega a
-    // página em vez de atualizar só o componente, o que aqui é aceitável.
+    // Cada contexto exporta o provedor e o hook que o lê; no Fast Refresh, recarregar a página é aceitável.
     files: ['src/contexto/**'],
     rules: { 'react-refresh/only-export-components': 'off' },
   },
@@ -51,8 +41,7 @@ export default defineConfig(
   {
     files: ['tests/**'],
     rules: {
-      // Polyfills e funções falsas leem métodos sem chamá-los
-      // (URL.createObjectURL ??= ..., expect(objeto.metodo).toHaveBeenCalled()).
+      // Polyfills e mocks leem métodos sem chamá-los (expect(objeto.metodo).toHaveBeenCalled()).
       '@typescript-eslint/unbound-method': 'off',
     },
   },

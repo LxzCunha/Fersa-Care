@@ -21,11 +21,7 @@ const TIPOS_DE_ALVO: Record<AlvoDeAuditoria, string> = {
   CHAMADO: 'Chamado',
 };
 
-/**
- * Trilha de auditoria (/admin/auditoria): quem entrou, quem errou a senha e
- * tudo o que foi alterado no cadastro, com data, autor e IP. Só leitura: o
- * banco recusa alterar ou apagar eventos.
- */
+/** Só leitura: o banco recusa alterar ou apagar eventos da auditoria. */
 export function AdminAuditoria() {
   const [parametros, setParametros] = useSearchParams();
   const alterar = useFiltrosNaUrl(parametros, setParametros);

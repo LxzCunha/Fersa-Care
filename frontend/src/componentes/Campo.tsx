@@ -1,9 +1,5 @@
 import type { InputHTMLAttributes, ReactNode } from 'react';
 
-/**
- * Rótulo + controle + ajuda/erro, com as ligações de acessibilidade prontas
- * (aria-invalid e aria-describedby). `children` recebe esses atributos.
- */
 export function Campo({
   id,
   rotulo,
@@ -42,7 +38,6 @@ export function Campo({
   );
 }
 
-/** Atalho para o caso mais comum: um <input> de texto. */
 export function CampoTexto({
   id,
   rotulo,

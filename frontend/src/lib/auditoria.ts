@@ -1,14 +1,8 @@
 import type { AcaoDeAuditoria, AlvoDeAuditoria, EventoDeAuditoria, Perfil, Visibilidade } from '../api/tipos';
 import { PERFIS, STATUS_CHAMADO, STATUS_USUARIO, VISIBILIDADES } from './rotulos';
 
-/**
- * Transforma os `detalhes` de um evento da trilha de auditoria em frases
- * curtas para a tabela ("Alterou: título, visibilidade", "Situação: Ativo →
- * Inativo"...). Chaves desconhecidas são ignoradas: a API pode ganhar
- * detalhes novos sem quebrar a tela.
- */
+// Chaves desconhecidas em `detalhes` são ignoradas, para a API poder ganhar detalhes novos.
 
-/** Nomes dos campos (como a API os chama) em português. */
 const CAMPOS: Record<string, string> = {
   titulo: 'título',
   descricao: 'descrição',
@@ -107,12 +101,10 @@ const TELAS_DO_ALVO: Record<AlvoDeAuditoria, string> = {
 
 const EXCLUSOES: AcaoDeAuditoria[] = ['USUARIO_EXCLUIDO', 'DOCUMENTO_EXCLUIDO', 'PRODUTO_EXCLUIDO', 'CATEGORIA_EXCLUIDA'];
 
-/** A ação foi sobre a própria conta de quem fez (entrar, trocar a senha...). */
 export function sobreAPropriaConta({ autor, alvo }: Pick<EventoDeAuditoria, 'autor' | 'alvo'>): boolean {
   return alvo?.tipo === 'USUARIO' && autor?.id === alvo.id;
 }
 
-/** Onde abrir o registro afetado no admin. Registro excluído não tem para onde ir. */
 export function destinoDoAlvo({ acao, alvo }: Pick<EventoDeAuditoria, 'acao' | 'alvo'>): string | undefined {
   if (!alvo || EXCLUSOES.includes(acao)) return undefined;
   return `${TELAS_DO_ALVO[alvo.tipo]}/${alvo.id}`;

@@ -15,10 +15,6 @@ import './Busca.css';
 const PECAS_NA_BUSCA = 6;
 const MATERIAIS_NA_BUSCA = 8;
 
-/**
- * Busca geral: procura ao mesmo tempo nas peças do catálogo e nos manuais e
- * vídeos, para quem só tem o código da caixa ou o nome do problema.
- */
 export function Busca() {
   const [parametros] = useSearchParams();
   const navegar = useNavigate();

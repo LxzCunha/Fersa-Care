@@ -12,11 +12,6 @@ import type {
   UsuarioDetalhado,
 } from '../src/api/tipos';
 
-/**
- * Dados de exemplo no formato que a API devolve. Cada fábrica aceita só os
- * campos que importam para o teste; o resto vem preenchido.
- */
-
 let sequencia = 0;
 const proximoId = () => `00000000-0000-4000-8000-${String(++sequencia).padStart(12, '0')}`;
 const DATA = '2026-10-20T13:00:00.000Z';

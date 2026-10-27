@@ -15,10 +15,6 @@ import { LayoutAdmin } from './LayoutAdmin';
 import { Painel } from './Painel';
 import './Admin.css';
 
-/**
- * Rotas da área do administrador (tudo abaixo de /admin).
- * Este arquivo é carregado sob demanda (React.lazy em App.tsx).
- */
 export default function AreaAdmin() {
   return (
     <Routes>

@@ -1,16 +1,10 @@
-/**
- * Cliente HTTP do portal. Todas as chamadas à API passam por aqui.
- *
- * O login fica num cookie httpOnly que o navegador envia sozinho em cada
- * requisição para /api — o JavaScript nunca toca no token.
- */
+// O login vai num cookie httpOnly que o navegador envia sozinho: o JavaScript nunca toca no token.
 
 export interface DetalheDeErro {
   campo: string;
   mensagem: string;
 }
 
-/** Erro devolvido pela API no formato { erro: { codigo, mensagem, detalhes } }. */
 export class ErroApi extends Error {
   readonly status: number;
   readonly codigo: string;
@@ -24,16 +18,13 @@ export class ErroApi extends Error {
     this.detalhes = detalhes;
   }
 
-  /** Mensagem de erro de um campo específico (para mostrar embaixo do input). */
   erroDoCampo(campo: string): string | undefined {
     return this.detalhes.find((detalhe) => detalhe.campo === campo)?.mensagem;
   }
 }
 
-/** Corpo das respostas de erro da API (pode faltar se a resposta não for JSON). */
 export type CorpoDeErro = { erro?: { codigo?: string; mensagem?: string; detalhes?: DetalheDeErro[] } } | null;
 
-/** Texto para mostrar na tela: a mensagem da API ou um aviso genérico. */
 export function mensagemDeErro(erro: unknown): string {
   if (erro instanceof ErroApi) return erro.message;
   return 'Não foi possível carregar. Tente novamente em instantes.';
@@ -41,9 +32,7 @@ export function mensagemDeErro(erro: unknown): string {
 
 interface OpcoesRequisicao {
   metodo?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-  /** Objeto enviado como JSON. */
   corpo?: unknown;
-  /** Formulário com arquivo (multipart/form-data). */
   formulario?: FormData;
   /** Parâmetros da URL; valores vazios são ignorados. */
   parametros?: Record<string, string | number | boolean | undefined | null>;
@@ -98,7 +87,6 @@ export async function api<T>(caminho: string, opcoes: OpcoesRequisicao = {}): Pr
   return dados as T;
 }
 
-/** Endereço que abre ou baixa o conteúdo de um documento (a API confere a permissão). */
 export function urlDoArquivo(documentoId: string, opcoes: { download?: boolean } = {}): string {
   return montarUrl(`/documentos/${documentoId}/arquivo`, { download: opcoes.download ? 1 : undefined });
 }

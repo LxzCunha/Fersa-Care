@@ -1,9 +1,5 @@
 import { Link } from 'react-router';
 
-/**
- * Trilha de navegação ("Início · Catálogo · Rolamentos de Esferas"), como no
- * topo das páginas do site FERSA. O último item é a página atual (sem link).
- */
 export function Trilha({ itens }: { itens: { rotulo: string; para?: string }[] }) {
   return (
     <nav className="trilha" aria-label="Você está em">
