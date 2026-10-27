@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { check, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { check, integer, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { datas } from './colunas.js';
 import { perfilUsuario, statusUsuario, type Perfil } from './enums.js';
 
@@ -15,6 +15,12 @@ export const usuarios = pgTable(
     perfil: perfilUsuario('perfil').notNull().default('USUARIO'),
     status: statusUsuario('status').notNull().default('PENDENTE'),
     ultimoAcessoEm: timestamp('ultimo_acesso_em', { withTimezone: true }),
+    /**
+     * Vai no token de sessão e é conferida a cada requisição. Somar 1 derruba
+     * todos os logins da conta (troca de senha, desativação, "sair dos outros
+     * dispositivos"), mesmo com o JWT ainda dentro da validade.
+     */
+    versaoSessao: integer('versao_sessao').notNull().default(0),
     ...datas,
   },
   (t) => [check('usuarios_email_minusculo', sql`${t.email} = lower(${t.email})`)],

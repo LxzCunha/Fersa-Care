@@ -9,6 +9,7 @@ import {
   IMAGEM_LIMITE_MB,
   removerArquivo,
 } from '../lib/armazenamento.js';
+import { arquivoConfereComExtensao } from '../lib/assinaturas.js';
 import { ErroHttp } from '../lib/erros.js';
 
 interface CampoDeArquivo {
@@ -21,9 +22,10 @@ const MB = 1024 * 1024;
 
 /**
  * Recebe os arquivos de um formulário multipart (no máximo um por campo) e
- * grava direto na pasta de uploads com nome gerado pelo sistema. Se a
- * requisição terminar com erro (validação, permissão...), os arquivos gravados
- * são apagados para não deixar lixo.
+ * grava direto na pasta de uploads com nome gerado pelo sistema. Depois confere
+ * tamanho e conteúdo de cada um (a extensão precisa bater com os primeiros
+ * bytes do arquivo). Se a requisição terminar com erro (validação,
+ * permissão...), os arquivos gravados são apagados para não deixar lixo.
  */
 function criarUpload(campos: CampoDeArquivo[]) {
   const campoPorNome = new Map(campos.map((campo) => [campo.nome, campo]));
@@ -73,9 +75,29 @@ function criarUpload(campos: CampoDeArquivo[]) {
       if (erro) return next(erro);
 
       const grandeDemais = campos.find((campo) => (arquivoEnviado(req, campo.nome)?.size ?? 0) > campo.limiteMb * MB);
-      next(grandeDemais ? erroDeTamanho(grandeDemais) : undefined);
+      if (grandeDemais) return next(erroDeTamanho(grandeDemais));
+      conferirConteudo(req).then(next, next);
     });
   };
+}
+
+/** Recusa arquivo vazio ou com conteúdo de outro tipo (ex.: executável renomeado para .pdf). */
+async function conferirConteudo(req: Request): Promise<ErroHttp | undefined> {
+  for (const arquivo of todosOsArquivos(req)) {
+    if (arquivo.size === 0) {
+      return erroNoCampo(400, 'ARQUIVO_VAZIO', arquivo.fieldname, 'O arquivo enviado está vazio.');
+    }
+    const extensao = extensaoDe(arquivo.originalname);
+    if (!(await arquivoConfereComExtensao(arquivo.path, extensao))) {
+      return erroNoCampo(
+        400,
+        'CONTEUDO_NAO_CONFERE',
+        arquivo.fieldname,
+        `O conteúdo do arquivo não é de um ${extensao} válido. Confira se ele não foi renomeado ou está corrompido.`,
+      );
+    }
+  }
+  return undefined;
 }
 
 function erroNoCampo(status: number, codigo: string, campo: string, mensagem: string) {

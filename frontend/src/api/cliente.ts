@@ -30,6 +30,15 @@ export class ErroApi extends Error {
   }
 }
 
+/** Corpo das respostas de erro da API (pode faltar se a resposta não for JSON). */
+export type CorpoDeErro = { erro?: { codigo?: string; mensagem?: string; detalhes?: DetalheDeErro[] } } | null;
+
+/** Texto para mostrar na tela: a mensagem da API ou um aviso genérico. */
+export function mensagemDeErro(erro: unknown): string {
+  if (erro instanceof ErroApi) return erro.message;
+  return 'Não foi possível carregar. Tente novamente em instantes.';
+}
+
 interface OpcoesRequisicao {
   metodo?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   /** Objeto enviado como JSON. */
@@ -77,7 +86,7 @@ export async function api<T>(caminho: string, opcoes: OpcoesRequisicao = {}): Pr
   const dados: unknown = await resposta.json().catch(() => null);
 
   if (!resposta.ok) {
-    const erro = (dados as { erro?: { codigo?: string; mensagem?: string; detalhes?: DetalheDeErro[] } } | null)?.erro;
+    const erro = (dados as CorpoDeErro)?.erro;
     throw new ErroApi(
       resposta.status,
       erro?.codigo ?? 'ERRO',

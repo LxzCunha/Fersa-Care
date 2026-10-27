@@ -5,7 +5,8 @@ import { listarCategoriasAdmin } from '../../api/admin';
 import { AvisoErro, Carregando, EstadoVazio } from '../../componentes/Estados';
 import { plural } from '../../lib/formatar';
 import { useValorAtrasado } from '../../lib/ganchos';
-import { BarraBusca, CabecalhoLista, RodapeLista, useAbrirAoClicarNaLinha } from './Cadastro';
+import { BarraBusca, CabecalhoLista, RodapeLista } from './Cadastro';
+import { useAbrirAoClicarNaLinha } from './navegacao';
 
 /** Lista de categorias; o cadastro abre numa janela por cima (rotas filhas no <Outlet />). */
 export function AdminCategorias() {

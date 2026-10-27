@@ -1,4 +1,4 @@
-import { api, ErroApi } from './cliente';
+import { api, ErroApi, type CorpoDeErro } from './cliente';
 import type { ConversaDoAssistente, EventoDoAssistente } from './tipos';
 
 /**
@@ -27,12 +27,13 @@ export async function perguntarAoAssistente(
   }
 
   if (!resposta.ok || !resposta.body) {
-    const corpo = await resposta.json().catch(() => null);
+    const corpo: unknown = await resposta.json().catch(() => null);
+    const erro = (corpo as CorpoDeErro)?.erro;
     throw new ErroApi(
       resposta.status,
-      corpo?.erro?.codigo ?? 'ERRO',
-      corpo?.erro?.mensagem ?? 'Não foi possível falar com o assistente agora.',
-      corpo?.erro?.detalhes ?? [],
+      erro?.codigo ?? 'ERRO',
+      erro?.mensagem ?? 'Não foi possível falar com o assistente agora.',
+      erro?.detalhes ?? [],
     );
   }
 

@@ -34,3 +34,8 @@ export function atualizarPerfil(dados: { nome: string; empresa: string; telefone
 export function trocarSenha(senhaAtual: string, novaSenha: string) {
   return api<void>('/auth/eu/senha', { metodo: 'PUT', corpo: { senhaAtual, novaSenha } });
 }
+
+/** Encerra a sessão em todos os outros dispositivos; este navegador recebe um login novo. */
+export function encerrarOutrasSessoes() {
+  return api<void>('/auth/eu/encerrar-outras-sessoes', { metodo: 'POST' });
+}

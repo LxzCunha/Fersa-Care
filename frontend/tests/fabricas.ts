@@ -3,6 +3,7 @@ import type {
   ChamadoDetalhado,
   Documento,
   DocumentoAdmin,
+  EventoDeAuditoria,
   Pagina,
   PaginaUsuarios,
   Produto,
@@ -144,3 +145,18 @@ export function umChamado(dados: Partial<ChamadoDetalhado> = {}): ChamadoDetalha
     ...dados,
   };
 }
+
+export function umEventoDeAuditoria(dados: Partial<EventoDeAuditoria> = {}): EventoDeAuditoria {
+  return {
+    id: proximoId(),
+    acao: 'DOCUMENTO_ALTERADO',
+    autor: { id: 'admin', nome: 'Administrador FERSA' },
+    alvo: { tipo: 'DOCUMENTO', id: 'doc-1', rotulo: 'Boletim 12' },
+    detalhes: { campos: ['titulo'] },
+    ip: '201.17.4.20',
+    requisicaoId: 'b7c1d2e3-0000-4000-8000-000000000001',
+    criadoEm: '2026-10-27T16:43:00.000Z',
+    ...dados,
+  };
+}
+

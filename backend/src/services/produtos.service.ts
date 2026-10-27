@@ -1,11 +1,13 @@
 import { paraProdutoDto } from '../dtos/produtos.dto.js';
 import { arquivoExiste, caminhoDoArquivo, removerArquivo, tipoDoArquivo } from '../lib/armazenamento.js';
+import { camposAlterados } from '../lib/diferencas.js';
 import { naoEncontrado, requisicaoInvalida } from '../lib/erros.js';
 import { montarPagina } from '../lib/validacao.js';
 import type { UsuarioAutenticado } from '../models/index.js';
 import * as categoriasRepository from '../repositories/categorias.repository.js';
 import * as produtosRepository from '../repositories/produtos.repository.js';
 import type { DadosProduto, FiltrosProdutos } from '../validators/produtos.validator.js';
+import { registrarEvento } from './auditoria.service.js';
 import { listarPagina as listarDocumentos } from './documentos.service.js';
 
 /** Catálogo de peças. Peças são públicas; os documentos ligados a elas seguem a regra de acesso. */
@@ -55,6 +57,7 @@ export async function criarProduto(dados: DadosProduto, imagem: ImagemRecebida |
   const { removerImagem: _ignorado, ...valores } = dados;
   await conferirCategoria(valores.categoriaId);
   const produto = await produtosRepository.inserir({ ...valores, imagemChave: imagem?.filename ?? null });
+  await registrarEvento({ acao: 'PRODUTO_CRIADO', alvo: alvoDoProduto(produto), detalhes: { ativo: produto.ativo } });
   return detalharProdutoParaAdmin(produto.id);
 }
 
@@ -69,6 +72,12 @@ export async function atualizarProduto(id: string, dados: DadosProduto, imagem: 
 
   const novaChave = imagem ? imagem.filename : removerImagem ? null : atual.imagemChave;
   await produtosRepository.atualizar(id, { ...valores, imagemChave: novaChave });
+  const campos = camposAlterados(atual, { ...valores, imagemChave: novaChave });
+  await registrarEvento({
+    acao: 'PRODUTO_ALTERADO',
+    alvo: alvoDoProduto({ id, ...valores }),
+    detalhes: { campos: campos.map((campo) => (campo === 'imagemChave' ? 'imagem' : campo)) },
+  });
 
   // Só apaga a foto antiga depois que o banco confirmou a troca.
   if (atual.imagemChave && atual.imagemChave !== novaChave) await removerArquivo(atual.imagemChave);
@@ -80,7 +89,12 @@ export async function atualizarProduto(id: string, dados: DadosProduto, imagem: 
 export async function excluirProduto(id: string) {
   const removido = await produtosRepository.excluir(id);
   if (!removido) throw naoEncontrado('Produto não encontrado.');
+  await registrarEvento({ acao: 'PRODUTO_EXCLUIDO', alvo: alvoDoProduto({ id, ...removido }) });
   await removerArquivo(removido.imagemChave);
+}
+
+function alvoDoProduto(produto: { id: string; codigo: string; nome: string }) {
+  return { tipo: 'PRODUTO' as const, id: produto.id, rotulo: `${produto.codigo} · ${produto.nome}` };
 }
 
 async function conferirCategoria(categoriaId: string | null) {

@@ -1,5 +1,6 @@
 import type { CookieOptions, NextFunction, Request, Response } from 'express';
 import { env } from '../config/env.js';
+import { contextoAtual } from '../lib/contexto.js';
 import { naoAutenticado, proibido } from '../lib/erros.js';
 import type { UsuarioAutenticado } from '../models/index.js';
 import { usuarioDaSessao } from '../services/auth.service.js';
@@ -18,6 +19,7 @@ import { usuarioDaSessao } from '../services/auth.service.js';
 
 // Acrescenta o campo `usuario` ao tipo Request do Express.
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace -- é assim que os tipos do Express aceitam campos novos (declaration merging)
   namespace Express {
     interface Request {
       /** Preenchido quando a requisição traz um login válido de um usuário ATIVO. */
@@ -58,6 +60,9 @@ export async function identificarUsuario(req: Request, _res: Response, next: Nex
   const token = extrairToken(req);
   // Usuário desativado depois do login perde o acesso imediatamente (ver usuarioDaSessao).
   if (token) req.usuario = await usuarioDaSessao(token);
+  // Logs e auditoria passam a saber quem está chamando.
+  const contexto = contextoAtual();
+  if (contexto) contexto.usuario = req.usuario;
   next();
 }
 

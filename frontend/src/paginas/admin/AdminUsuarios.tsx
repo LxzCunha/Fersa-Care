@@ -16,9 +16,8 @@ import {
   CabecalhoLista,
   Marcador,
   RodapeLista,
-  useAbrirAoClicarNaLinha,
-  useFiltrosNaUrl,
 } from './Cadastro';
+import { useAbrirAoClicarNaLinha, useFiltrosNaUrl } from './navegacao';
 
 const POR_PAGINA = 20;
 

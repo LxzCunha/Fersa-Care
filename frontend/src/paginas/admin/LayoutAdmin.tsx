@@ -5,132 +5,23 @@ import {
   ChevronsDownUp,
   ChevronsUpDown,
   CircleUser,
-  FolderOpen,
   Globe,
-  LifeBuoy,
   LayoutDashboard,
   LogOut,
   Menu,
-  Package,
   Search,
   UserCog,
-  Users,
   X,
-  type LucideIcon,
 } from 'lucide-react';
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router';
 import { listarChamados, listarUsuarios } from '../../api/admin';
 import { Marca } from '../../componentes/Marca';
-import { useAutenticacao } from '../../contexto/Autenticacao';
-import { useNotificar } from '../../contexto/Notificacoes';
+import { useAutenticacao, useSairDaConta } from '../../contexto/Autenticacao';
+import { DESCRICAO_DO_CONTADOR, GRUPOS, PAINEL, paginaAtual, type Contador } from './menu';
 
-export const CHAVE_PENDENTES = ['admin', 'pendentes'] as const;
-export const CHAVE_CHAMADOS_ABERTOS = ['admin', 'chamados-abertos'] as const;
-
-/** Contadores âmbar do menu: o que pede atenção do admin. */
-type Contador = 'pendentes' | 'chamados';
-const DESCRICAO_DO_CONTADOR: Record<Contador, string> = {
-  pendentes: 'aguardando aprovação',
-  chamados: 'chamados abertos',
-};
-
-interface Pagina {
-  rotulo: string;
-  para: string;
-  /** Só fica marcada no endereço exato, sem as subpáginas. */
-  exata?: boolean;
-  /** Mostra um contador âmbar ao lado do nome. */
-  contador?: Contador;
-}
-
-interface Grupo {
-  id: string;
-  rotulo: string;
-  icone: LucideIcon;
-  paginas: Pagina[];
-}
-
-/** O painel fica fora dos grupos, como a página inicial de um sistema de gestão. */
-const PAINEL: Pagina = { rotulo: 'Painel', para: '/admin', exata: true };
-
-const GRUPOS: Grupo[] = [
-  {
-    id: 'biblioteca',
-    rotulo: 'Biblioteca',
-    icone: FolderOpen,
-    paginas: [
-      { rotulo: 'Documentos', para: '/admin/documentos' },
-      { rotulo: 'Cadastrar documento', para: '/admin/documentos/novo' },
-    ],
-  },
-  {
-    id: 'catalogo',
-    rotulo: 'Catálogo',
-    icone: Package,
-    paginas: [
-      { rotulo: 'Peças', para: '/admin/produtos' },
-      { rotulo: 'Cadastrar peça', para: '/admin/produtos/novo' },
-      { rotulo: 'Categorias', para: '/admin/categorias' },
-      { rotulo: 'Cadastrar categoria', para: '/admin/categorias/nova' },
-    ],
-  },
-  {
-    id: 'usuarios',
-    rotulo: 'Usuários',
-    icone: Users,
-    paginas: [
-      { rotulo: 'Todos os usuários', para: '/admin/usuarios' },
-      { rotulo: 'Aguardando aprovação', para: '/admin/usuarios?status=PENDENTE', contador: 'pendentes' },
-      { rotulo: 'Cadastrar usuário', para: '/admin/usuarios/novo' },
-    ],
-  },
-  {
-    id: 'suporte',
-    rotulo: 'Suporte',
-    icone: LifeBuoy,
-    paginas: [
-      { rotulo: 'Chamados abertos', para: '/admin/chamados?status=ABERTO', contador: 'chamados' },
-      { rotulo: 'Todos os chamados', para: '/admin/chamados' },
-    ],
-  },
-  {
-    id: 'portal',
-    rotulo: 'Portal',
-    icone: Globe,
-    paginas: [
-      { rotulo: 'Página inicial', para: '/', exata: true },
-      { rotulo: 'Manuais e vídeos', para: '/documentos' },
-      { rotulo: 'Catálogo de peças', para: '/produtos' },
-      { rotulo: 'Minha conta', para: '/minha-conta' },
-    ],
-  },
-];
-
-/**
- * A página do menu que corresponde ao endereço: a mais específica. Em
- * /admin/produtos/novo é "Cadastrar peça" (e não "Peças"); na edição de uma
- * peça, "Peças"; com ?status=PENDENTE, "Aguardando aprovação".
- */
-export function paginaAtual(caminhoAtual: string, consultaAtual: string): Pagina | undefined {
-  const parametros = new URLSearchParams(consultaAtual);
-  let melhor: Pagina | undefined;
-  let melhorPontuacao = -1;
-  for (const pagina of [PAINEL, ...GRUPOS.flatMap((grupo) => grupo.paginas)]) {
-    const [caminho = '', consulta = ''] = pagina.para.split('?');
-    const filtros = [...new URLSearchParams(consulta)];
-    const caminhoBate =
-      caminhoAtual === caminho || (!pagina.exata && caminhoAtual.startsWith(`${caminho}/`));
-    if (!caminhoBate || !filtros.every(([chave, valor]) => parametros.get(chave) === valor)) continue;
-
-    const pontuacao = caminho.length * 10 + filtros.length;
-    if (pontuacao > melhorPontuacao) {
-      melhor = pagina;
-      melhorPontuacao = pontuacao;
-    }
-  }
-  return melhor;
-}
+const CHAVE_PENDENTES = ['admin', 'pendentes'] as const;
+const CHAVE_CHAMADOS_ABERTOS = ['admin', 'chamados-abertos'] as const;
 
 /** "Catálogo" → "catalogo": a busca do menu ignora acentos e maiúsculas. */
 function normalizar(texto: string): string {
@@ -165,8 +56,7 @@ function salvarMenuRecolhido(recolhido: boolean) {
  * ficar só com os ícones; no celular ele vira uma gaveta.
  */
 export function LayoutAdmin() {
-  const { usuario, sair } = useAutenticacao();
-  const notificar = useNotificar();
+  const { usuario } = useAutenticacao();
   const navegar = useNavigate();
   const { pathname, search } = useLocation();
   const idMenu = useId();
@@ -194,17 +84,27 @@ export function LayoutAdmin() {
   const abrirGavetaRef = useRef<HTMLButtonElement>(null);
   const fecharGavetaRef = useRef<HTMLButtonElement>(null);
 
-  // Ao trocar de página: volta ao topo e fecha a gaveta do celular.
+  // Ao trocar de página: volta ao topo e fecha a gaveta do celular. A gaveta
+  // (estado do React) é ajustada na própria renderização, e não no efeito.
   useEffect(() => {
     window.scrollTo(0, 0);
-    setGavetaAberta(false);
   }, [pathname, search]);
+  const endereco = pathname + search;
+  const [enderecoAnterior, setEnderecoAnterior] = useState(endereco);
+  if (endereco !== enderecoAnterior) {
+    setEnderecoAnterior(endereco);
+    setGavetaAberta(false);
+  }
 
   // O grupo da página atual sempre aparece aberto.
-  useEffect(() => {
-    if (!grupoAtual) return;
-    setGruposAbertos((abertos) => (abertos.has(grupoAtual.id) ? abertos : new Set(abertos).add(grupoAtual.id)));
-  }, [grupoAtual]);
+  const [grupoAnterior, setGrupoAnterior] = useState(grupoAtual);
+  if (grupoAtual !== grupoAnterior) {
+    setGrupoAnterior(grupoAtual);
+    if (grupoAtual) {
+      const { id } = grupoAtual;
+      setGruposAbertos((abertos) => (abertos.has(id) ? abertos : new Set(abertos).add(id)));
+    }
+  }
 
   // Gaveta aberta: foco no botão de fechar e Esc fecha.
   useEffect(() => {
@@ -263,11 +163,7 @@ export function LayoutAdmin() {
     navegar(primeiroResultado.para);
   }
 
-  async function aoSair() {
-    await sair();
-    notificar('Você saiu da sua conta.');
-    navegar('/');
-  }
+  const aoSair = useSairDaConta();
 
   const alerta = (contador: Contador | undefined) =>
     contador && contadores[contador] > 0 ? (
@@ -442,7 +338,12 @@ function MenuDaConta({ nome, aoSair }: { nome: string; aoSair: () => void }) {
   const idLista = useId();
   const { pathname } = useLocation();
 
-  useEffect(() => setAberto(false), [pathname]);
+  // Fecha ao trocar de página (ajuste feito na renderização, e não num efeito).
+  const [caminhoAnterior, setCaminhoAnterior] = useState(pathname);
+  if (pathname !== caminhoAnterior) {
+    setCaminhoAnterior(pathname);
+    setAberto(false);
+  }
 
   // Fecha ao clicar fora ou com Esc.
   useEffect(() => {

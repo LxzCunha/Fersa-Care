@@ -1,5 +1,5 @@
 import { ArrowRight, Search, X } from 'lucide-react';
-import { useEffect, useId, useState, type FormEvent } from 'react';
+import { useId, useState, type FormEvent } from 'react';
 import './CampoBusca.css';
 
 /**
@@ -23,12 +23,15 @@ export function CampoBusca({
   focarAoAbrir?: boolean;
 }) {
   const [termo, setTermo] = useState(valorInicial);
+  const [valorAnterior, setValorAnterior] = useState(valorInicial);
   const idCampo = useId();
 
   // Mantém o campo sincronizado quando a busca muda pela URL (voltar do navegador).
-  useEffect(() => {
+  // O ajuste acontece na própria renderização, como recomenda o React, e não num efeito.
+  if (valorInicial !== valorAnterior) {
+    setValorAnterior(valorInicial);
     setTermo(valorInicial);
-  }, [valorInicial]);
+  }
 
   function enviar(evento: FormEvent) {
     evento.preventDefault();
@@ -54,6 +57,7 @@ export function CampoBusca({
         enterKeyHint="search"
         autoComplete="off"
         // Na página de busca o campo abre pronto para digitar.
+        // eslint-disable-next-line jsx-a11y/no-autofocus -- só na página /busca (focarAoAbrir), que existe para digitar uma busca
         autoFocus={focarAoAbrir}
         placeholder={placeholder}
         value={termo}

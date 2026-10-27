@@ -1,4 +1,17 @@
-# Documentos de trabalho (plano do RAG, roteiro de testes manuais): ficam só na máquina.
+# Documentos de trabalho (plano do RAG, roteiro de testes manuais, notas): ficam só na máquina.
 docs/
 
+# Segredos: o docker compose lê um .env na raiz (JWT_SEGREDO, ADMIN_SENHA...).
+.env
+.env.*
+!.env.example
+
+# Dependências, builds e relatórios (cada pacote também tem o seu .gitignore)
+node_modules/
+dist/
+coverage/
+*.log
+
+# Sistema e editores
 .DS_Store
+.idea/

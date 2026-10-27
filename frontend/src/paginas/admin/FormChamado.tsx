@@ -3,16 +3,17 @@ import { FileText, Package } from 'lucide-react';
 import { useId, useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router';
 import { atualizarChamado, detalharChamado } from '../../api/admin';
-import { ErroApi } from '../../api/cliente';
+import { ErroApi, mensagemDeErro } from '../../api/cliente';
 import type { ChamadoDetalhado, StatusChamado } from '../../api/tipos';
 import { TextoFormatado } from '../../componentes/Assistente';
 import { Campo } from '../../componentes/Campo';
-import { AvisoErro, Carregando, mensagemDeErro } from '../../componentes/Estados';
+import { AvisoErro, Carregando } from '../../componentes/Estados';
 import { useNotificar } from '../../contexto/Notificacoes';
 import { dataHora } from '../../lib/formatar';
 import { STATUS_CHAMADO } from '../../lib/rotulos';
 import { useRecarregarTudo } from './acoes';
-import { Janela, rolarJanelaParaTopo, useVoltarParaLista } from './Cadastro';
+import { Janela } from './Cadastro';
+import { rolarJanelaParaTopo, useVoltarParaLista } from './navegacao';
 
 /** Chamado de suporte (/admin/chamados/:id): contato, conversa com o assistente, situação e anotação. */
 export function FormChamado() {

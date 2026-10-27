@@ -3,16 +3,26 @@ import { env } from '../config/env.js';
 
 /**
  * Senhas nunca são salvas em texto: guardamos só o hash bcrypt.
- * Nos testes usamos um custo menor para a suíte rodar rápido.
+ * Custo 12 (2^12 rodadas, ~250 ms por login): caro para quem tenta adivinhar
+ * senhas de um banco vazado, imperceptível para quem entra. Nos testes usamos
+ * um custo menor para a suíte rodar rápido.
  */
-const CUSTO = env.emTeste ? 4 : 10;
+export const CUSTO_DO_HASH = env.emTeste ? 4 : 12;
 
 export function gerarHashSenha(senha: string): Promise<string> {
-  return bcrypt.hash(senha, CUSTO);
+  return bcrypt.hash(senha, CUSTO_DO_HASH);
 }
 
 export function conferirSenha(senha: string, hash: string): Promise<boolean> {
   return bcrypt.compare(senha, hash);
+}
+
+/**
+ * Hash gravado com custo menor que o atual (ex.: antes de subirmos de 10 para
+ * 12). No login, com a senha em mãos, ele é refeito com o custo novo.
+ */
+export function hashDesatualizado(hash: string, custo = CUSTO_DO_HASH): boolean {
+  return bcrypt.getRounds(hash) < custo;
 }
 
 /**
@@ -22,6 +32,6 @@ export function conferirSenha(senha: string, hash: string): Promise<boolean> {
  */
 let hashFalso: string | undefined;
 export function hashParaComparacaoFalsa(): string {
-  hashFalso ??= bcrypt.hashSync('senha-que-nao-existe', CUSTO);
+  hashFalso ??= bcrypt.hashSync('senha-que-nao-existe', CUSTO_DO_HASH);
   return hashFalso;
 }

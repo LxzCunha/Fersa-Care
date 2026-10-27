@@ -1,8 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
 import { abrirChamado, obterConversa, perguntarAoAssistente, type ContatoDoChamado } from '../api/assistente';
-import { ErroApi } from '../api/cliente';
+import { ErroApi, mensagemDeErro } from '../api/cliente';
 import type { Encaminhamento, FonteDaResposta } from '../api/tipos';
-import { mensagemDeErro } from '../componentes/Estados';
 
 /**
  * Estado da conversa com o assistente técnico. Fica no Layout do portal, então

@@ -4,11 +4,13 @@ import { fileURLToPath } from 'node:url';
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import helmet from 'helmet';
-import swaggerUi from 'swagger-ui-express';
+import swaggerUi, { type JsonObject } from 'swagger-ui-express';
 import YAML from 'yaml';
 import { env } from './config/env.js';
 import { identificarUsuario } from './middlewares/autenticacao.js';
 import { rotaNaoEncontrada, tratarErros } from './middlewares/erros.js';
+import { conferirOrigem } from './middlewares/origem.js';
+import { identificarRequisicao, registrarRequisicao } from './middlewares/requisicao.js';
 import { rotasDaApi } from './routes/index.js';
 
 const ARQUIVO_OPENAPI = fileURLToPath(new URL('../openapi.yaml', import.meta.url));
@@ -21,8 +23,14 @@ export function criarApp() {
   const app = express();
 
   if (env.CONFIAR_PROXY > 0) app.set('trust proxy', env.CONFIAR_PROXY);
+  // Não anuncia "X-Powered-By: Express" (o helmet também remove; aqui vale mesmo sem ele).
+  app.disable('x-powered-by');
 
-  // Cabeçalhos de segurança (CSP, nosniff, frame-ancestors...).
+  // Id da requisição + contexto (logs e auditoria) e uma linha de log por chamada.
+  app.use(identificarRequisicao);
+  app.use(registrarRequisicao);
+
+  // Cabeçalhos de segurança (CSP, HSTS, nosniff, frame-ancestors, referrer...).
   app.use(
     helmet({
       contentSecurityPolicy: {
@@ -47,19 +55,30 @@ export function criarApp() {
         },
       },
       crossOriginEmbedderPolicy: false,
+      // Em HTTPS, o navegador passa a recusar HTTP no domínio por 1 ano.
+      strictTransportSecurity: env.COOKIE_SEGURO ? { maxAge: 31536000, includeSubDomains: true } : false,
     }),
   );
+  // Recursos do navegador que o portal não usa ficam desligados (inclusive para iframes de terceiros).
+  app.use((_req, res, next) => {
+    res.setHeader(
+      'Permissions-Policy',
+      'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+    );
+    next();
+  });
 
   app.use(express.json({ limit: '1mb' }));
   app.use(cookieParser());
 
   // ── API ──────────────────────────────────────────────────────────────────
+  app.use('/api', conferirOrigem);
   app.use('/api', identificarUsuario);
   app.use('/api', rotasDaApi);
 
   // Documentação interativa da API (Swagger UI) em /api/docs
   if (fs.existsSync(ARQUIVO_OPENAPI)) {
-    const especificacao = YAML.parse(fs.readFileSync(ARQUIVO_OPENAPI, 'utf8'));
+    const especificacao = YAML.parse(fs.readFileSync(ARQUIVO_OPENAPI, 'utf8')) as JsonObject;
     app.get('/api/docs/openapi.json', (_req, res) => {
       res.json(especificacao);
     });

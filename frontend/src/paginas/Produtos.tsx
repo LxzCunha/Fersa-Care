@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { MessageCircle, SlidersHorizontal, X } from 'lucide-react';
-import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
+import { useId, useRef, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router';
 import { listarCategorias, listarProdutos, type FiltrosProdutos } from '../api/portal';
 import type { Categoria, Segmento } from '../api/tipos';
@@ -192,6 +192,7 @@ export function Produtos() {
       </div>
 
       {/* Gaveta de filtros do celular: os resultados atualizam por trás enquanto a pessoa escolhe. */}
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- clique no fundo fecha a gaveta; pelo teclado, o Esc do <dialog> e o botão "Fechar filtros" fazem o mesmo */}
       <dialog ref={gaveta} className="gaveta" aria-labelledby="titulo-gaveta" onClick={(e) => e.target === gaveta.current && gaveta.current.close()}>
         <div className="gaveta-conteudo">
           <div className="gaveta-topo">
@@ -232,11 +233,14 @@ function PainelFiltros({
   // O painel aparece duas vezes (lateral e gaveta): cada um com seus grupos de rádio.
   const prefixo = useId();
 
-  // Se os filtros mudarem por fora (pílula removida, "Limpar tudo"), o formulário acompanha.
+  // Se os filtros mudarem por fora (pílula removida, "Limpar tudo"), o formulário
+  // acompanha. O ajuste acontece na própria renderização, e não num efeito.
   const assinatura = JSON.stringify(medidas);
-  useEffect(() => {
+  const [assinaturaAnterior, setAssinaturaAnterior] = useState(assinatura);
+  if (assinatura !== assinaturaAnterior) {
+    setAssinaturaAnterior(assinatura);
     setRascunho(paraTexto(medidas));
-  }, [assinatura]);
+  }
 
   function aplicarMedidas(evento: FormEvent) {
     evento.preventDefault();

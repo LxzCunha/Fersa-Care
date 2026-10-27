@@ -7,6 +7,8 @@
     "moduleResolution": "NodeNext",
     "types": ["node"],
     "strict": true,
+    // lista[0] e registro[chave] podem ser undefined: o tipo passa a dizer isso.
+    "noUncheckedIndexedAccess": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,

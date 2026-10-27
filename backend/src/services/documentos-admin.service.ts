@@ -2,7 +2,9 @@ import { emTransacao, type Transacao } from '../db/index.js';
 import { paraDocumentoDto } from '../dtos/documentos.dto.js';
 import { removerArquivo, tipoDoArquivo } from '../lib/armazenamento.js';
 import { gerarCapa, temCapaAutomatica } from '../lib/capas.js';
+import { camposAlterados, diferencaDeListas } from '../lib/diferencas.js';
 import { naoEncontrado, requisicaoInvalida } from '../lib/erros.js';
+import { log, mensagemDoErro } from '../lib/log.js';
 import type { LinhaDocumento, UsuarioAutenticado } from '../models/index.js';
 import * as documentosRepository from '../repositories/documentos.repository.js';
 import * as produtosRepository from '../repositories/produtos.repository.js';
@@ -10,6 +12,7 @@ import * as trechosRepository from '../repositories/trechos.repository.js';
 import * as usuariosRepository from '../repositories/usuarios.repository.js';
 import * as visualizacoesRepository from '../repositories/visualizacoes.repository.js';
 import type { DadosDocumento, FiltrosDocumentos } from '../validators/documentos.validator.js';
+import { registrarEvento } from './auditoria.service.js';
 import { listarPagina } from './documentos.service.js';
 import { agendarIndexacao, situacaoDaIndexacao } from './indexacao.service.js';
 
@@ -76,6 +79,18 @@ export async function criarDocumento(
         tx,
       );
       await sincronizarRelacionamentos(tx, novoId, dados);
+      await registrarEvento(
+        {
+          acao: 'DOCUMENTO_CRIADO',
+          alvo: { tipo: 'DOCUMENTO', id: novoId, rotulo: dados.titulo },
+          detalhes: {
+            visibilidade: dados.visibilidade,
+            publicado: dados.publicado,
+            ...(dados.visibilidade === 'RESTRITO' ? { acessoLiberadoPara: dados.usuarioIds } : {}),
+          },
+        },
+        tx,
+      );
       return novoId;
     }),
   );
@@ -96,12 +111,21 @@ export async function atualizarDocumento(
 
   const origem = camposDeOrigem(dados, arquivos.arquivo, atual.arquivoChave);
   const capa = await definirCapa(dados, arquivos, atual);
+  const acessoAntes = (await documentosRepository.usuariosComAcesso(id)).map((usuario) => usuario.id);
 
   await desfazendoCapaSeFalhar(capa, () =>
     emTransacao(async (tx) => {
       await conferirReferencias(tx, dados);
       await documentosRepository.atualizar(id, { ...camposBasicos(dados), ...origem.campos, ...capa.campos }, tx);
       await sincronizarRelacionamentos(tx, id, dados);
+      await registrarEvento(
+        {
+          acao: 'DOCUMENTO_ALTERADO',
+          alvo: { tipo: 'DOCUMENTO', id, rotulo: dados.titulo },
+          detalhes: detalhesDaEdicao(atual, dados, arquivos, acessoAntes),
+        },
+        tx,
+      );
     }),
   );
 
@@ -123,6 +147,7 @@ export async function reindexarDocumento(id: string, admin: UsuarioAutenticado) 
 export async function excluirDocumento(id: string) {
   const removido = await documentosRepository.excluir(id);
   if (!removido) throw naoEncontrado('Documento não encontrado.');
+  await registrarEvento({ acao: 'DOCUMENTO_EXCLUIDO', alvo: { tipo: 'DOCUMENTO', id, rotulo: removido.titulo } });
   await removerArquivo(removido.arquivoChave);
   await removerArquivo(removido.capaChave);
 }
@@ -153,6 +178,29 @@ function camposBasicos(dados: DadosDocumento) {
     idioma: dados.idioma,
     visibilidade: dados.visibilidade,
     publicado: dados.publicado,
+  };
+}
+
+/**
+ * O que a edição mudou, para a auditoria: campos alterados, troca de arquivo
+ * ou capa e, em documento restrito, quem ganhou ou perdeu o acesso.
+ */
+function detalhesDaEdicao(
+  atual: LinhaDocumento,
+  dados: DadosDocumento,
+  arquivos: ArquivosDoDocumento,
+  acessoAntes: string[],
+) {
+  const campos = camposAlterados(atual, { ...camposBasicos(dados), urlExterna: dados.urlExterna ?? null });
+  if (arquivos.arquivo) campos.push('arquivo');
+  if (arquivos.capa || dados.removerCapa) campos.push('capa');
+
+  const acessoDepois = dados.visibilidade === 'RESTRITO' ? dados.usuarioIds : [];
+  const { incluidos, removidos } = diferencaDeListas(acessoAntes, acessoDepois);
+  return {
+    campos,
+    ...(incluidos.length > 0 ? { acessoLiberadoPara: incluidos } : {}),
+    ...(removidos.length > 0 ? { acessoRetiradoDe: removidos } : {}),
   };
 }
 
@@ -261,7 +309,7 @@ async function gerarCapaAutomatica(arquivo: { chave: string | null; nome: string
   try {
     return await gerarCapa(arquivo.chave, arquivo.nome);
   } catch (erro) {
-    console.warn(`Não foi possível gerar a capa de "${arquivo.nome}":`, erro instanceof Error ? erro.message : erro);
+    log.warn({ arquivo: arquivo.nome, motivo: mensagemDoErro(erro) }, 'Não foi possível gerar a capa automática');
     return null;
   }
 }

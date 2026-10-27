@@ -1,19 +1,12 @@
 import { CircleCheck, FileText, MessageCircle, Package, RotateCcw, Send, X } from 'lucide-react';
 import { Fragment, useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import { ErroApi } from '../api/cliente';
+import { ErroApi, mensagemDeErro } from '../api/cliente';
 import type { FonteDaResposta } from '../api/tipos';
+import { SUGESTOES_DO_ASSISTENTE } from '../config';
 import { useAssistente, type MensagemNoChat } from '../contexto/Assistente';
 import { useAutenticacao } from '../contexto/Autenticacao';
-import { mensagemDeErro } from './Estados';
 import './Assistente.css';
-
-/** Perguntas de exemplo para quem abre o chat pela primeira vez. */
-export const SUGESTOES = [
-  'Como medir a folga axial do cubo de roda?',
-  'Qual o torque de aperto da porca do cubo?',
-  'Meu rolamento está fazendo ruído. O que pode ser?',
-];
 
 /**
  * Assistente técnico: a bolinha no canto inferior direito e o painel de
@@ -74,6 +67,7 @@ function PainelDoAssistente({ aoFechar }: { aoFechar: () => void }) {
   const mostrarPedidoDeChamado = !chamado && (encaminhamento === 'SUGERIR_CHAMADO' || encaminhamento === 'PEDIR_CONTATO');
 
   return (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- painel com role="dialog": Esc fecha, como pede o padrão de diálogo da WAI-ARIA (a regra só libera isso no <dialog> nativo)
     <section
       className="assistente-painel"
       role="dialog"
@@ -110,7 +104,7 @@ function PainelDoAssistente({ aoFechar }: { aoFechar: () => void }) {
               manuais, fichas e boletins da FERSA.
             </p>
             <ul aria-label="Sugestões de perguntas">
-              {SUGESTOES.map((sugestao) => (
+              {SUGESTOES_DO_ASSISTENTE.map((sugestao) => (
                 <li key={sugestao}>
                   <button type="button" onClick={() => void enviar(sugestao)}>
                     {sugestao}

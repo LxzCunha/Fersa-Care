@@ -92,6 +92,11 @@
   }
 }
 
+.conta-coluna {
+  display: grid;
+  gap: var(--e-5);
+}
+
 .conta-identidade {
   display: flex;
   flex-wrap: wrap;

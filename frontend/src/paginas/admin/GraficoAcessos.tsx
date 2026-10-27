@@ -59,6 +59,7 @@ export function GraficoAcessos({ dados }: { dados: { dia: string; total: number 
                   key={item.dia}
                   className={`grafico-coluna ${ehHoje ? 'grafico-coluna-hoje' : ''}`}
                   style={{ '--altura': `${(item.total / escala) * 100}%` } as CSSProperties}
+                  // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a coluna recebe foco para mostrar a dica pelo teclado, como no mouse; os números também estão na tabela abaixo
                   tabIndex={0}
                   role="img"
                   aria-label={`${ehHoje ? 'Hoje' : diaLongo(item.dia)}: ${plural(item.total, 'abertura')}`}

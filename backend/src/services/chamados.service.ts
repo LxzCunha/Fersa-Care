@@ -1,10 +1,12 @@
 import { paraChamadoDto, paraMensagemDto } from '../dtos/assistente.dto.js';
+import { camposAlterados } from '../lib/diferencas.js';
 import { naoEncontrado } from '../lib/erros.js';
 import { montarPagina } from '../lib/validacao.js';
 import type { Chamado } from '../models/index.js';
 import * as assistenteRepository from '../repositories/assistente.repository.js';
 import * as chamadosRepository from '../repositories/chamados.repository.js';
 import type { DadosAtualizarChamado, FiltrosChamados } from '../validators/chamados.validator.js';
+import { registrarEvento } from './auditoria.service.js';
 
 /** Chamados de suporte técnico: abertura (pelo assistente) e acompanhamento (admin). */
 
@@ -45,7 +47,16 @@ export async function detalharChamado(id: string) {
 }
 
 export async function atualizarChamado(id: string, dados: DadosAtualizarChamado) {
-  const atualizado = await chamadosRepository.atualizar(id, dados);
-  if (!atualizado) throw naoEncontrado('Chamado não encontrado.');
+  const atual = await chamadosRepository.buscarPorId(id);
+  if (!atual) throw naoEncontrado('Chamado não encontrado.');
+  await chamadosRepository.atualizar(id, dados);
+  await registrarEvento({
+    acao: 'CHAMADO_ALTERADO',
+    alvo: { tipo: 'CHAMADO', id, rotulo: `Chamado nº ${atual.numero} · ${atual.nome}` },
+    detalhes: {
+      campos: camposAlterados(atual, dados),
+      ...(atual.status !== dados.status ? { status: { de: atual.status, para: dados.status } } : {}),
+    },
+  });
   return detalharChamado(id);
 }

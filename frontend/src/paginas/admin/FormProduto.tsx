@@ -9,18 +9,19 @@ import {
   listarCategoriasAdmin,
   type DadosProduto,
 } from '../../api/admin';
-import { ErroApi } from '../../api/cliente';
+import { ErroApi, mensagemDeErro } from '../../api/cliente';
 import type { ProdutoAdmin, Segmento } from '../../api/tipos';
 import { Campo, CampoTexto } from '../../componentes/Campo';
 import { DialogoConfirmacao } from '../../componentes/DialogoConfirmacao';
-import { AvisoErro, Carregando, mensagemDeErro } from '../../componentes/Estados';
+import { AvisoErro, Carregando } from '../../componentes/Estados';
 import { useNotificar } from '../../contexto/Notificacoes';
 import { plural } from '../../lib/formatar';
 import { escreverMedida, lerMedida } from '../../lib/medidas';
 import { SEGMENTOS } from '../../lib/rotulos';
 import { useRecarregarTudo } from './acoes';
 import { CampoImagem } from './CampoImagem';
-import { Janela, rolarJanelaParaTopo, useVoltarParaLista } from './Cadastro';
+import { Janela } from './Cadastro';
+import { rolarJanelaParaTopo, useVoltarParaLista } from './navegacao';
 
 /** Campos de medida: digitados como texto ("16,25") e enviados como número. */
 const MEDIDAS = [

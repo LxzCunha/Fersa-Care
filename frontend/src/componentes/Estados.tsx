@@ -1,6 +1,6 @@
 import { CircleAlert, LoaderCircle } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { ErroApi } from '../api/cliente';
+import { mensagemDeErro } from '../api/cliente';
 
 /** Estados comuns das telas: carregando, erro e lista vazia. */
 
@@ -11,11 +11,6 @@ export function Carregando({ texto = 'Carregando...' }: { texto?: string }) {
       <span>{texto}</span>
     </div>
   );
-}
-
-export function mensagemDeErro(erro: unknown): string {
-  if (erro instanceof ErroApi) return erro.message;
-  return 'Não foi possível carregar. Tente novamente em instantes.';
 }
 
 export function AvisoErro({ erro, children }: { erro?: unknown; children?: ReactNode }) {

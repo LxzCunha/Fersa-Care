@@ -3,6 +3,7 @@ import multer from 'multer';
 import { z } from 'zod';
 import { env } from '../config/env.js';
 import { ErroHttp } from '../lib/erros.js';
+import { log } from '../lib/log.js';
 
 /**
  * Middleware de erros: último da cadeia. Todo erro lançado em rotas e serviços
@@ -97,6 +98,8 @@ export function tratarErros(erro: unknown, _req: Request, res: Response, _next: 
     return responder(res, 400, 'DADOS_INVALIDOS', 'Identificador em formato inválido.');
   }
 
-  console.error('Erro inesperado:', erro);
+  // O detalhe fica só no log (com o id da requisição); o cliente recebe uma mensagem genérica
+  // e o mesmo id no cabeçalho X-Request-Id, para o suporte achar o registro.
+  log.error({ err: erro }, 'Erro inesperado');
   return responder(res, 500, 'ERRO_INTERNO', 'Ocorreu um erro inesperado. Tente novamente.');
 }

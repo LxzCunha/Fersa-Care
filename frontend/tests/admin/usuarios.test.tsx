@@ -120,7 +120,7 @@ describe('Cadastro de usuário', () => {
     await pessoa.type(within(janela).getByLabelText('E-mail'), 'marina@exemplo.com');
     await pessoa.type(within(janela).getByLabelText(/Empresa/), 'Distribuidora Sul');
     await pessoa.click(within(janela).getByRole('button', { name: 'Gerar senha' }));
-    const senha = (within(janela).getByLabelText('Senha') as HTMLInputElement).value;
+    const senha = within(janela).getByLabelText<HTMLInputElement>('Senha').value;
     expect(senha).toMatch(/^[A-Za-z][A-Za-z0-9]{8}[0-9]$/);
 
     await pessoa.click(within(janela).getByRole('button', { name: 'Salvar' }));

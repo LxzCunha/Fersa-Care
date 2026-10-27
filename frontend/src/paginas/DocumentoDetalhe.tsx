@@ -5,11 +5,10 @@ import { ErroApi, urlDoArquivo } from '../api/cliente';
 import { detalharDocumento } from '../api/portal';
 import type { Documento } from '../api/tipos';
 import { BlocoSuporte } from '../componentes/BlocoSuporte';
-import { resumoDoConteudo } from '../componentes/CartaoDocumento';
 import { AvisoErro, Carregando, EstadoVazio } from '../componentes/Estados';
 import { SeloVisibilidade } from '../componentes/SeloVisibilidade';
 import { useAutenticacao } from '../contexto/Autenticacao';
-import { data } from '../lib/formatar';
+import { data, resumoDoConteudo } from '../lib/formatar';
 import { IDIOMAS, SEGMENTOS, TIPOS } from '../lib/rotulos';
 import { enderecoDoPlayer } from '../lib/videos';
 import './DocumentoDetalhe.css';
@@ -118,6 +117,7 @@ export function DocumentoDetalhe() {
       <div className="documento-grade">
         <section className="documento-conteudo" aria-label="Conteúdo do documento">
           {visualizacao === 'video' && (
+            // eslint-disable-next-line jsx-a11y/media-has-caption -- o portal ainda não guarda arquivo de legendas para os vídeos enviados
             <video className="documento-video" controls preload="metadata" playsInline src={enderecoAbrir}>
               Seu navegador não reproduz este vídeo. <a href={enderecoBaixar}>Baixe o arquivo</a>.
             </video>

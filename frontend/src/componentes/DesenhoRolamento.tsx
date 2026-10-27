@@ -22,7 +22,7 @@ const esferas = Array.from({ length: QUANTIDADE_ESFERAS }, (_, indice) => {
 
 /** Permite passar variáveis CSS (--nome) pelo atributo style. */
 function variaveis(valores: Record<string, string | number>): CSSProperties {
-  return valores as CSSProperties;
+  return valores;
 }
 
 function Seta({ x, y, direcao }: { x: number; y: number; direcao: 'esquerda' | 'direita' | 'cima' | 'baixo' }) {

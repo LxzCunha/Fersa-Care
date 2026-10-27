@@ -8,15 +8,16 @@ import {
   excluirCategoria,
   type DadosCategoria,
 } from '../../api/admin';
-import { ErroApi } from '../../api/cliente';
+import { ErroApi, mensagemDeErro } from '../../api/cliente';
 import type { Categoria } from '../../api/tipos';
 import { Campo, CampoTexto } from '../../componentes/Campo';
 import { DialogoConfirmacao } from '../../componentes/DialogoConfirmacao';
-import { AvisoErro, Carregando, mensagemDeErro } from '../../componentes/Estados';
+import { AvisoErro, Carregando } from '../../componentes/Estados';
 import { useNotificar } from '../../contexto/Notificacoes';
 import { plural } from '../../lib/formatar';
 import { useRecarregarTudo } from './acoes';
-import { Janela, rolarJanelaParaTopo, useVoltarParaLista } from './Cadastro';
+import { Janela } from './Cadastro';
+import { rolarJanelaParaTopo, useVoltarParaLista } from './navegacao';
 
 /** Cadastro (/admin/categorias/nova) e edição (/admin/categorias/:id), numa janela sobre a lista. */
 export function FormCategoria() {

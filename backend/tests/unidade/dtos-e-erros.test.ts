@@ -5,6 +5,7 @@ import { paraDocumentoDto } from '../../src/dtos/documentos.dto.js';
 import { paraProdutoDto } from '../../src/dtos/produtos.dto.js';
 import { paraUsuarioDto } from '../../src/dtos/usuarios.dto.js';
 import { naoEncontrado } from '../../src/lib/erros.js';
+import { log } from '../../src/lib/log.js';
 import { tratarErros } from '../../src/middlewares/erros.js';
 import type { LinhaDocumento, LinhaProduto, Usuario } from '../../src/models/index.js';
 
@@ -108,7 +109,7 @@ describe('DTO da peça', () => {
 });
 
 describe('DTO do usuário', () => {
-  it('nunca devolve o hash da senha', () => {
+  it('nunca devolve o hash da senha nem a versão da sessão', () => {
     const usuario: Usuario = {
       id: 'u1',
       nome: 'Carlos',
@@ -119,11 +120,13 @@ describe('DTO do usuário', () => {
       perfil: 'USUARIO',
       status: 'ATIVO',
       ultimoAcessoEm: null,
+      versaoSessao: 3,
       criadoEm: DATA,
       atualizadoEm: DATA,
     };
     const dto = paraUsuarioDto(usuario);
     expect(dto).not.toHaveProperty('senhaHash');
+    expect(dto).not.toHaveProperty('versaoSessao');
     expect(JSON.stringify(dto)).not.toContain('segredo');
     expect(dto).toMatchObject({ id: 'u1', perfil: 'USUARIO', status: 'ATIVO' });
   });
@@ -182,12 +185,13 @@ describe('Middleware de erros', () => {
     expect(responder({ type: 'entity.too.large' })).toMatchObject({ status: 413 });
   });
 
-  it('erro inesperado: 500 genérico, sem vazar detalhes', () => {
-    const espiao = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    const { status, corpo } = responder(new Error('senha do banco: hunter2'));
+  it('erro inesperado: 500 genérico, sem vazar detalhes (que vão só para o log)', () => {
+    const espiao = vi.spyOn(log, 'error').mockImplementation(() => undefined);
+    const falha = new Error('senha do banco: hunter2');
+    const { status, corpo } = responder(falha);
     expect(status).toBe(500);
     expect(JSON.stringify(corpo)).not.toContain('hunter2');
-    expect(espiao).toHaveBeenCalled();
+    expect(espiao).toHaveBeenCalledWith({ err: falha }, 'Erro inesperado');
     espiao.mockRestore();
   });
 });

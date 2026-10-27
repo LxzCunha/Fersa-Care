@@ -37,6 +37,18 @@ const esquema = z.object({
   UPLOAD_LIMITE_MB: z.coerce.number().positive().default(200),
   FRONTEND_DIST: textoOpcional,
   CONFIAR_PROXY: z.coerce.number().int().min(0).default(0),
+  /**
+   * Origens (além da própria API) aceitas em requisições que alteram dados com
+   * o cookie de sessão. Lista separada por vírgula, ex.: https://care.fersa.com.br
+   */
+  ORIGENS_CONFIAVEIS: z
+    .string()
+    .default('')
+    .transform((valor) => valor.split(',').map((origem) => origem.trim().replace(/\/$/, '')).filter(Boolean)),
+
+  // Logs estruturados (pino). Em produção, JSON (um evento por linha); no dev, texto colorido.
+  LOG_NIVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).optional(),
+  LOG_FORMATO: z.enum(['json', 'legivel']).optional(),
 
   // Assistente técnico (RAG) com modelos rodando no Ollama.
   OLLAMA_URL: z.url('OLLAMA_URL precisa ser um endereço, ex.: http://localhost:11434').default('http://localhost:11434'),
@@ -72,6 +84,8 @@ function segredoTemporario(): string {
 
 export const env = {
   ...dados,
+  LOG_NIVEL: dados.LOG_NIVEL ?? (dados.NODE_ENV === 'test' ? 'silent' : 'info'),
+  LOG_FORMATO: dados.LOG_FORMATO ?? (emProducao ? 'json' : 'legivel'),
   JWT_SEGREDO: dados.JWT_SEGREDO ?? segredoTemporario(),
   UPLOAD_DIR: path.resolve(dados.UPLOAD_DIR),
   FRONTEND_DIST: dados.FRONTEND_DIST ? path.resolve(dados.FRONTEND_DIST) : undefined,

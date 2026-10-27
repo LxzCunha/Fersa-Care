@@ -349,14 +349,14 @@ export async function marcarIndexacao(id: string, erro: string | null, tx?: Tran
     .where(eq(documentos.id, id));
 }
 
-/** Exclui o documento e devolve as chaves do arquivo e da capa (para apagá-los), ou undefined se não existia. */
+/** Exclui o documento e devolve o título e as chaves do arquivo e da capa (para apagá-los), ou undefined se não existia. */
 export async function excluir(
   id: string,
-): Promise<{ arquivoChave: string | null; capaChave: string | null } | undefined> {
+): Promise<{ titulo: string; arquivoChave: string | null; capaChave: string | null } | undefined> {
   const [removido] = await db
     .delete(documentos)
     .where(eq(documentos.id, id))
-    .returning({ arquivoChave: documentos.arquivoChave, capaChave: documentos.capaChave });
+    .returning({ titulo: documentos.titulo, arquivoChave: documentos.arquivoChave, capaChave: documentos.capaChave });
   return removido;
 }
 

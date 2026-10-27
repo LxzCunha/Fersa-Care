@@ -1,6 +1,6 @@
 import { Check, ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react';
-import { useEffect, useId, useRef, useState, type MouseEvent as EventoDeMouse, type ReactNode } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { Link } from 'react-router';
 import { DialogoConfirmacao } from '../../componentes/DialogoConfirmacao';
 import { numero } from '../../lib/formatar';
 
@@ -125,22 +125,6 @@ export function Marcador({ marcado, rotulo }: { marcado: boolean; rotulo: string
   );
 }
 
-/**
- * Clique em qualquer ponto da linha abre o cadastro (como na referência).
- * Links e botões da linha continuam funcionando normalmente; para teclado,
- * cada linha tem um link de verdade.
- */
-export function useAbrirAoClicarNaLinha() {
-  const navegar = useNavigate();
-  return (destino: string) => ({
-    className: 'linha-clicavel',
-    onClick: (evento: EventoDeMouse) => {
-      if ((evento.target as HTMLElement).closest('a, button, input, select, label')) return;
-      navegar(destino);
-    },
-  });
-}
-
 /** Rodapé fixo com a contagem ("1–20 de 135 usuários") e as setas de página. */
 export function RodapeLista({
   total,
@@ -185,36 +169,7 @@ export function RodapeLista({
   );
 }
 
-/**
- * Filtros da lista guardados na URL (dá para compartilhar e o "voltar" do
- * navegador funciona). Mudar um filtro volta para a primeira página.
- */
-export function useFiltrosNaUrl(parametros: URLSearchParams, setParametros: (novos: URLSearchParams, opcoes?: { replace?: boolean }) => void) {
-  return (chave: string, valor: string | undefined) => {
-    const novos = new URLSearchParams(parametros);
-    if (valor) novos.set(chave, valor);
-    else novos.delete(chave);
-    if (chave !== 'pagina') novos.delete('pagina');
-    setParametros(novos, { replace: true });
-  };
-}
-
 // ─── Janela de cadastro ─────────────────────────────────────────────────────
-
-/**
- * Fecha a janela voltando para a lista com os mesmos filtros
- * (/admin/produtos/123?ativo=true → /admin/produtos?ativo=true).
- */
-export function useVoltarParaLista(lista: string) {
-  const navegar = useNavigate();
-  const { search } = useLocation();
-  return () => navegar(`${lista}${search}`);
-}
-
-/** Leva a rolagem da janela ao topo (onde fica o aviso de erro). */
-export function rolarJanelaParaTopo() {
-  document.querySelector('.janela-corpo')?.scrollTo({ top: 0, behavior: 'smooth' });
-}
 
 /**
  * Janela (modal) do cadastro, sobre a lista: "Cancelar" à esquerda, título no

@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { log } from '../lib/log.js';
 import { esquemaParametroId } from '../lib/validacao.js';
 import * as assistenteService from '../services/assistente.service.js';
 import { esquemaPergunta } from '../validators/assistente.validator.js';
@@ -39,7 +40,7 @@ export async function perguntar(req: Request, res: Response) {
     for await (const evento of eventos) enviar(evento);
   } catch (erro) {
     if (!interromper.signal.aborted) {
-      console.error('Erro no assistente:', erro);
+      log.error({ err: erro }, 'Erro no assistente');
       enviar({ tipo: 'erro', mensagem: 'Não foi possível responder agora. Tente de novo em instantes.' } as { tipo: string });
     }
   }

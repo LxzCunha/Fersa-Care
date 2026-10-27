@@ -4,6 +4,8 @@ import request from 'supertest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../src/db/index.js';
 import * as ia from '../src/lib/ia.js';
+import type * as ModuloIa from '../src/lib/ia.js';
+import { log } from '../src/lib/log.js';
 import { chamados, documentoTrechos, type UsuarioAutenticado } from '../src/models/index.js';
 import * as trechosRepository from '../src/repositories/trechos.repository.js';
 import {
@@ -22,7 +24,7 @@ import { app, criarAdmin, criarDocumento, criarProduto, criarUsuario, entrarComo
  */
 
 vi.mock('../src/lib/ia.js', async (original) => ({
-  ...(await original<typeof import('../src/lib/ia.js')>()),
+  ...(await original<typeof ModuloIa>()),
   gerarEmbeddings: vi.fn(),
   conversar: vi.fn(),
   iaDisponivel: vi.fn(),
@@ -46,7 +48,10 @@ function vetorDeTeste(texto: string): number[] {
 /** Faz o modelo "responder" com os pedaços informados. */
 function modeloResponde(...pedacos: string[]) {
   vi.mocked(ia.conversar).mockImplementation(async function* () {
-    for (const pedaco of pedacos) yield pedaco;
+    for (const pedaco of pedacos) {
+      await Promise.resolve(); // cada pedaço chega depois, como no streaming de verdade
+      yield pedaco;
+    }
   });
 }
 
@@ -95,7 +100,7 @@ const comoUsuario = (pessoa: { id: string; nome: string; email: string; perfil: 
 });
 
 beforeEach(() => {
-  vi.mocked(ia.gerarEmbeddings).mockReset().mockImplementation(async (textos) => textos.map(vetorDeTeste));
+  vi.mocked(ia.gerarEmbeddings).mockReset().mockImplementation((textos) => Promise.resolve(textos.map(vetorDeTeste)));
   vi.mocked(ia.conversar).mockReset();
   vi.mocked(ia.iaDisponivel).mockReset().mockResolvedValue(true);
   modeloResponde('Resposta padrão do modelo.');
@@ -149,7 +154,7 @@ describe('Indexação dos documentos', () => {
   });
 
   it('arquivo ilegível (PDF corrompido) entra só com a ficha, sem falhar', async () => {
-    const espiao = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const espiao = vi.spyOn(log, 'warn').mockImplementation(() => undefined);
     const documento = await criarDocumento({ titulo: 'PDF quebrado', arquivo: { nome: 'quebrado.pdf', conteudo: '%PDF-1.4 lixo' } });
     expect(await indexarDocumento(documento.id)).toEqual({ trechos: 1 });
     expect(espiao).toHaveBeenCalled();
@@ -201,7 +206,6 @@ describe('Busca do assistente respeita quem pode ver cada documento', () => {
     const liberado = await criarUsuario({ nome: 'Liberado' });
     const outro = await criarUsuario({ nome: 'Outro' });
     const admin = await criarAdmin();
-    vi.spyOn(console, 'warn').mockImplementation(() => undefined); // os PDFs de teste são ilegíveis
     const docs = {
       publico: await criarDocumento({ titulo: 'Folga — público', visibilidade: 'PUBLICO' }),
       clientes: await criarDocumento({ titulo: 'Folga — clientes', visibilidade: 'AUTENTICADO' }),
@@ -218,7 +222,6 @@ describe('Busca do assistente respeita quem pode ver cada documento', () => {
     expect(await titulosPara(comoUsuario(liberado))).toEqual(['Folga — clientes', 'Folga — público', 'Folga — restrito']);
     // Nem o admin recebe rascunho no assistente (não está no portal).
     expect(await titulosPara(comoUsuario(admin))).toEqual(['Folga — clientes', 'Folga — público', 'Folga — restrito']);
-    vi.mocked(console.warn).mockRestore();
   });
 
   it('visitante perguntando sobre material exclusivo: nada dele chega ao modelo nem às fontes', async () => {
@@ -309,8 +312,9 @@ describe('Perguntas ao assistente', () => {
 
   it('Ollama fora do ar: avisa e oferece o chamado', async () => {
     vi.mocked(ia.gerarEmbeddings).mockRejectedValue(new ia.IaIndisponivel('sem conexão'));
-    const espiao = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const espiao = vi.spyOn(log, 'warn').mockImplementation(() => undefined);
     const { texto, fim } = await perguntar(request, 'Qual a folga axial?');
+    expect(espiao).toHaveBeenCalledWith({ motivo: 'sem conexão' }, expect.stringContaining('Assistente sem IA'));
     espiao.mockRestore();
     expect(texto).toBe(MENSAGEM_FORA_DO_AR);
     expect(fim).toMatchObject({ encaminhamento: 'SUGERIR_CHAMADO' });

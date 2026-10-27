@@ -2,20 +2,12 @@ import { Download, ExternalLink, Play } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import type { Documento } from '../api/tipos';
-import { formatoDoArquivo, tamanhoDeArquivo } from '../lib/formatar';
+import { resumoDoConteudo } from '../lib/formatar';
 import { TIPOS } from '../lib/rotulos';
 import { SeloVisibilidade } from './SeloVisibilidade';
 import './CartaoDocumento.css';
 
 const MAXIMO_DE_CODIGOS = 3;
-
-/** Descrição curta do conteúdo: "PDF, 2,6 MB", "Vídeo MP4" ou "Link externo". */
-export function resumoDoConteudo(documento: Documento): string {
-  if (documento.origem === 'LINK') return 'Link externo';
-  const formato = formatoDoArquivo(documento.arquivo?.nome);
-  const tamanho = tamanhoDeArquivo(documento.arquivo?.tamanho);
-  return tamanho ? `${formato}, ${tamanho}` : formato;
-}
 
 /**
  * Capa do documento (miniatura gerada pela API). Sem capa, ou se ela não

@@ -220,3 +220,46 @@ export interface ChamadoDetalhado extends Chamado {
 export interface PaginaChamados extends Pagina<Chamado> {
   porStatus: Record<StatusChamado, number>;
 }
+
+// ─── Trilha de auditoria (espelha backend/src/models/auditoria.model.ts) ─────
+
+export type AcaoDeAuditoria =
+  | 'LOGIN'
+  | 'LOGIN_RECUSADO'
+  | 'ACESSO_SOLICITADO'
+  | 'SENHA_ALTERADA'
+  | 'SESSOES_ENCERRADAS'
+  | 'USUARIO_CRIADO'
+  | 'USUARIO_ALTERADO'
+  | 'USUARIO_STATUS_ALTERADO'
+  | 'USUARIO_EXCLUIDO'
+  | 'DOCUMENTO_CRIADO'
+  | 'DOCUMENTO_ALTERADO'
+  | 'DOCUMENTO_EXCLUIDO'
+  | 'PRODUTO_CRIADO'
+  | 'PRODUTO_ALTERADO'
+  | 'PRODUTO_EXCLUIDO'
+  | 'CATEGORIA_CRIADA'
+  | 'CATEGORIA_ALTERADA'
+  | 'CATEGORIA_EXCLUIDA'
+  | 'CHAMADO_ALTERADO';
+
+export type AlvoDeAuditoria = 'USUARIO' | 'DOCUMENTO' | 'PRODUTO' | 'CATEGORIA' | 'CHAMADO';
+
+/** Abas da tela: logins e senhas (ACESSOS) ou mudanças no cadastro (ALTERACOES). */
+export type GrupoDeAuditoria = 'ACESSOS' | 'ALTERACOES';
+
+export interface EventoDeAuditoria {
+  id: string;
+  acao: AcaoDeAuditoria;
+  /** Quem fez; null em ações de visitantes (login recusado, pedido de acesso). */
+  autor: { id: string | null; nome: string } | null;
+  /** O registro afetado, com o título/nome que tinha no momento. */
+  alvo: { tipo: AlvoDeAuditoria; id: string; rotulo: string } | null;
+  /** Campos alterados, situação de/para, acesso liberado/retirado, motivo da recusa... */
+  detalhes: Record<string, unknown>;
+  ip: string | null;
+  requisicaoId: string | null;
+  criadoEm: string;
+}
+

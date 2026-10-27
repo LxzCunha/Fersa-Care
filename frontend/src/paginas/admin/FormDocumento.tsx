@@ -10,7 +10,7 @@ import {
   reindexarDocumento,
   type DadosDocumento,
 } from '../../api/admin';
-import { ErroApi } from '../../api/cliente';
+import { ErroApi, mensagemDeErro } from '../../api/cliente';
 import type {
   DocumentoAdmin,
   Idioma,
@@ -21,7 +21,7 @@ import type {
 } from '../../api/tipos';
 import { Campo, CampoTexto } from '../../componentes/Campo';
 import { DialogoConfirmacao } from '../../componentes/DialogoConfirmacao';
-import { AvisoErro, Carregando, mensagemDeErro } from '../../componentes/Estados';
+import { AvisoErro, Carregando } from '../../componentes/Estados';
 import { LIMITE_UPLOAD_MB } from '../../config';
 import { useNotificar } from '../../contexto/Notificacoes';
 import { data, dataHora, plural } from '../../lib/formatar';
@@ -29,7 +29,8 @@ import { IDIOMAS, ORDEM_DOS_TIPOS, TIPOS, VISIBILIDADES } from '../../lib/rotulo
 import { useRecarregarTudo } from './acoes';
 import { CampoArquivo } from './CampoArquivo';
 import { CampoImagem } from './CampoImagem';
-import { Janela, rolarJanelaParaTopo, useVoltarParaLista } from './Cadastro';
+import { Janela } from './Cadastro';
+import { rolarJanelaParaTopo, useVoltarParaLista } from './navegacao';
 import { SeletorProdutos, SeletorUsuarios } from './Seletores';
 
 /** Cadastro (/admin/documentos/novo) e edição (/admin/documentos/:id), numa janela sobre a lista. */

@@ -18,3 +18,4 @@ export * from './documento-trecho.model.js';
 export * from './assistente-conversa.model.js';
 export * from './assistente-mensagem.model.js';
 export * from './chamado.model.js';
+export * from './auditoria.model.js';

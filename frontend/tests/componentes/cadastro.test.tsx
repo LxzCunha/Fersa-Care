@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { CampoArquivo } from '../../src/paginas/admin/CampoArquivo';
 import { CampoImagem } from '../../src/paginas/admin/CampoImagem';
 import { Abas, BarraBusca, FiltroNaBusca, Janela, Marcador, RodapeLista } from '../../src/paginas/admin/Cadastro';
-import { paginaAtual } from '../../src/paginas/admin/LayoutAdmin';
+import { paginaAtual } from '../../src/paginas/admin/menu';
 import { renderizar } from '../renderizar';
 
 describe('Abas de filtro', () => {

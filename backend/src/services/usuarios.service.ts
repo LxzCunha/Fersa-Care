@@ -1,4 +1,5 @@
 import { paraUsuarioDto } from '../dtos/usuarios.dto.js';
+import { camposAlterados } from '../lib/diferencas.js';
 import { naoEncontrado, proibido } from '../lib/erros.js';
 import { gerarHashSenha } from '../lib/senha.js';
 import { montarPagina } from '../lib/validacao.js';
@@ -10,6 +11,7 @@ import type {
   DadosCriarUsuario,
   FiltrosUsuarios,
 } from '../validators/usuarios.validator.js';
+import { registrarEvento } from './auditoria.service.js';
 
 /** Gestão de usuários pelo administrador (aprovar, criar, editar, desativar). */
 
@@ -39,6 +41,11 @@ export async function detalharUsuario(id: string) {
 export async function criarUsuario(dados: DadosCriarUsuario) {
   const { senha, ...resto } = dados;
   const usuario = await usuariosRepository.inserir({ ...resto, senhaHash: await gerarHashSenha(senha) });
+  await registrarEvento({
+    acao: 'USUARIO_CRIADO',
+    alvo: alvoDoUsuario(usuario),
+    detalhes: { perfil: usuario.perfil, status: usuario.status },
+  });
   return paraUsuarioDto(usuario);
 }
 
@@ -47,9 +54,24 @@ export async function atualizarUsuario(id: string, dados: DadosAtualizarUsuario,
   await protegerAcessoDeAdmin(atual, { perfil: dados.perfil, status: dados.status }, adminId);
 
   const { novaSenha, ...resto } = dados;
-  const usuario = await usuariosRepository.atualizar(id, {
-    ...resto,
-    ...(novaSenha ? { senhaHash: await gerarHashSenha(novaSenha) } : {}),
+  // Senha redefinida ou conta fora de uso: os logins abertos caem na hora.
+  const encerrarSessoes = Boolean(novaSenha) || (resto.status !== 'ATIVO' && atual.status === 'ATIVO');
+  const usuario = await usuariosRepository.atualizar(
+    id,
+    { ...resto, ...(novaSenha ? { senhaHash: await gerarHashSenha(novaSenha) } : {}) },
+    { encerrarSessoes },
+  );
+
+  const campos = camposAlterados(atual, resto);
+  if (novaSenha) campos.push('senha');
+  await registrarEvento({
+    acao: 'USUARIO_ALTERADO',
+    alvo: alvoDoUsuario(usuario!),
+    detalhes: {
+      campos,
+      ...(atual.perfil !== resto.perfil ? { perfil: { de: atual.perfil, para: resto.perfil } } : {}),
+      ...(atual.status !== resto.status ? { status: { de: atual.status, para: resto.status } } : {}),
+    },
   });
   return paraUsuarioDto(usuario!);
 }
@@ -59,7 +81,18 @@ export async function alterarStatus(id: string, status: StatusUsuario, adminId: 
   const atual = await buscarOuFalhar(id);
   await protegerAcessoDeAdmin(atual, { perfil: atual.perfil, status }, adminId);
 
-  const usuario = await usuariosRepository.atualizar(id, { status });
+  const usuario = await usuariosRepository.atualizar(
+    id,
+    { status },
+    { encerrarSessoes: status !== 'ATIVO' && atual.status === 'ATIVO' },
+  );
+  if (atual.status !== status) {
+    await registrarEvento({
+      acao: 'USUARIO_STATUS_ALTERADO',
+      alvo: alvoDoUsuario(atual),
+      detalhes: { status: { de: atual.status, para: status } },
+    });
+  }
   return paraUsuarioDto(usuario!);
 }
 
@@ -68,6 +101,11 @@ export async function excluirUsuario(id: string, adminId: string) {
   if (atual.id === adminId) throw proibido('Você não pode excluir a própria conta.');
   await protegerAcessoDeAdmin(atual, { perfil: 'USUARIO', status: 'INATIVO' }, adminId);
   await usuariosRepository.excluir(id);
+  await registrarEvento({ acao: 'USUARIO_EXCLUIDO', alvo: alvoDoUsuario(atual), detalhes: { perfil: atual.perfil } });
+}
+
+function alvoDoUsuario(usuario: Pick<Usuario, 'id' | 'nome' | 'email'>) {
+  return { tipo: 'USUARIO' as const, id: usuario.id, rotulo: `${usuario.nome} <${usuario.email}>` };
 }
 
 // ─── Regras de proteção ─────────────────────────────────────────────────────

@@ -4,6 +4,7 @@ import { arquivoExiste } from '../lib/armazenamento.js';
 import { ROTULOS_DOS_TIPOS } from '../lib/assistente/instrucoes.js';
 import { extrairTexto, temTextoLegivel, trechosDoDocumento } from '../lib/assistente/trechos.js';
 import { gerarEmbeddings } from '../lib/ia.js';
+import { log, mensagemDoErro } from '../lib/log.js';
 import type { LinhaDocumento } from '../models/index.js';
 import * as documentosRepository from '../repositories/documentos.repository.js';
 import * as trechosRepository from '../repositories/trechos.repository.js';
@@ -64,7 +65,7 @@ async function textoDoArquivo(chave: string | null, nome: string | null) {
   try {
     return await extrairTexto(chave, nome);
   } catch (erro) {
-    console.warn(`Não foi possível ler o texto de "${nome}":`, erro instanceof Error ? erro.message : erro);
+    log.warn({ arquivo: nome, motivo: mensagemDoErro(erro) }, 'Não foi possível ler o texto do arquivo');
     return [];
   }
 }
@@ -88,7 +89,7 @@ export function agendarIndexacao(id: string, { forcar = false } = {}) {
     try {
       await indexarDocumento(id);
     } catch (erro) {
-      console.warn(`Indexação do documento ${id} falhou:`, erro instanceof Error ? erro.message : erro);
+      log.warn({ documentoId: id, motivo: mensagemDoErro(erro) }, 'Indexação do documento falhou');
     }
   });
 }
@@ -112,7 +113,7 @@ export async function indexarPendentes({ todos = false } = {}) {
     try {
       trechos += (await indexarDocumento(id))?.trechos ?? 0;
     } catch (erro) {
-      falhas.push(`${id}: ${erro instanceof Error ? erro.message : erro}`);
+      falhas.push(`${id}: ${mensagemDoErro(erro)}`);
     }
   }
   return { documentos: ids.length, trechos, falhas };

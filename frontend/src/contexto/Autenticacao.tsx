@@ -1,7 +1,10 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react';
+import { useNavigate } from 'react-router';
 import * as authApi from '../api/auth';
+import { mensagemDeErro } from '../api/cliente';
 import type { Usuario } from '../api/tipos';
+import { useNotificar } from './Notificacoes';
 
 /**
  * Guarda quem está logado e expõe entrar/sair para qualquer tela.
@@ -75,4 +78,24 @@ export function useAutenticacao(): ValorAutenticacao {
   const contexto = useContext(ContextoAutenticacao);
   if (!contexto) throw new Error('useAutenticacao precisa estar dentro de <ProvedorAutenticacao>.');
   return contexto;
+}
+
+/**
+ * O botão "Sair" (portal, Minha conta e administração): encerra a sessão, avisa
+ * e volta para o início. Se a API não responder, a pessoa continua logada, então
+ * avisamos em vez de fingir que saiu.
+ */
+export function useSairDaConta() {
+  const { sair } = useAutenticacao();
+  const notificar = useNotificar();
+  const navegar = useNavigate();
+  return useCallback(async () => {
+    try {
+      await sair();
+      notificar('Você saiu da sua conta.');
+      navegar('/');
+    } catch (falha) {
+      notificar(`Não foi possível sair: ${mensagemDeErro(falha)}`, 'erro');
+    }
+  }, [sair, notificar, navegar]);
 }

@@ -28,6 +28,10 @@ RUN npm run build && npm prune --omit=dev
 
 # ─── 3. Imagem final, só com o necessário para rodar ──────────────────────────
 FROM node:24-alpine
+LABEL org.opencontainers.image.title="FERSA CARE" \
+      org.opencontainers.image.description="Portal de pós-venda FERSA: API Node.js que também entrega o site React" \
+      org.opencontainers.image.authors="Alexandre Breus da Cunha" \
+      org.opencontainers.image.source="https://github.com/LxzCunha/Fersa-Care"
 ENV NODE_ENV=production \
     PORTA=3000 \
     FRONTEND_DIST=/app/frontend/dist \
@@ -47,7 +51,7 @@ USER node
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s \
-  CMD wget -qO- http://127.0.0.1:3000/api/saude > /dev/null || exit 1
+  CMD wget -qO- http://127.0.0.1:3000/api/saude/pronto > /dev/null || exit 1
 
 # Aplica migrações, garante o administrador inicial (e os exemplos, se
 # SEED_EXEMPLOS=true), gera as capas que faltam e sobe o servidor.

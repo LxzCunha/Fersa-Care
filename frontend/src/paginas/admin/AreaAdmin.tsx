@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router';
 import { NaoEncontrada } from '../NaoEncontrada';
+import { AdminAuditoria } from './AdminAuditoria';
 import { AdminCategorias } from './AdminCategorias';
 import { AdminChamados } from './AdminChamados';
 import { AdminDocumentos } from './AdminDocumentos';
@@ -43,6 +44,7 @@ export default function AreaAdmin() {
           <Route path="nova" element={<FormCategoria />} />
           <Route path=":id" element={<FormCategoria />} />
         </Route>
+        <Route path="auditoria" element={<AdminAuditoria />} />
         <Route path="*" element={<NaoEncontrada />} />
       </Route>
     </Routes>

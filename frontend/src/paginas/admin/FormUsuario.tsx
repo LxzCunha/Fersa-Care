@@ -8,17 +8,18 @@ import {
   excluirUsuario,
   type DadosUsuario,
 } from '../../api/admin';
-import { ErroApi } from '../../api/cliente';
+import { ErroApi, mensagemDeErro } from '../../api/cliente';
 import type { Perfil, StatusUsuario, UsuarioDetalhado } from '../../api/tipos';
 import { Campo, CampoTexto } from '../../componentes/Campo';
 import { DialogoConfirmacao } from '../../componentes/DialogoConfirmacao';
-import { AvisoErro, Carregando, mensagemDeErro } from '../../componentes/Estados';
+import { AvisoErro, Carregando } from '../../componentes/Estados';
 import { useAutenticacao } from '../../contexto/Autenticacao';
 import { useNotificar } from '../../contexto/Notificacoes';
 import { data, dataHora } from '../../lib/formatar';
 import { STATUS_USUARIO, TIPOS } from '../../lib/rotulos';
 import { useRecarregarTudo } from './acoes';
-import { Janela, rolarJanelaParaTopo, useVoltarParaLista } from './Cadastro';
+import { Janela } from './Cadastro';
+import { rolarJanelaParaTopo, useVoltarParaLista } from './navegacao';
 
 /** Cadastro (/admin/usuarios/novo) e edição (/admin/usuarios/:id), numa janela sobre a lista. */
 export function FormUsuario() {
@@ -47,8 +48,8 @@ function gerarSenha(): string {
   const todos = letras + numeros;
   const aleatorios = crypto.getRandomValues(new Uint32Array(10));
   const caracteres = Array.from(aleatorios, (valor) => todos[valor % todos.length]);
-  caracteres[0] = letras[aleatorios[0] % letras.length];
-  caracteres[9] = numeros[aleatorios[9] % numeros.length];
+  caracteres[0] = letras[aleatorios[0]! % letras.length];
+  caracteres[9] = numeros[aleatorios[9]! % numeros.length];
   return caracteres.join('');
 }
 

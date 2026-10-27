@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import * as saudeController from '../controllers/saude.controller.js';
 import { adminRotas } from './admin.routes.js';
 import { assistenteRotas } from './assistente.routes.js';
 import { authRotas } from './auth.routes.js';
@@ -16,9 +17,8 @@ import { produtosRotas } from './produtos.routes.js';
  */
 export const rotasDaApi = Router();
 
-rotasDaApi.get('/saude', (_req, res) => {
-  res.json({ status: 'ok', horario: new Date().toISOString() });
-});
+rotasDaApi.get('/saude', saudeController.vivo);
+rotasDaApi.get('/saude/pronto', saudeController.pronto);
 
 rotasDaApi.use('/auth', authRotas);
 rotasDaApi.use('/documentos', documentosRotas);

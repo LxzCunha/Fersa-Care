@@ -13,6 +13,7 @@ import {
 } from '../lib/assistente/instrucoes.js';
 import { naoEncontrado, requisicaoInvalida } from '../lib/erros.js';
 import { conversar, gerarEmbeddings, IaIndisponivel } from '../lib/ia.js';
+import { log } from '../lib/log.js';
 import type {
   AssistenteConversa,
   AssistenteMensagem,
@@ -174,7 +175,7 @@ export async function* responder(
     };
   } catch (erro) {
     if (!(erro instanceof IaIndisponivel)) throw erro;
-    console.warn('Assistente sem IA:', erro.message);
+    log.warn({ motivo: erro.message }, 'Assistente sem IA: respondendo com o encaminhamento ao suporte');
     yield* responderSemModelo(conversa.id, MENSAGEM_FORA_DO_AR, 'SUGERIR_CHAMADO');
   }
 }

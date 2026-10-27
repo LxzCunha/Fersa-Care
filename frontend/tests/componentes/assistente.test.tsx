@@ -3,8 +3,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as api from '../../src/api/assistente';
 import { ErroApi } from '../../src/api/cliente';
 import type { EventoDoAssistente } from '../../src/api/tipos';
-import { Assistente, SUGESTOES, TextoFormatado } from '../../src/componentes/Assistente';
+import { Assistente, TextoFormatado } from '../../src/componentes/Assistente';
 import { BlocoSuporte } from '../../src/componentes/BlocoSuporte';
+import { SUGESTOES_DO_ASSISTENTE } from '../../src/config';
 import { CHAVE_CONVERSA } from '../../src/contexto/Assistente';
 import { umUsuario } from '../fabricas';
 import { renderizar } from '../renderizar';
@@ -13,8 +14,9 @@ vi.mock('../../src/api/assistente');
 
 /** Faz a API "responder" com estes eventos, na ordem. */
 function apiResponde(...eventos: EventoDoAssistente[]) {
-  vi.mocked(api.perguntarAoAssistente).mockImplementation(async (_dados, aoEvento) => {
+  vi.mocked(api.perguntarAoAssistente).mockImplementation((_dados, aoEvento) => {
     for (const evento of eventos) aoEvento(evento);
+    return Promise.resolve();
   });
 }
 
@@ -43,7 +45,7 @@ describe('Bolinha e painel', () => {
     const { painel } = await abrirChat();
     expect(within(painel).getByText(/Pergunte sobre montagem, folga, torque/)).toBeInTheDocument();
     expect(within(painel).getAllByRole('button', { name: /\?|\./ }).map((botao) => botao.textContent)).toEqual(
-      expect.arrayContaining(SUGESTOES),
+      expect.arrayContaining(SUGESTOES_DO_ASSISTENTE),
     );
     expect(within(painel).getByLabelText('Sua pergunta')).toHaveFocus();
     expect(screen.queryByRole('button', { name: 'Abrir o assistente técnico' })).toBeNull();
@@ -103,10 +105,10 @@ describe('Conversa', () => {
   it('a próxima pergunta continua a mesma conversa', async () => {
     apiResponde(conversa('c-9'), { tipo: 'texto', texto: 'Ok.' }, fim());
     const { pessoa, painel } = await abrirChat();
-    await pessoa.click(within(painel).getByRole('button', { name: SUGESTOES[0] }));
+    await pessoa.click(within(painel).getByRole('button', { name: SUGESTOES_DO_ASSISTENTE[0] }));
     await pessoa.type(within(painel).getByLabelText('Sua pergunta'), 'e o torque?{Enter}');
     expect(vi.mocked(api.perguntarAoAssistente).mock.calls.map(([dados]) => dados)).toEqual([
-      { pergunta: SUGESTOES[0], conversaId: undefined },
+      { pergunta: SUGESTOES_DO_ASSISTENTE[0], conversaId: undefined },
       { pergunta: 'e o torque?', conversaId: 'c-9' },
     ]);
   });

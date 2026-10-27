@@ -2,8 +2,7 @@ import { CircleUser, FolderOpen, House, LayoutDashboard, LogIn, LogOut, Mail, Me
 import { useEffect } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { SUPORTE } from '../config';
-import { useAutenticacao } from '../contexto/Autenticacao';
-import { useNotificar } from '../contexto/Notificacoes';
+import { useAutenticacao, useSairDaConta } from '../contexto/Autenticacao';
 import { ProvedorAssistente, useAssistente } from '../contexto/Assistente';
 import { Assistente } from './Assistente';
 import { CampoBusca } from './CampoBusca';
@@ -27,10 +26,8 @@ export function Layout() {
 }
 
 function EstruturaDoPortal() {
-  const { usuario, ehAdmin, sair } = useAutenticacao();
+  const { usuario, ehAdmin } = useAutenticacao();
   const assistente = useAssistente();
-  const notificar = useNotificar();
-  const navegar = useNavigate();
   const { pathname } = useLocation();
 
   // Ao trocar de página, volta para o topo.
@@ -38,11 +35,7 @@ function EstruturaDoPortal() {
     window.scrollTo(0, 0);
   }, [pathname]);
 
-  async function aoSair() {
-    await sair();
-    notificar('Você saiu da sua conta.');
-    navegar('/');
-  }
+  const aoSair = useSairDaConta();
 
   const primeiroNome = usuario?.nome.split(' ')[0];
   /** A lista de categorias faz parte do catálogo: lá, "Catálogo" também fica marcado. */

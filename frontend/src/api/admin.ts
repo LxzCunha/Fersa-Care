@@ -1,9 +1,12 @@
 import { api, ErroApi } from './cliente';
 import type {
+  AcaoDeAuditoria,
   Categoria,
   ChamadoDetalhado,
   DocumentoAdmin,
   Documento,
+  EventoDeAuditoria,
+  GrupoDeAuditoria,
   Idioma,
   Pagina,
   PaginaChamados,
@@ -298,3 +301,19 @@ export function detalharChamado(id: string) {
 export function atualizarChamado(id: string, dados: { status: StatusChamado; observacao: string }) {
   return api<ChamadoDetalhado>(`/admin/chamados/${id}`, { metodo: 'PATCH', corpo: dados });
 }
+
+// ─── Trilha de auditoria ────────────────────────────────────────────────────
+
+export interface FiltrosAuditoria {
+  busca?: string;
+  grupo?: GrupoDeAuditoria;
+  acao?: AcaoDeAuditoria;
+  alvoId?: string;
+  pagina?: number;
+  porPagina?: number;
+}
+
+export function listarAuditoria(filtros: FiltrosAuditoria) {
+  return api<Pagina<EventoDeAuditoria>>('/admin/auditoria', { parametros: { ...filtros } });
+}
+

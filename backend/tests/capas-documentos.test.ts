@@ -16,6 +16,9 @@ const PNG = Buffer.from(
   'base64',
 );
 
+/** Só o cabeçalho de um MP4 (caixa "ftyp"): passa na conferência de conteúdo, mas não tem capa automática. */
+const MP4 = Buffer.concat([Buffer.from([0, 0, 0, 0x18]), Buffer.from('ftypmp42'), Buffer.alloc(16)]);
+
 const BASE = { titulo: 'Ficha técnica 30205', tipo: 'FICHA_TECNICA', visibilidade: 'PUBLICO', origem: 'ARQUIVO' };
 
 async function arquivosNaPasta() {
@@ -61,7 +64,7 @@ describe('Capas dos documentos', () => {
     expect(ilegivel.body.capaUrl).toBeNull();
     await request(app).get(`/api/documentos/${ilegivel.body.id}/capa`).expect(404);
 
-    const video = await cadastrar({ ...BASE, tipo: 'VIDEO' }, { arquivo: [Buffer.from('mp4'), 'video.mp4'] }).expect(201);
+    const video = await cadastrar({ ...BASE, tipo: 'VIDEO' }, { arquivo: [MP4, 'video.mp4'] }).expect(201);
     expect(video.body.capaUrl).toBeNull();
 
     const imagem = await cadastrar(BASE, { arquivo: [PNG, 'diagrama.png'] }).expect(201);
@@ -132,7 +135,16 @@ describe('Capas dos documentos', () => {
     expect(pdfComoCapa.status).toBe(400);
     expect(pdfComoCapa.body.erro).toMatchObject({ codigo: 'TIPO_DE_ARQUIVO_INVALIDO', detalhes: [{ campo: 'capa' }] });
 
-    const ilegivel = await cadastrar(BASE, { arquivo: [PDF, 'ficha.pdf'], capa: [Buffer.from('não é PNG'), 'capa.png'] });
+    // Extensão de imagem com outro conteúdo: barrado já no recebimento.
+    const disfarcado = await cadastrar(BASE, { arquivo: [PDF, 'ficha.pdf'], capa: [Buffer.from('não é PNG'), 'capa.png'] });
+    expect(disfarcado.status).toBe(400);
+    expect(disfarcado.body.erro).toMatchObject({ codigo: 'CONTEUDO_NAO_CONFERE', detalhes: [{ campo: 'capa' }] });
+
+    // Cabeçalho de PNG, mas a imagem não abre: recusado ao gerar a capa.
+    const ilegivel = await cadastrar(BASE, {
+      arquivo: [PDF, 'ficha.pdf'],
+      capa: [Buffer.concat([PNG.subarray(0, 8), Buffer.from('resto corrompido')]), 'capa.png'],
+    });
     expect(ilegivel.status).toBe(400);
     expect(ilegivel.body.erro.detalhes).toEqual([{ campo: 'capa', mensagem: expect.stringContaining('PNG') }]);
 

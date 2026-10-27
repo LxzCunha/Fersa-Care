@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { alterarStatusUsuario } from '../../api/admin';
+import { mensagemDeErro } from '../../api/cliente';
 import type { StatusUsuario, Usuario } from '../../api/tipos';
-import { mensagemDeErro } from '../../componentes/Estados';
 import { useNotificar } from '../../contexto/Notificacoes';
 
 /**

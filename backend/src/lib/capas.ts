@@ -46,7 +46,7 @@ async function desenharPrimeiraPagina(caminho: string): Promise<Canvas> {
     contexto.fillRect(0, 0, canvas.width, canvas.height);
 
     // O pdf.js espera um <canvas> do navegador; o do @napi-rs/canvas tem a mesma interface.
-    await pagina.render({ canvas, viewport } as unknown as Parameters<typeof pagina.render>[0]).promise;
+    await pagina.render({ canvas, viewport }).promise;
     return canvas;
   });
 }

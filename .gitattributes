@@ -1,0 +1,13 @@
+# Finais de linha LF no repositório, qualquer que seja o sistema de quem clona.
+* text=auto eol=lf
+
+# Binários
+*.png binary
+*.jpg binary
+*.webp binary
+*.pdf binary
+*.mp4 binary
+
+# Arquivos gerados: recolhidos nos diffs do GitHub e fora das estatísticas de linguagem.
+package-lock.json linguist-generated=true
+backend/drizzle/meta/*.json linguist-generated=true

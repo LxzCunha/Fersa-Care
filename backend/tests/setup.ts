@@ -10,7 +10,7 @@ garantirQueEhBancoDeTeste(env.DATABASE_URL);
 // Cada teste começa com o banco e a pasta de uploads vazios.
 beforeEach(async () => {
   await db.execute(sql`
-    TRUNCATE chamados, assistente_mensagens, assistente_conversas,
+    TRUNCATE auditoria, chamados, assistente_mensagens, assistente_conversas,
              documento_trechos, documento_visualizacoes, documento_acessos, documento_produtos,
              documentos, produtos, categorias, usuarios RESTART IDENTITY CASCADE
   `);

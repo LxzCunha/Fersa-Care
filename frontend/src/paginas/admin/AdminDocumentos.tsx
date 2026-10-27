@@ -3,9 +3,9 @@ import { useState } from 'react';
 import { Link, Outlet, useLocation, useSearchParams } from 'react-router';
 import { listarDocumentosAdmin } from '../../api/admin';
 import type { TipoDocumento, Visibilidade } from '../../api/tipos';
-import { CapaDocumento, resumoDoConteudo } from '../../componentes/CartaoDocumento';
+import { CapaDocumento } from '../../componentes/CartaoDocumento';
 import { AvisoErro, Carregando, EstadoVazio } from '../../componentes/Estados';
-import { data } from '../../lib/formatar';
+import { data, resumoDoConteudo } from '../../lib/formatar';
 import { useValorAtrasado } from '../../lib/ganchos';
 import { ORDEM_DOS_TIPOS, TIPOS, VISIBILIDADES } from '../../lib/rotulos';
 import {
@@ -15,9 +15,8 @@ import {
   FiltroNaBusca,
   Marcador,
   RodapeLista,
-  useAbrirAoClicarNaLinha,
-  useFiltrosNaUrl,
 } from './Cadastro';
+import { useAbrirAoClicarNaLinha, useFiltrosNaUrl } from './navegacao';
 
 const POR_PAGINA = 20;
 

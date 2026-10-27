@@ -58,8 +58,8 @@ export async function atualizar(id: string, valores: Partial<NovaCategoria>): Pr
   return categoria;
 }
 
-/** As peças da categoria ficam sem categoria (ON DELETE SET NULL). Devolve false se não existia. */
-export async function excluir(id: string): Promise<boolean> {
-  const [removida] = await db.delete(categorias).where(eq(categorias.id, id)).returning({ id: categorias.id });
-  return removida !== undefined;
+/** As peças da categoria ficam sem categoria (ON DELETE SET NULL). Devolve o nome, ou undefined se não existia. */
+export async function excluir(id: string): Promise<{ nome: string } | undefined> {
+  const [removida] = await db.delete(categorias).where(eq(categorias.id, id)).returning({ nome: categorias.nome });
+  return removida;
 }

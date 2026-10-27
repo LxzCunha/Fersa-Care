@@ -12,6 +12,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import type {
+  AcaoDeAuditoria,
   Idioma,
   Perfil,
   Segmento,
@@ -89,3 +90,27 @@ export const IDIOMAS: Record<Idioma, string> = {
   es: 'Espanhol',
   en: 'Inglês',
 };
+
+/** Ações da trilha de auditoria. Âmbar (selo-pendente) só no que pede atenção: login recusado. */
+export const ACOES_DE_AUDITORIA: Record<AcaoDeAuditoria, { rotulo: string; classe: string }> = {
+  LOGIN: { rotulo: 'Entrou', classe: 'selo-ativo' },
+  LOGIN_RECUSADO: { rotulo: 'Login recusado', classe: 'selo-pendente' },
+  ACESSO_SOLICITADO: { rotulo: 'Pediu acesso', classe: 'selo-clientes' },
+  SENHA_ALTERADA: { rotulo: 'Trocou a senha', classe: 'selo-clientes' },
+  SESSOES_ENCERRADAS: { rotulo: 'Saiu dos outros dispositivos', classe: 'selo-clientes' },
+  USUARIO_CRIADO: { rotulo: 'Cadastrou usuário', classe: 'selo-ativo' },
+  USUARIO_ALTERADO: { rotulo: 'Editou usuário', classe: 'selo-clientes' },
+  USUARIO_STATUS_ALTERADO: { rotulo: 'Mudou a situação', classe: 'selo-clientes' },
+  USUARIO_EXCLUIDO: { rotulo: 'Excluiu usuário', classe: 'selo-inativo' },
+  DOCUMENTO_CRIADO: { rotulo: 'Cadastrou documento', classe: 'selo-ativo' },
+  DOCUMENTO_ALTERADO: { rotulo: 'Editou documento', classe: 'selo-clientes' },
+  DOCUMENTO_EXCLUIDO: { rotulo: 'Excluiu documento', classe: 'selo-inativo' },
+  PRODUTO_CRIADO: { rotulo: 'Cadastrou peça', classe: 'selo-ativo' },
+  PRODUTO_ALTERADO: { rotulo: 'Editou peça', classe: 'selo-clientes' },
+  PRODUTO_EXCLUIDO: { rotulo: 'Excluiu peça', classe: 'selo-inativo' },
+  CATEGORIA_CRIADA: { rotulo: 'Criou categoria', classe: 'selo-ativo' },
+  CATEGORIA_ALTERADA: { rotulo: 'Editou categoria', classe: 'selo-clientes' },
+  CATEGORIA_EXCLUIDA: { rotulo: 'Excluiu categoria', classe: 'selo-inativo' },
+  CHAMADO_ALTERADO: { rotulo: 'Atualizou chamado', classe: 'selo-clientes' },
+};
+

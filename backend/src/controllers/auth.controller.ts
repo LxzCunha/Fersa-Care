@@ -47,8 +47,16 @@ export async function atualizarPerfil(req: Request, res: Response) {
   res.json({ usuario: await authService.atualizarPerfil(usuarioLogado(req).id, dados) });
 }
 
+/** Troca a senha. Os outros logins da conta caem; esta sessão recebe um cookie novo. */
 export async function trocarSenha(req: Request, res: Response) {
   const dados = esquemaTrocarSenha.parse(req.body);
-  await authService.trocarSenha(usuarioLogado(req).id, dados);
+  const token = await authService.trocarSenha(usuarioLogado(req).id, dados);
+  res.cookie(NOME_COOKIE, token, opcoesDoCookie());
+  res.status(204).end();
+}
+
+export async function encerrarOutrasSessoes(req: Request, res: Response) {
+  const token = await authService.encerrarOutrasSessoes(usuarioLogado(req).id);
+  res.cookie(NOME_COOKIE, token, opcoesDoCookie());
   res.status(204).end();
 }

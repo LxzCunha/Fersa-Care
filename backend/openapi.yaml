@@ -15,6 +15,17 @@ info:
     **Authorize** (Bearer).
 
     **Erros** sempre seguem o formato `{ "erro": { "codigo", "mensagem", "detalhes" } }`.
+    Toda resposta traz o cabeçalho `X-Request-Id`: informe-o ao suporte para localizar a
+    requisição nos logs.
+
+    **Segurança**
+    - Requisições que alteram dados (POST, PUT, PATCH, DELETE) vindas de um navegador
+      precisam partir do próprio portal (cabeçalhos `Origin`/`Sec-Fetch-Site`); de outro site
+      recebem `403 ORIGEM_NAO_PERMITIDA`. Clientes sem navegador (curl, apps) não são afetados.
+    - O token de sessão perde a validade quando a senha é trocada ou redefinida, quando a
+      conta é desativada e em "sair dos outros dispositivos".
+    - Login: no máximo 10 tentativas erradas por IP e 5 por conta a cada 15 minutos (`429`).
+    - Uploads: o conteúdo precisa bater com a extensão (`400 CONTEUDO_NAO_CONFERE`).
 servers:
   - url: /
 tags:
@@ -32,6 +43,10 @@ tags:
   - name: Assistente
     description: Assistente técnico (bolinha de chat) com RAG; responde só sobre peças e produtos FERSA
   - name: Admin - Chamados
+  - name: Admin - Auditoria
+    description: Trilha de auditoria (logins, senhas e alterações feitas pelo administrador). Só leitura.
+  - name: Saúde
+    description: Verificações para Docker, Kubernetes e balanceadores
 security:
   - cookieSessao: []
   - bearer: []
@@ -40,12 +55,32 @@ security:
 paths:
   /api/saude:
     get:
-      tags: [Autenticação]
-      summary: Verifica se a API está no ar
+      tags: [Saúde]
+      summary: O processo está de pé (liveness). Não consulta o banco.
       security: []
       responses:
         '200':
           description: OK
+
+  /api/saude/pronto:
+    get:
+      tags: [Saúde]
+      summary: Pode receber tráfego (readiness)
+      description: |
+        Confere o banco (indispensável) e o Ollama do assistente (opcional). Sem o assistente a
+        API responde `degradado`, mas continua pronta.
+      security: []
+      responses:
+        '200':
+          description: Pronta (`ok` ou `degradado`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Prontidao' }
+        '503':
+          description: Sem banco de dados
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Prontidao' }
 
   /api/auth/entrar:
     post:
@@ -159,9 +194,21 @@ paths:
               properties:
                 senhaAtual: { type: string }
                 novaSenha: { type: string, minLength: 8 }
+      description: |
+        Os logins da conta em outros dispositivos deixam de valer. Esta sessão recebe um cookie
+        novo (quem usa `Authorization: Bearer` precisa entrar de novo).
       responses:
-        '204': { description: Senha alterada }
+        '204': { description: Senha alterada (com um novo cookie de sessão) }
         '400': { $ref: '#/components/responses/Erro' }
+
+  /api/auth/eu/encerrar-outras-sessoes:
+    post:
+      tags: [Autenticação]
+      summary: Sai da conta em todos os outros dispositivos
+      description: Invalida todos os tokens da conta e devolve um cookie novo para esta sessão.
+      responses:
+        '204': { description: Sessões encerradas (com um novo cookie de sessão) }
+        '401': { $ref: '#/components/responses/Erro' }
 
   /api/documentos:
     get:
@@ -724,6 +771,39 @@ paths:
                   totalPaginas: { type: integer }
                   porStatus: { type: object, additionalProperties: { type: integer } }
 
+  /api/admin/auditoria:
+    get:
+      tags: [Admin - Auditoria]
+      summary: Eventos da trilha de auditoria, mais recentes primeiro
+      parameters:
+        - $ref: '#/components/parameters/Busca'
+        - name: grupo
+          in: query
+          description: ACESSOS (logins, senhas, sessões) ou ALTERACOES (mudanças feitas no cadastro)
+          schema: { type: string, enum: [ACESSOS, ALTERACOES] }
+        - { name: acao, in: query, schema: { $ref: '#/components/schemas/AcaoDeAuditoria' } }
+        - { name: autorId, in: query, schema: { type: string, format: uuid } }
+        - { name: alvoTipo, in: query, schema: { type: string, enum: [USUARIO, DOCUMENTO, PRODUTO, CATEGORIA, CHAMADO] } }
+        - { name: alvoId, in: query, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/PorPagina'
+      responses:
+        '200':
+          description: Página de eventos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  itens: { type: array, items: { $ref: '#/components/schemas/EventoDeAuditoria' } }
+                  total: { type: integer }
+                  pagina: { type: integer }
+                  porPagina: { type: integer }
+                  totalPaginas: { type: integer }
+        '400': { $ref: '#/components/responses/Erro' }
+        '401': { $ref: '#/components/responses/Erro' }
+        '403': { $ref: '#/components/responses/Erro' }
+
   /api/admin/chamados/{id}:
     parameters: [{ $ref: '#/components/parameters/Id' }]
     get:
@@ -798,6 +878,61 @@ components:
           schema: { $ref: '#/components/schemas/Erro' }
 
   schemas:
+    Prontidao:
+      type: object
+      properties:
+        status: { type: string, enum: [ok, degradado, indisponivel] }
+        verificacoes:
+          type: object
+          properties:
+            banco: { type: string, enum: [ok, falhou] }
+            assistente: { type: string, enum: [ok, indisponivel] }
+        horario: { type: string, format: date-time }
+    AcaoDeAuditoria:
+      type: string
+      enum:
+        - LOGIN
+        - LOGIN_RECUSADO
+        - ACESSO_SOLICITADO
+        - SENHA_ALTERADA
+        - SESSOES_ENCERRADAS
+        - USUARIO_CRIADO
+        - USUARIO_ALTERADO
+        - USUARIO_STATUS_ALTERADO
+        - USUARIO_EXCLUIDO
+        - DOCUMENTO_CRIADO
+        - DOCUMENTO_ALTERADO
+        - DOCUMENTO_EXCLUIDO
+        - PRODUTO_CRIADO
+        - PRODUTO_ALTERADO
+        - PRODUTO_EXCLUIDO
+        - CATEGORIA_CRIADA
+        - CATEGORIA_ALTERADA
+        - CATEGORIA_EXCLUIDA
+        - CHAMADO_ALTERADO
+    EventoDeAuditoria:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        acao: { $ref: '#/components/schemas/AcaoDeAuditoria' }
+        autor:
+          type: [object, 'null']
+          description: Quem fez (null em ações de visitantes, como login recusado)
+          properties:
+            id: { type: [string, 'null'], format: uuid }
+            nome: { type: string }
+        alvo:
+          type: [object, 'null']
+          properties:
+            tipo: { type: string, enum: [USUARIO, DOCUMENTO, PRODUTO, CATEGORIA, CHAMADO] }
+            id: { type: string, format: uuid }
+            rotulo: { type: string, description: 'Título, nome ou código no momento do evento' }
+        detalhes:
+          type: object
+          description: 'O que mudou: nomes dos campos, situação de/para, acesso liberado/retirado, motivo da recusa. Nunca valores de senha.'
+        ip: { type: [string, 'null'] }
+        requisicaoId: { type: [string, 'null'], description: 'O X-Request-Id da requisição' }
+        criadoEm: { type: string, format: date-time }
     MensagemDoAssistente:
       type: object
       properties:

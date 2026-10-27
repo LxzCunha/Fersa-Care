@@ -87,20 +87,45 @@ export async function inserir(valores: NovoUsuario): Promise<Usuario> {
   return usuario!;
 }
 
-export async function atualizar(id: string, valores: Partial<NovoUsuario>): Promise<Usuario | undefined> {
+/**
+ * Atualiza o cadastro. Com `encerrarSessoes`, soma 1 à versão da sessão no
+ * mesmo UPDATE: todo token emitido antes deixa de valer.
+ */
+export async function atualizar(
+  id: string,
+  valores: Partial<Omit<NovoUsuario, 'versaoSessao'>>,
+  opcoes: { encerrarSessoes?: boolean } = {},
+): Promise<Usuario | undefined> {
   const [usuario] = await db
     .update(usuarios)
-    .set({ ...valores, atualizadoEm: new Date() })
+    .set({
+      ...valores,
+      ...(opcoes.encerrarSessoes ? { versaoSessao: sql`${usuarios.versaoSessao} + 1` } : {}),
+      atualizadoEm: new Date(),
+    })
     .where(eq(usuarios.id, id))
     .returning();
   return usuario;
 }
 
-/** Marca o horário do login (não conta como edição do cadastro). */
-export async function registrarAcesso(id: string): Promise<Usuario | undefined> {
+/** Derruba todos os logins da conta (sem mexer em `atualizadoEm`: não é edição do cadastro). */
+export async function encerrarSessoes(id: string): Promise<Usuario | undefined> {
   const [usuario] = await db
     .update(usuarios)
-    .set({ ultimoAcessoEm: new Date() })
+    .set({ versaoSessao: sql`${usuarios.versaoSessao} + 1` })
+    .where(eq(usuarios.id, id))
+    .returning();
+  return usuario;
+}
+
+/**
+ * Marca o horário do login (não conta como edição do cadastro). Com
+ * `novoHashDaSenha`, aproveita para regravar a senha com o custo atual do bcrypt.
+ */
+export async function registrarAcesso(id: string, novoHashDaSenha?: string): Promise<Usuario | undefined> {
+  const [usuario] = await db
+    .update(usuarios)
+    .set({ ultimoAcessoEm: new Date(), ...(novoHashDaSenha ? { senhaHash: novoHashDaSenha } : {}) })
     .where(eq(usuarios.id, id))
     .returning();
   return usuario;

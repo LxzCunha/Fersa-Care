@@ -1,8 +1,9 @@
 import { fireEvent, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { CapaDocumento, CartaoDocumento, GradeDocumentos, resumoDoConteudo } from '../../src/componentes/CartaoDocumento';
+import { CapaDocumento, CartaoDocumento, GradeDocumentos } from '../../src/componentes/CartaoDocumento';
 import { CartaoPeca, ImagemPeca } from '../../src/componentes/CartaoPeca';
 import { SeloVisibilidade } from '../../src/componentes/SeloVisibilidade';
+import { resumoDoConteudo } from '../../src/lib/formatar';
 import { umDocumento, umProduto } from '../fabricas';
 import { renderizar } from '../renderizar';
 

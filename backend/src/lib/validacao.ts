@@ -32,6 +32,11 @@ export const campoSenhaNova = z
   .string({ error: 'Informe a senha.' })
   .min(8, 'A senha precisa ter pelo menos 8 caracteres.')
   .max(72, 'A senha pode ter no máximo 72 caracteres.')
+  // O bcrypt só considera os primeiros 72 bytes; letras acentuadas ocupam 2.
+  .refine(
+    (senha) => senha.length > 72 || Buffer.byteLength(senha, 'utf8') <= 72,
+    'A senha ficou longa demais (com acentos, cabem menos de 72 caracteres).',
+  )
   .regex(/[A-Za-z]/, 'A senha precisa ter pelo menos uma letra.')
   .regex(/\d/, 'A senha precisa ter pelo menos um número.');
 
@@ -86,7 +91,7 @@ export function somenteLetrasENumeros(texto: string): string {
 export function lerDadosDoFormulario(req: Request): unknown {
   if (!req.is('multipart/form-data')) return req.body;
 
-  const bruto: unknown = req.body?.dados;
+  const bruto: unknown = (req.body as { dados?: unknown } | undefined)?.dados;
   if (typeof bruto !== 'string') {
     throw requisicaoInvalida('Envie os campos do formulário em JSON no campo "dados".');
   }

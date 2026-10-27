@@ -1,19 +1,18 @@
-import { KeyRound, LayoutDashboard, LogOut, Save } from 'lucide-react';
+import { KeyRound, LayoutDashboard, LogOut, MonitorSmartphone, Save } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router';
-import { atualizarPerfil, trocarSenha } from '../api/auth';
-import { ErroApi } from '../api/cliente';
+import { Link } from 'react-router';
+import { atualizarPerfil, encerrarOutrasSessoes, trocarSenha } from '../api/auth';
+import { ErroApi, mensagemDeErro } from '../api/cliente';
 import { CampoTexto } from '../componentes/Campo';
 import { AvisoErro } from '../componentes/Estados';
-import { useAutenticacao } from '../contexto/Autenticacao';
+import { useAutenticacao, useSairDaConta } from '../contexto/Autenticacao';
 import { useNotificar } from '../contexto/Notificacoes';
 import { PERFIS } from '../lib/rotulos';
 import './Acesso.css';
 
 export function MinhaConta() {
-  const { usuario, ehAdmin, atualizarUsuario, sair } = useAutenticacao();
+  const { usuario, ehAdmin, atualizarUsuario } = useAutenticacao();
   const notificar = useNotificar();
-  const navegar = useNavigate();
 
   const [perfil, setPerfil] = useState({
     nome: usuario?.nome ?? '',
@@ -26,6 +25,8 @@ export function MinhaConta() {
   const [senhas, setSenhas] = useState({ atual: '', nova: '', confirmacao: '' });
   const [erroSenha, setErroSenha] = useState<unknown>(null);
   const [salvandoSenha, setSalvandoSenha] = useState(false);
+  const [encerrando, setEncerrando] = useState(false);
+  const aoSair = useSairDaConta();
 
   if (!usuario) return null;
 
@@ -58,7 +59,7 @@ export function MinhaConta() {
     try {
       await trocarSenha(senhas.atual, senhas.nova);
       setSenhas({ atual: '', nova: '', confirmacao: '' });
-      notificar('Senha alterada.');
+      notificar('Senha alterada. Os outros dispositivos conectados saíram da conta.');
     } catch (falha) {
       setErroSenha(falha);
     } finally {
@@ -66,10 +67,16 @@ export function MinhaConta() {
     }
   }
 
-  async function aoSair() {
-    await sair();
-    notificar('Você saiu da sua conta.');
-    navegar('/');
+  async function sairDosOutrosDispositivos() {
+    setEncerrando(true);
+    try {
+      await encerrarOutrasSessoes();
+      notificar('Pronto: só este navegador continua conectado à sua conta.');
+    } catch (falha) {
+      notificar(mensagemDeErro(falha), 'erro');
+    } finally {
+      setEncerrando(false);
+    }
   }
 
   const erroCampoPerfil = (campo: string) => (erroPerfil instanceof ErroApi ? erroPerfil.erroDoCampo(campo) : undefined);
@@ -138,43 +145,61 @@ export function MinhaConta() {
           </button>
         </form>
 
-        <form className="acesso-formulario" onSubmit={salvarSenha} noValidate>
-          <h2>Trocar senha</h2>
-          {Boolean(erroSenha) && !(erroSenha instanceof ErroApi && erroSenha.detalhes.length) && (
-            <AvisoErro erro={erroSenha} />
-          )}
-          <CampoTexto
-            id="senha-atual"
-            rotulo="Senha atual"
-            type="password"
-            autoComplete="current-password"
-            value={senhas.atual}
-            onChange={(e) => setSenhas({ ...senhas, atual: e.target.value })}
-            erro={erroCampoSenha('senhaAtual')}
-          />
-          <CampoTexto
-            id="senha-nova"
-            rotulo="Nova senha"
-            type="password"
-            autoComplete="new-password"
-            ajuda="Pelo menos 8 caracteres, com letras e números."
-            value={senhas.nova}
-            onChange={(e) => setSenhas({ ...senhas, nova: e.target.value })}
-            erro={erroCampoSenha('novaSenha')}
-          />
-          <CampoTexto
-            id="senha-confirmacao"
-            rotulo="Repita a nova senha"
-            type="password"
-            autoComplete="new-password"
-            value={senhas.confirmacao}
-            onChange={(e) => setSenhas({ ...senhas, confirmacao: e.target.value })}
-            erro={erroCampoSenha('confirmacao')}
-          />
-          <button type="submit" className="botao botao-secundario" disabled={salvandoSenha}>
-            <KeyRound aria-hidden /> {salvandoSenha ? 'Alterando...' : 'Alterar senha'}
-          </button>
-        </form>
+        <div className="conta-coluna">
+          <form className="acesso-formulario" onSubmit={salvarSenha} noValidate>
+            <h2>Trocar senha</h2>
+            {Boolean(erroSenha) && !(erroSenha instanceof ErroApi && erroSenha.detalhes.length) && (
+              <AvisoErro erro={erroSenha} />
+            )}
+            <CampoTexto
+              id="senha-atual"
+              rotulo="Senha atual"
+              type="password"
+              autoComplete="current-password"
+              value={senhas.atual}
+              onChange={(e) => setSenhas({ ...senhas, atual: e.target.value })}
+              erro={erroCampoSenha('senhaAtual')}
+            />
+            <CampoTexto
+              id="senha-nova"
+              rotulo="Nova senha"
+              type="password"
+              autoComplete="new-password"
+              ajuda="Pelo menos 8 caracteres, com letras e números."
+              value={senhas.nova}
+              onChange={(e) => setSenhas({ ...senhas, nova: e.target.value })}
+              erro={erroCampoSenha('novaSenha')}
+            />
+            <CampoTexto
+              id="senha-confirmacao"
+              rotulo="Repita a nova senha"
+              type="password"
+              autoComplete="new-password"
+              value={senhas.confirmacao}
+              onChange={(e) => setSenhas({ ...senhas, confirmacao: e.target.value })}
+              erro={erroCampoSenha('confirmacao')}
+            />
+            <button type="submit" className="botao botao-secundario" disabled={salvandoSenha}>
+              <KeyRound aria-hidden /> {salvandoSenha ? 'Alterando...' : 'Alterar senha'}
+            </button>
+          </form>
+
+          <section className="acesso-formulario" aria-labelledby="titulo-dispositivos">
+            <h2 id="titulo-dispositivos">Dispositivos conectados</h2>
+            <p className="campo-ajuda">
+              Entrou num computador da oficina e esqueceu a conta aberta? Encerre as outras sessões: só este
+              navegador continua conectado. Trocar a senha faz o mesmo.
+            </p>
+            <button
+              type="button"
+              className="botao botao-secundario"
+              onClick={sairDosOutrosDispositivos}
+              disabled={encerrando}
+            >
+              <MonitorSmartphone aria-hidden /> {encerrando ? 'Encerrando...' : 'Sair dos outros dispositivos'}
+            </button>
+          </section>
+        </div>
       </div>
     </div>
   );

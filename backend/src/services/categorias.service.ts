@@ -1,6 +1,8 @@
+import { camposAlterados } from '../lib/diferencas.js';
 import { naoEncontrado } from '../lib/erros.js';
 import * as categoriasRepository from '../repositories/categorias.repository.js';
 import type { DadosCategoria, FiltrosCategorias } from '../validators/categorias.validator.js';
+import { registrarEvento } from './auditoria.service.js';
 
 /** Categorias do catálogo de peças. */
 
@@ -21,17 +23,25 @@ export async function detalharCategoria(id: string) {
 
 export async function criarCategoria(dados: DadosCategoria) {
   const categoria = await categoriasRepository.inserir(dados);
+  await registrarEvento({ acao: 'CATEGORIA_CRIADA', alvo: { tipo: 'CATEGORIA', id: categoria.id, rotulo: categoria.nome } });
   return detalharCategoria(categoria.id);
 }
 
 export async function atualizarCategoria(id: string, dados: DadosCategoria) {
+  const atual = await detalharCategoria(id);
   const categoria = await categoriasRepository.atualizar(id, dados);
   if (!categoria) throw naoEncontrado('Categoria não encontrada.');
+  await registrarEvento({
+    acao: 'CATEGORIA_ALTERADA',
+    alvo: { tipo: 'CATEGORIA', id, rotulo: categoria.nome },
+    detalhes: { campos: camposAlterados(atual, dados) },
+  });
   return detalharCategoria(id);
 }
 
 /** As peças continuam no catálogo, só ficam sem categoria. */
 export async function excluirCategoria(id: string) {
-  const existia = await categoriasRepository.excluir(id);
-  if (!existia) throw naoEncontrado('Categoria não encontrada.');
+  const removida = await categoriasRepository.excluir(id);
+  if (!removida) throw naoEncontrado('Categoria não encontrada.');
+  await registrarEvento({ acao: 'CATEGORIA_EXCLUIDA', alvo: { tipo: 'CATEGORIA', id, rotulo: removida.nome } });
 }

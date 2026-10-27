@@ -153,11 +153,13 @@ export async function atualizar(id: string, valores: Partial<NovoProduto>): Prom
 }
 
 /** Exclui e devolve a chave da foto (para apagá-la do disco), ou undefined se não existia. */
-export async function excluir(id: string): Promise<{ imagemChave: string | null } | undefined> {
+export async function excluir(
+  id: string,
+): Promise<{ codigo: string; nome: string; imagemChave: string | null } | undefined> {
   const [removido] = await db
     .delete(produtos)
     .where(eq(produtos.id, id))
-    .returning({ imagemChave: produtos.imagemChave });
+    .returning({ codigo: produtos.codigo, nome: produtos.nome, imagemChave: produtos.imagemChave });
   return removido;
 }
 

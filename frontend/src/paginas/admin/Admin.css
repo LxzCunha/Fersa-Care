@@ -1006,6 +1006,14 @@ a.painel-numero:hover {
   font-weight: 600;
 }
 
+/* Frase curta sob o título da lista (ex.: auditoria somente leitura) */
+.lista-aviso {
+  max-width: 48rem;
+  margin: calc(-1 * var(--e-2)) 0 var(--e-4);
+  color: var(--texto-suave);
+  font-size: var(--texto-sm);
+}
+
 .botao-mais {
   display: grid;
   flex-shrink: 0;
@@ -1239,6 +1247,15 @@ a.painel-numero:hover {
 
 .tabela .celula-descricao {
   max-width: 28rem;
+}
+
+/* Detalhes de um evento da auditoria: uma frase por linha */
+.lista-detalhes {
+  display: grid;
+  gap: var(--e-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 /* Sim/não: quadrado azul com ✓, ou vazio */

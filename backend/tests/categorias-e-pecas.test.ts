@@ -145,7 +145,7 @@ describe('Foto da peça', () => {
     await admin
       .put(`/api/admin/produtos/${criado.body.id}`)
       .field('dados', JSON.stringify(dados))
-      .attach('imagem', PNG, 'nova.webp')
+      .attach('imagem', PNG, 'nova.png')
       .expect(200);
     const depois = await arquivosNaPasta();
     expect(depois).toHaveLength(1);
@@ -188,7 +188,7 @@ describe('Foto da peça', () => {
     const criado = await admin
       .post('/api/admin/produtos')
       .field('dados', JSON.stringify(dados))
-      .attach('imagem', PNG, 'foto.jpg')
+      .attach('imagem', PNG, 'foto.png')
       .expect(201);
     await admin.delete(`/api/admin/produtos/${criado.body.id}`).expect(204);
     expect(await arquivosNaPasta()).toEqual([]);

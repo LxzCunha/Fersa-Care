@@ -1,3 +1,5 @@
+import type { Documento } from '../api/tipos';
+
 /** Formatação de valores para exibição. */
 
 const formatoData = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -34,6 +36,14 @@ export function tamanhoDeArquivo(bytes: number | null | undefined): string {
 export function formatoDoArquivo(nome: string | null | undefined): string {
   const extensao = nome?.split('.').pop();
   return extensao && extensao !== nome ? extensao.toUpperCase() : 'Arquivo';
+}
+
+/** Descrição curta do conteúdo: "PDF, 2,6 MB", "Vídeo MP4" ou "Link externo". */
+export function resumoDoConteudo(documento: Documento): string {
+  if (documento.origem === 'LINK') return 'Link externo';
+  const formato = formatoDoArquivo(documento.arquivo?.nome);
+  const tamanho = tamanhoDeArquivo(documento.arquivo?.tamanho);
+  return tamanho ? `${formato}, ${tamanho}` : formato;
 }
 
 export function numero(valor: number): string {

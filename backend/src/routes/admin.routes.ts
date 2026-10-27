@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import * as auditoriaController from '../controllers/auditoria.controller.js';
 import * as categoriasController from '../controllers/categorias.controller.js';
 import * as chamadosController from '../controllers/chamados.controller.js';
 import * as documentosAdminController from '../controllers/documentos-admin.controller.js';
@@ -48,3 +49,5 @@ adminRotas.get('/categorias/:id', categoriasController.detalhar);
 adminRotas.post('/categorias', categoriasController.criar);
 adminRotas.put('/categorias/:id', categoriasController.atualizar);
 adminRotas.delete('/categorias/:id', categoriasController.excluir);
+
+adminRotas.get('/auditoria', auditoriaController.listar);

@@ -27,3 +27,10 @@ export const EXTENSOES_ACEITAS =
 
 /** Sugestões de busca exibidas na página inicial. */
 export const EXEMPLOS_DE_BUSCA = ['30205', 'folga axial', 'cubo de roda', 'catálogo'];
+
+/** Perguntas de exemplo para quem abre o chat do assistente pela primeira vez. */
+export const SUGESTOES_DO_ASSISTENTE = [
+  'Como medir a folga axial do cubo de roda?',
+  'Qual o torque de aperto da porca do cubo?',
+  'Meu rolamento está fazendo ruído. O que pode ser?',
+];

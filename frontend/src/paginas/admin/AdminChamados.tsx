@@ -7,7 +7,8 @@ import { AvisoErro, Carregando, EstadoVazio } from '../../componentes/Estados';
 import { dataHora } from '../../lib/formatar';
 import { useValorAtrasado } from '../../lib/ganchos';
 import { STATUS_CHAMADO } from '../../lib/rotulos';
-import { Abas, BarraBusca, CabecalhoLista, RodapeLista, useAbrirAoClicarNaLinha, useFiltrosNaUrl } from './Cadastro';
+import { Abas, BarraBusca, CabecalhoLista, RodapeLista } from './Cadastro';
+import { useAbrirAoClicarNaLinha, useFiltrosNaUrl } from './navegacao';
 
 const POR_PAGINA = 20;
 

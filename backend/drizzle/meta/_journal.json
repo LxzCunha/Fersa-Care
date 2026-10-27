@@ -57,6 +57,20 @@
       "when": 1793123097569,
       "tag": "0007_assistente_e_chamados",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793129378105,
+      "tag": "0008_auditoria_e_versao_da_sessao",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793129381610,
+      "tag": "0009_auditoria_somente_insercao",
+      "breakpoints": true
     }
   ]
 }
