@@ -27,7 +27,8 @@
   color: var(--marca);
 }
 
-.marca-nome {
+.marca-nome,
+.marca-care {
   font-family: var(--fonte-titulo);
   font-size: 1.5rem;
   font-weight: 800;
@@ -43,23 +44,15 @@
 .marca-care {
   padding-left: 0.6rem;
   border-left: 1.5px solid var(--marca-borda);
-  color: var(--texto-suave);
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  line-height: 1.2;
 }
 
-.marca-pequeno .marca-nome {
+.marca-pequeno .marca-nome,
+.marca-pequeno .marca-care {
   font-size: 1.2rem;
 }
 
 .marca-pequeno .marca-logotipo {
   height: 1.1rem;
-}
-
-.marca-pequeno .marca-care {
-  font-size: 0.85rem;
 }
 
 .cabecalho {
