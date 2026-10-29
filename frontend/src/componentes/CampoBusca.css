@@ -34,6 +34,7 @@
   padding: 0 0.6rem;
   border: 0;
   background: transparent;
+  color: var(--tinta);
   appearance: none;
 }
 
