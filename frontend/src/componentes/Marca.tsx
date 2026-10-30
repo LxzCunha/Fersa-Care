@@ -14,7 +14,7 @@ export function Marca({ tamanho = 'normal' }: { tamanho?: 'normal' | 'pequeno' }
       ) : (
         <span className="marca-nome">FERSA</span>
       )}
-      <span className="marca-care">Care</span>
+      <span className="marca-care">CARE</span>
     </span>
   );
 }
