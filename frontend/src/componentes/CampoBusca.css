@@ -15,7 +15,7 @@
 
 .busca:focus-within {
   border-color: var(--marca);
-  box-shadow: 0 0 0 3px rgb(27 54 93 / 0.18);
+  box-shadow: 0 0 0 3px rgb(var(--fersa-origin-rgb) / 0.18);
 }
 
 .busca-icone {
@@ -72,7 +72,7 @@
 
 .busca-enviar {
   background: var(--marca);
-  color: #fff;
+  color: var(--branco);
 }
 
 .busca-enviar:hover {
@@ -88,7 +88,7 @@
 .busca-destaque {
   min-height: 3.5rem;
   border-color: transparent;
-  box-shadow: 0 8px 28px rgb(16 35 63 / 0.18);
+  box-shadow: 0 8px 28px rgb(var(--fersa-origin-rgb) / 0.18);
 }
 
 .busca-destaque .busca-entrada {

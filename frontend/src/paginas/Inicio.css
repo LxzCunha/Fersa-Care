@@ -1,9 +1,7 @@
 .hero {
   overflow: hidden;
-  background:
-    radial-gradient(120% 90% at 85% 10%, rgb(255 255 255 / 0.09), transparent 60%),
-    linear-gradient(160deg, var(--marca) 0%, var(--marca-escura) 100%);
-  color: #fff;
+  background: var(--gradiente-marca);
+  color: var(--branco);
 }
 
 .hero-grade {
@@ -20,7 +18,7 @@
 }
 
 .hero-sobretitulo {
-  color: rgb(255 255 255 / 0.72);
+  color: rgb(var(--fersa-branco-rgb) / 0.72);
   font-size: var(--texto-xs);
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -30,14 +28,14 @@
 .hero-titulo {
   max-width: 20ch;
   font-size: var(--texto-4xl);
-  font-weight: 800;
+  font-weight: var(--peso-titulo-grande);
   line-height: 1.08;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
 }
 
 .hero-apoio {
   max-width: 34rem;
-  color: rgb(255 255 255 / 0.82);
+  color: rgb(var(--fersa-branco-rgb) / 0.82);
   font-size: var(--texto-lg);
 }
 
@@ -46,27 +44,27 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--e-2);
-  color: rgb(255 255 255 / 0.72);
+  color: rgb(var(--fersa-branco-rgb) / 0.72);
   font-size: var(--texto-sm);
 }
 
 .hero-exemplo {
   min-height: 2.25rem;
   padding: 0 var(--e-3);
-  border: 1px solid rgb(255 255 255 / 0.3);
+  border: 1px solid rgb(var(--fersa-branco-rgb) / 0.3);
   border-radius: var(--raio-pilula);
-  background: rgb(255 255 255 / 0.06);
-  color: #fff;
+  background: rgb(var(--fersa-branco-rgb) / 0.06);
+  color: var(--branco);
   font-size: var(--texto-sm);
   font-weight: 600;
 }
 
 .hero-exemplo:hover {
-  border-color: #fff;
-  background: rgb(255 255 255 / 0.14);
+  border-color: var(--branco);
+  background: rgb(var(--fersa-branco-rgb) / 0.14);
 }
 
-.hero-desenho {
+.hero-simbolo {
   display: none;
 }
 
@@ -77,11 +75,14 @@
     padding-block: var(--e-8);
   }
 
-  .hero-desenho {
+  /* Símbolo em branco sobre Fersa Origin, como na pág. 34 do manual. */
+  .hero-simbolo {
     display: block;
-    max-width: 28rem;
-    justify-self: end;
-    opacity: 0.9;
+    justify-self: center;
+    width: min(100%, 15rem);
+    aspect-ratio: 583.933 / 657.988;
+    background: var(--branco);
+    mask: url('../assets/marca/simbolo.svg') center / contain no-repeat;
   }
 }
 
@@ -248,7 +249,7 @@
 .convite-icone {
   width: 1.75rem;
   height: 1.75rem;
-  color: rgb(255 255 255 / 0.8);
+  color: rgb(var(--fersa-branco-rgb) / 0.8);
 }
 
 .convite h2 {

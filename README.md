@@ -10,7 +10,7 @@
 ![React 19](https://img.shields.io/badge/React_19-20232A?logo=react&logoColor=61DAFB)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&logoColor=white)
 ![PostgreSQL + pgvector](https://img.shields.io/badge/PostgreSQL_+_pgvector-4169E1?logo=postgresql&logoColor=white)
-![Testes](https://img.shields.io/badge/testes-569-2ea44f)
+![Testes](https://img.shields.io/badge/testes-576-2ea44f)
 
 Projeto de **[Alexandre Breus da Cunha](https://github.com/LxzCunha)**
 
@@ -77,8 +77,10 @@ O que vale olhar no código:
 4. **Trilha de auditoria somente inserção.** Cada login e cada alteração do admin é registrado com autor, campos alterados, IP e id da requisição, e um gatilho no banco recusa UPDATE e DELETE. Autor e IP vêm de um contexto aberto por requisição com `AsyncLocalStorage`, o mesmo que coloca o id da requisição em todas as linhas de log.
    [`services/auditoria.service.ts`](backend/src/services/auditoria.service.ts) · [`lib/contexto.ts`](backend/src/lib/contexto.ts) · [`drizzle/0009_auditoria_somente_insercao.sql`](backend/drizzle/0009_auditoria_somente_insercao.sql)
 5. **Arquitetura em camadas, sem mágica.** `routes → controllers → services → repositories → models`, em módulos de funções. Os services não conhecem o ORM, as transações são explícitas e as entradas são validadas com Zod. As decisões estão documentadas em [`adr/`](adr/).
-6. **569 testes automatizados.** São 323 na API, contra um PostgreSQL de verdade, com as migrações reais aplicadas a cada rodada. Outros 246 no site, com Testing Library usando a tela como uma pessoa usaria. Completam o pacote ESLint com informação de tipos, CI no GitHub Actions, CodeQL e Dependabot.
+6. **576 testes automatizados.** São 323 na API, contra um PostgreSQL de verdade, com as migrações reais aplicadas a cada rodada. Outros 253 no site, com Testing Library usando a tela como uma pessoa usaria. Completam o pacote ESLint com informação de tipos, CI no GitHub Actions, CodeQL e Dependabot.
 7. **Pensado para o celular e acessível.** Navegação inferior, filtros em gaveta e janelas nativas (`<dialog>`) com foco e Esc. O layout do admin reage ao espaço com container queries, e o lint de acessibilidade (jsx-a11y) roda no CI.
+8. **Fiel ao manual de marca FERSA 2025.** Paleta oficial em tokens com os nomes do manual. Logotipo e símbolo extraídos em vetor do PDF, sem redesenho. Composição oficial "FERSA ✳ Care" com o separador da marca. Gradiente corporativo e tipografia TT Hoves Pro, com Albert Sans de reserva enquanto não há licença.
+   [`tokens.css`](frontend/src/estilos/tokens.css) · [`assets/marca/`](frontend/src/assets/marca/) · [ADR 0009](adr/0009-identidade-visual-pelo-manual-de-marca.md)
 
 ---
 
@@ -238,7 +240,7 @@ A busca usa o full-text search do PostgreSQL em português e ignora acentos (`ma
 
 | Camada | Tecnologia |
 |---|---|
-| Site | React 19, TypeScript, Vite, React Router, TanStack Query, CSS com tokens próprios (identidade visual FERSA) |
+| Site | React 19, TypeScript, Vite, React Router, TanStack Query, CSS com tokens do manual de marca FERSA 2025 |
 | API | Node.js 24, Express 5, Zod, Drizzle ORM, pino |
 | Banco | PostgreSQL 17 + pgvector (HNSW) + full-text search em português |
 | IA | Ollama local: `bge-m3` (embeddings) e `qwen2.5:14b` (respostas), pdf.js para extrair texto |
@@ -308,7 +310,7 @@ npm run test:unidade      # só os de unidade, sem banco (~1 s)
 npm run lint && npm run typecheck
 
 # frontend/  (API simulada)
-npm test                  # 246 testes de telas e componentes
+npm test                  # 253 testes de telas e componentes
 npm run lint && npm run build
 ```
 
@@ -415,7 +417,7 @@ Engineering highlights:
 - Layered CSRF defenses and magic-byte upload validation.
 - An append-only audit trail backed by a database trigger.
 - Structured logging with request ids.
-- 569 automated tests, 323 of them against a real PostgreSQL.
+- 576 automated tests, 323 of them against a real PostgreSQL.
 - CI with GitHub Actions, CodeQL and Dependabot.
 
 Stack: React 19, TypeScript, Express 5, Drizzle ORM, PostgreSQL 17 + pgvector, Ollama. Architecture decisions are documented in [`adr/`](adr/) (in Portuguese).

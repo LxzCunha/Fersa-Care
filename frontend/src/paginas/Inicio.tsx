@@ -6,7 +6,6 @@ import type { Segmento } from '../api/tipos';
 import { BlocoSuporte } from '../componentes/BlocoSuporte';
 import { CampoBusca } from '../componentes/CampoBusca';
 import { GradeDocumentos } from '../componentes/CartaoDocumento';
-import { DesenhoRolamento } from '../componentes/DesenhoRolamento';
 import { AvisoErro, Carregando } from '../componentes/Estados';
 import { EXEMPLOS_DE_BUSCA } from '../config';
 import { useAssistente } from '../contexto/Assistente';
@@ -57,7 +56,7 @@ export function Inicio() {
               ))}
             </div>
           </div>
-          <DesenhoRolamento className="hero-desenho" />
+          <span className="hero-simbolo" aria-hidden="true" />
         </div>
       </section>
 

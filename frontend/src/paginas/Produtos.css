@@ -40,7 +40,7 @@
   padding: 0 0.3rem;
   border-radius: var(--raio-pilula);
   background: var(--marca);
-  color: #fff;
+  color: var(--branco);
   font-size: 0.75rem;
 }
 
@@ -217,7 +217,7 @@
 }
 
 .gaveta::backdrop {
-  background: rgb(16 35 63 / 0.5);
+  background: rgb(var(--fersa-origin-rgb) / 0.5);
 }
 
 .gaveta-conteudo {

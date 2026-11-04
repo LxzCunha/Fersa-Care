@@ -196,7 +196,7 @@
 }
 
 .documento-produtos a:hover {
-  background: #f7f9fa;
+  background: var(--nevoa);
 }
 
 .documento-produto-codigo {

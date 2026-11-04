@@ -1,19 +1,13 @@
-// Usa o logotipo oficial em src/assets/marca/ se existir (nunca redesenhar); sem ele, o nome em texto.
-const arquivosDoLogotipo = import.meta.glob<string>('../assets/marca/fersa.{svg,png,webp}', {
-  eager: true,
-  query: '?url',
-  import: 'default',
-});
-const LOGOTIPO_OFICIAL = Object.values(arquivosDoLogotipo)[0];
+import logotipo from '../assets/marca/fersa.svg';
+import logotipoNegativo from '../assets/marca/fersa-negativo.svg';
 
-export function Marca({ tamanho = 'normal' }: { tamanho?: 'normal' | 'pequeno' }) {
+// Logotipo oficial + separador (o símbolo) + "Care", como no "Separator Element" do manual (pág. 36).
+// Fundo claro: logotipo em Fersa Origin; fundo escuro ou imagem: `negativa`.
+export function Marca({ tamanho = 'normal', negativa = false }: { tamanho?: 'normal' | 'pequeno'; negativa?: boolean }) {
   return (
-    <span className={`marca marca-${tamanho}`}>
-      {LOGOTIPO_OFICIAL ? (
-        <img className="marca-logotipo" src={LOGOTIPO_OFICIAL} alt="FERSA" />
-      ) : (
-        <span className="marca-nome">FERSA</span>
-      )}
+    <span className={`marca marca-${tamanho}${negativa ? ' marca-negativa' : ''}`}>
+      <img className="marca-logotipo" src={negativa ? logotipoNegativo : logotipo} alt="FERSA" />
+      <span className="marca-separador" aria-hidden="true" />
       <span className="marca-care">Care</span>
     </span>
   );

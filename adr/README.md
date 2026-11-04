@@ -12,5 +12,6 @@ Cada arquivo registra uma decisão que molda o projeto: o contexto, o que foi de
 | [0006](0006-testes-contra-postgres-real.md) | Testes de integração contra um PostgreSQL de verdade | Aceita |
 | [0007](0007-auditoria-somente-insercao.md) | Trilha de auditoria somente inserção, com contexto da requisição | Aceita |
 | [0008](0008-typescript-7-e-api-do-6-para-o-lint.md) | TypeScript 7 para compilar, TypeScript 6 como API do ESLint | Aceita (provisória) |
+| [0009](0009-identidade-visual-pelo-manual-de-marca.md) | Identidade visual pelo manual de marca FERSA 2025 | Aceita |
 
 Para uma decisão nova: copie o formato de um ADR existente, use o próximo número e adicione a linha acima. Decisão revista não é apagada: o ADR antigo ganha "Substituída por 00NN".

@@ -1,10 +1,19 @@
-# Logotipo oficial
+# Marca FERSA
 
-Coloque aqui o logotipo da FERSA (versão azul-marinho para fundo claro) com um destes nomes:
+Arquivos extraídos em vetor do manual de marca oficial (*Brandmanual Fersa 2025*, versão curta), sem redesenho: os caminhos são os mesmos do PDF, só recortados na área de cada arte.
 
-- `fersa.svg` (preferível: fica nítido em qualquer tela)
-- `fersa.png` ou `fersa.webp` (com fundo transparente, pelo menos 480 px de largura)
+| Arquivo | Uso | Página do manual |
+|---|---|---|
+| `fersa.svg` | Logotipo em Fersa Origin (`#003256`), para fundo branco ou claro | 4 |
+| `fersa-negativo.svg` | Logotipo em branco, para fundo escuro, azul ou imagem | 5 e 7 |
+| `simbolo.svg` | Símbolo; também é o separador entre o logotipo e um complemento ("FERSA ✳ Care") | 34 e 36 |
 
-O componente `src/componentes/Marca.tsx` detecta o arquivo no build e passa a usá-lo no cabeçalho e no rodapé. Sem o arquivo, o portal mostra o nome "FERSA" em texto, na cor da marca.
+`public/favicon.svg` é o símbolo em branco sobre Fersa Origin.
 
-Use o arquivo fornecido pela FERSA (manual de identidade visual), sem redesenhar o logotipo.
+Regras do manual que o código segue:
+
+- O logotipo não muda e não recebe acréscimos. "Care" entra como complemento, depois do separador oficial, com espaço igual à altura do logotipo de cada lado.
+- Fundo claro: logotipo em Fersa Origin. Fundo escuro ou imagem: logotipo em branco.
+- Tamanho mínimo: 20 mm de largura (cerca de 76 px). Área de respiro: a altura da letra F em volta do logotipo.
+
+Se a FERSA fornecer os arquivos exportados pelo time de design, substitua estes mantendo os nomes.
