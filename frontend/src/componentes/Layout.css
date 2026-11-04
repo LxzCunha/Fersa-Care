@@ -29,8 +29,13 @@
   color: var(--marca);
 }
 
-.marca-negativa {
-  color: var(--branco);
+.marca-nome,
+.marca-care {
+  font-family: var(--fonte-titulo);
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1;
 }
 
 .marca-logotipo {
@@ -39,24 +44,18 @@
   height: var(--altura-logo);
 }
 
-.marca-separador {
-  flex-shrink: 0;
-  height: calc(var(--altura-logo) * 0.8);
-  aspect-ratio: 583.933 / 657.988;
-  background: currentColor;
-  mask: url('../assets/marca/simbolo.svg') center / contain no-repeat;
-}
-
 .marca-care {
-  font-family: var(--fonte-titulo);
-  font-size: calc(var(--altura-logo) * 1.42);
-  font-weight: var(--peso-titulo-grande);
-  letter-spacing: 0;
-  line-height: 1;
+  padding-left: 0.6rem;
+  border-left: 1.5px solid var(--marca-borda);
 }
 
-.marca-pequeno {
-  --altura-logo: 1rem;
+.marca-pequeno .marca-nome,
+.marca-pequeno .marca-care {
+  font-size: 1.2rem;
+}
+
+.marca-pequeno .marca-logotipo {
+  height: 1.1rem;
 }
 
 .cabecalho {

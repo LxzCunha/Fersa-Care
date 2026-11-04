@@ -5,10 +5,13 @@ import logotipoNegativo from '../assets/marca/fersa-negativo.svg';
 // Fundo claro: logotipo em Fersa Origin; fundo escuro ou imagem: `negativa`.
 export function Marca({ tamanho = 'normal', negativa = false }: { tamanho?: 'normal' | 'pequeno'; negativa?: boolean }) {
   return (
-    <span className={`marca marca-${tamanho}${negativa ? ' marca-negativa' : ''}`}>
-      <img className="marca-logotipo" src={negativa ? logotipoNegativo : logotipo} alt="FERSA" />
-      <span className="marca-separador" aria-hidden="true" />
-      <span className="marca-care">Care</span>
+    <span className={`marca marca-${tamanho}`}>
+      {LOGOTIPO_OFICIAL ? (
+        <img className="marca-logotipo" src={LOGOTIPO_OFICIAL} alt="FERSA" />
+      ) : (
+        <span className="marca-nome">FERSA</span>
+      )}
+      <span className="marca-care">CARE</span>
     </span>
   );
 }
