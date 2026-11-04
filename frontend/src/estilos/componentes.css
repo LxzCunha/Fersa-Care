@@ -27,7 +27,7 @@
 
 .botao-principal {
   background: var(--marca);
-  color: #fff;
+  color: var(--branco);
 }
 .botao-principal:hover {
   background: var(--marca-hover);
@@ -35,7 +35,7 @@
 
 .botao-escuro {
   background: var(--tinta);
-  color: #fff;
+  color: var(--branco);
 }
 .botao-escuro:hover {
   background: var(--marca-escura);
@@ -65,12 +65,12 @@
   color: var(--tinta);
 }
 .botao-fantasma:hover {
-  background: rgb(16 35 63 / 0.06);
+  background: rgb(var(--fersa-origin-rgb) / 0.06);
 }
 
 .botao-perigo {
   background: var(--superficie);
-  border-color: #e6b8b2;
+  border-color: var(--erro-borda);
   color: var(--erro);
 }
 .botao-perigo:hover {
@@ -154,7 +154,7 @@
 .area-texto:focus {
   outline: none;
   border-color: var(--marca);
-  box-shadow: 0 0 0 3px rgb(27 54 93 / 0.22);
+  box-shadow: 0 0 0 3px rgb(var(--fersa-origin-rgb) / 0.22);
 }
 
 .entrada[aria-invalid='true'],
@@ -263,13 +263,13 @@
 
 .selo-publico,
 .selo-ativo {
-  border-color: #b5dcc6;
+  border-color: var(--ok-borda);
   background: var(--ok-fundo);
   color: var(--ok);
 }
 
 .selo-clientes {
-  border-color: #bcd2e8;
+  border-color: var(--info-borda);
   background: var(--info-fundo);
   color: var(--info);
 }
@@ -292,7 +292,7 @@
 .selo-admin {
   border-color: var(--tinta);
   background: var(--tinta);
-  color: #fff;
+  color: var(--branco);
 }
 
 .codigo {
@@ -342,27 +342,27 @@ a.etiqueta-codigo:hover {
 }
 
 .aviso-erro {
-  border-color: #eab7b1;
+  border-color: var(--erro-borda);
   background: var(--erro-fundo);
-  color: #7d1a14;
+  color: var(--erro-forte);
 }
 
 .aviso-ok {
-  border-color: #b5dcc6;
+  border-color: var(--ok-borda);
   background: var(--ok-fundo);
-  color: #124a2e;
+  color: var(--ok);
 }
 
 .aviso-info {
-  border-color: #bcd2e8;
+  border-color: var(--info-borda);
   background: var(--info-fundo);
-  color: #183a59;
+  color: var(--info);
 }
 
 .aviso-atencao {
   border-color: var(--atencao-borda);
   background: var(--atencao-fundo);
-  color: #5c3c00;
+  color: var(--atencao-texto);
 }
 
 .carregando {
@@ -496,7 +496,7 @@ a.etiqueta-codigo:hover {
 .chip[aria-pressed='true'] {
   border-color: var(--marca);
   background: var(--marca);
-  color: #fff;
+  color: var(--branco);
 }
 
 .chip .contagem {
@@ -605,11 +605,11 @@ a.etiqueta-codigo:hover {
   padding: 0;
   border: 0;
   border-radius: var(--raio-painel);
-  box-shadow: 0 24px 60px rgb(16 35 63 / 0.35);
+  box-shadow: 0 24px 60px rgb(var(--fersa-origin-rgb) / 0.35);
 }
 
 .dialogo::backdrop {
-  background: rgb(16 35 63 / 0.55);
+  background: rgb(var(--fersa-origin-rgb) / 0.55);
 }
 
 .dialogo-conteudo {
@@ -659,8 +659,8 @@ a.etiqueta-codigo:hover {
   padding: var(--e-3) var(--e-4);
   border-radius: var(--raio-controle);
   background: var(--marca-escura);
-  color: #fff;
-  box-shadow: 0 10px 30px rgb(16 35 63 / 0.3);
+  color: var(--branco);
+  box-shadow: 0 10px 30px rgb(var(--fersa-origin-rgb) / 0.3);
   font-size: var(--texto-sm);
   font-weight: 700;
   pointer-events: auto;
@@ -669,11 +669,11 @@ a.etiqueta-codigo:hover {
 
 .notificacao svg {
   flex-shrink: 0;
-  color: #9fd4b4;
+  color: var(--ok-cor);
 }
 
 .notificacao-erro svg {
-  color: #ff9d94;
+  color: var(--erro-claro);
 }
 
 @keyframes surgir {
@@ -728,12 +728,12 @@ a.etiqueta-codigo:hover {
   gap: var(--e-3);
   padding: var(--e-5);
   border-radius: var(--raio-painel);
-  background: var(--marca);
-  color: #fff;
+  background: var(--gradiente-marca);
+  color: var(--branco);
 }
 
 .cartao-marca p {
-  color: rgb(255 255 255 / 0.85);
+  color: rgb(var(--fersa-branco-rgb) / 0.85);
 }
 
 .cartao-marca .botao-secundario {
@@ -741,7 +741,7 @@ a.etiqueta-codigo:hover {
 }
 
 .cartao-marca .botao-principal {
-  background: #fff;
+  background: var(--branco);
   color: var(--marca);
 }
 

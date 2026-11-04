@@ -1,4 +1,4 @@
-import '@fontsource-variable/plus-jakarta-sans';
+import '@fontsource-variable/albert-sans';
 import './estilos/tokens.css';
 import './estilos/base.css';
 import './estilos/componentes.css';
@@ -10,6 +10,7 @@ import { BrowserRouter } from 'react-router';
 import { ErroApi } from './api/cliente';
 import { App } from './App';
 import { CHAVE_USUARIO_ATUAL, ProvedorAutenticacao } from './contexto/Autenticacao';
+import { carregarFonteDaMarca } from './lib/fonteDaMarca';
 import { ProvedorNotificacoes } from './contexto/Notificacoes';
 
 const clienteQuery: QueryClient = new QueryClient({
@@ -28,6 +29,8 @@ const clienteQuery: QueryClient = new QueryClient({
     },
   },
 });
+
+carregarFonteDaMarca();
 
 createRoot(document.getElementById('raiz')!).render(
   <StrictMode>

@@ -12,7 +12,7 @@
   padding: var(--e-2) var(--e-4);
   border-radius: var(--raio-pilula);
   background: var(--marca);
-  color: #fff;
+  color: var(--branco);
   font-weight: 700;
 }
 
@@ -21,9 +21,11 @@
 }
 
 .marca {
+  /* Proporções do manual (pág. 36): espaço = altura do logotipo; separador ~0,8 dela; "Care" com a mesma altura de maiúscula. */
+  --altura-logo: 1.25rem;
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: var(--altura-logo);
   color: var(--marca);
 }
 
@@ -37,8 +39,9 @@
 }
 
 .marca-logotipo {
+  flex-shrink: 0;
   width: auto;
-  height: 1.35rem;
+  height: var(--altura-logo);
 }
 
 .marca-care {
@@ -60,7 +63,7 @@
   top: 0;
   z-index: 20;
   border-bottom: 1px solid var(--linha);
-  background: rgb(255 255 255 / 0.96);
+  background: rgb(var(--fersa-branco-rgb) / 0.96);
   backdrop-filter: saturate(1.4) blur(8px);
 }
 
@@ -203,7 +206,7 @@
   height: calc(var(--altura-nav-inferior) + env(safe-area-inset-bottom));
   padding-bottom: env(safe-area-inset-bottom);
   border-top: 1px solid var(--linha);
-  background: rgb(255 255 255 / 0.97);
+  background: rgb(var(--fersa-branco-rgb) / 0.97);
   backdrop-filter: saturate(1.4) blur(8px);
 }
 
@@ -276,7 +279,7 @@
   /* O peso da fonte não muda, para os itens vizinhos não pularem. */
   .nav-principal a.active {
     background: var(--marca);
-    color: #fff;
+    color: var(--branco);
   }
 
   .nav-principal a.active:hover {

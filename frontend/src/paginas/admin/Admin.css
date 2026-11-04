@@ -33,7 +33,7 @@
   position: fixed;
   inset: 0;
   z-index: 55;
-  background: rgb(16 35 63 / 0.45);
+  background: rgb(var(--fersa-origin-rgb) / 0.45);
 }
 
 .lateral :focus-visible {
@@ -279,7 +279,7 @@
   background: var(--atencao-forte);
   color: var(--tinta);
   font-size: var(--texto-xs);
-  font-weight: 800;
+  font-weight: var(--peso-forte);
 }
 
 .lateral-vazio {
@@ -361,6 +361,14 @@
 .admin-topo-marca {
   display: inline-flex;
   text-decoration: none;
+}
+
+/* No celular, só o logotipo: o manual permite usá-lo sem o complemento, e falta espaço ao lado da conta. */
+@media (max-width: 40rem) {
+  .admin-topo-marca .marca-separador,
+  .admin-topo-marca .marca-care {
+    display: none;
+  }
 }
 
 .admin-topo-trilha {
@@ -722,7 +730,7 @@
 }
 
 a.painel-numero:hover {
-  background: #f7f9fa;
+  background: var(--nevoa);
 }
 
 .painel-numero-rotulo {
@@ -828,7 +836,7 @@ a.painel-numero:hover {
 }
 
 .pendentes li + li {
-  border-top: 1px solid #efd29a;
+  border-top: 1px solid var(--atencao-borda);
 }
 
 .pendente-nome {
@@ -836,7 +844,7 @@ a.painel-numero:hover {
 }
 
 .pendente-nome small {
-  color: #5c3c00;
+  color: var(--atencao-texto);
 }
 
 .mais-acessados {
@@ -938,7 +946,7 @@ a.painel-numero:hover {
   height: var(--altura);
   min-height: 0;
   border-radius: 4px 4px 0 0;
-  background: #6f88aa; /* contraste 3:1 sobre o branco */
+  background: var(--aco); /* Fersa Chrome: contraste 3:1 sobre o branco */
   transition: opacity 0.15s;
 }
 
@@ -977,7 +985,7 @@ a.painel-numero:hover {
   padding: var(--e-2) var(--e-3);
   border-radius: var(--raio-controle);
   background: var(--tinta);
-  color: #d7dee5;
+  color: rgb(var(--fersa-branco-rgb) / 0.85);
   font-size: var(--texto-xs);
   white-space: nowrap;
   transform: translateX(-50%);
@@ -986,7 +994,7 @@ a.painel-numero:hover {
 
 .grafico-dica strong {
   display: block;
-  color: #fff;
+  color: var(--branco);
   font-size: var(--texto-md);
 }
 
@@ -1036,7 +1044,7 @@ a.painel-numero:hover {
 
 .lista-cabecalho h1 {
   font-size: var(--texto-2xl);
-  font-weight: 600;
+  font-weight: var(--peso-titulo-grande);
 }
 
 .lista-aviso {
@@ -1383,7 +1391,7 @@ a.painel-numero:hover {
   border-radius: 1.25rem;
   background: var(--superficie);
   color: var(--texto);
-  box-shadow: 0 24px 80px rgb(16 35 63 / 0.35);
+  box-shadow: 0 24px 80px rgb(var(--fersa-origin-rgb) / 0.35);
 }
 
 /* Só a janela aberta vira flex: a fechada precisa continuar escondida. */
@@ -1397,7 +1405,7 @@ a.painel-numero:hover {
 }
 
 .janela::backdrop {
-  background: rgb(16 35 63 / 0.5);
+  background: rgb(var(--fersa-origin-rgb) / 0.5);
 }
 
 .janela-topo {
@@ -1837,7 +1845,7 @@ a.painel-numero:hover {
 .capa-automatica img {
   width: 4.5rem;
   height: auto;
-  filter: drop-shadow(0 1px 3px rgb(16 35 63 / 0.18));
+  filter: drop-shadow(0 1px 3px rgb(var(--fersa-origin-rgb) / 0.18));
 }
 
 .seletor {

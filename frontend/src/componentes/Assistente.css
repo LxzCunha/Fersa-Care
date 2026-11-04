@@ -12,8 +12,8 @@
   background: var(--marca);
   color: var(--superficie);
   box-shadow:
-    0 6px 20px rgb(16 35 63 / 0.35),
-    0 1px 3px rgb(16 35 63 / 0.25);
+    0 6px 20px rgb(var(--fersa-origin-rgb) / 0.35),
+    0 1px 3px rgb(var(--fersa-origin-rgb) / 0.25);
   cursor: pointer;
   transition:
     transform 0.15s,
@@ -392,7 +392,7 @@
     height: min(40rem, 100dvh - 2 * var(--e-5));
     overflow: hidden;
     border-radius: var(--raio-painel);
-    box-shadow: 0 24px 60px rgb(16 35 63 / 0.35);
+    box-shadow: 0 24px 60px rgb(var(--fersa-origin-rgb) / 0.35);
   }
 }
 

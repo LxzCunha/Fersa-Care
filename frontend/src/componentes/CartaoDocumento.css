@@ -17,7 +17,7 @@
   width: calc(100% - 2 * var(--capa-margem));
   height: calc(100% - 2 * var(--capa-margem));
   object-fit: contain;
-  filter: drop-shadow(0 1px 2px rgb(16 35 63 / 0.16)) drop-shadow(0 4px 10px rgb(16 35 63 / 0.08));
+  filter: drop-shadow(0 1px 2px rgb(var(--fersa-origin-rgb) / 0.16)) drop-shadow(0 4px 10px rgb(var(--fersa-origin-rgb) / 0.08));
 }
 
 .capa-documento-play {
@@ -29,9 +29,9 @@
   height: 2rem;
   margin: auto;
   border-radius: var(--raio-pilula);
-  background: rgb(255 255 255 / 0.94);
+  background: rgb(var(--fersa-branco-rgb) / 0.94);
   color: var(--marca);
-  box-shadow: 0 2px 8px rgb(16 35 63 / 0.25);
+  box-shadow: 0 2px 8px rgb(var(--fersa-origin-rgb) / 0.25);
 }
 
 .capa-documento-play svg {
@@ -50,7 +50,7 @@
   border-radius: 2px;
   background: var(--superficie);
   color: var(--aco-claro);
-  filter: drop-shadow(0 1px 2px rgb(16 35 63 / 0.16));
+  filter: drop-shadow(0 1px 2px rgb(var(--fersa-origin-rgb) / 0.16));
 }
 
 .capa-substituta svg {
@@ -65,7 +65,7 @@
   border-top: 0;
   border-radius: var(--raio-etiqueta);
   background: var(--marca);
-  color: #fff;
+  color: var(--branco);
 }
 
 .grade-documentos {

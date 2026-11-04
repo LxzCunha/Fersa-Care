@@ -1,46 +1,85 @@
-/* Tokens do FERSA Care (identidade de brasil.fersa.com). O resto do CSS só usa estas variáveis. */
+/* Tokens do FERSA Care, conforme o manual de marca FERSA 2025. O resto do CSS só usa estas variáveis. */
 :root {
-  --marca: #1b365d;
-  --marca-hover: #26497a;
-  --marca-escura: #10233f; /* faixas e painéis de destaque */
-  --marca-clara: #e9eef6; /* fundos suaves, seleção, item ativo */
-  --marca-borda: #c5d2e4;
+  /* Paleta do manual de marca FERSA 2025 (págs. 27–29). Além destas, só as cores de estado (erro e atenção). */
+  --fersa-origin: #003256;
+  --fersa-origin-rgb: 0 50 86;
+  --fersa-titanium: #f6f6f6;
+  --fersa-steel: #465055;
+  --fersa-chrome: #85959c;
+  --fersa-electric: #00a9ff;
+  --fersa-soul: #50dcc8;
+  --fersa-power: #96cf17;
+  --fersa-preto: #000000;
+  --fersa-branco: #ffffff;
+  --fersa-branco-rgb: 255 255 255;
 
-  --tinta: #121a26; /* títulos e texto forte */
-  --texto: #1d2430;
-  --texto-suave: #5a6472;
-  --aco: #6b7584; /* ícones e rótulos */
-  --aco-claro: #a9b2be;
-  --fundo: #ffffff;
-  --nevoa: #f3f4f6; /* painéis cinza: ficha técnica, filtros, rodapé */
-  --superficie: #ffffff; /* cartões e campos */
-  --linha: #e3e6ea; /* divisórias e bordas de cartões */
-  --linha-forte: #c6ccd4; /* bordas de campos */
+  /* Tons claros = a escala do próprio manual (a cor misturada com branco); tons escuros = a cor com preto. */
+  --marca: var(--fersa-origin);
+  --marca-hover: color-mix(in srgb, var(--fersa-origin) 82%, var(--fersa-branco));
+  --marca-escura: var(--fersa-origin);
+  --marca-clara: color-mix(in srgb, var(--fersa-origin) 7%, var(--fersa-branco));
+  --marca-borda: color-mix(in srgb, var(--fersa-origin) 22%, var(--fersa-branco));
+  --destaque: var(--fersa-electric);
 
+  /* Gradiente corporativo (pág. 29): Fersa Electric subindo da base sobre Origin, ou sobre Titanium. */
+  --gradiente-marca:
+    radial-gradient(75% 55% at 50% 112%, var(--fersa-electric) 0%, rgb(0 169 255 / 0.7) 28%, rgb(0 169 255 / 0.18) 62%, transparent 82%),
+    var(--fersa-origin);
+  --gradiente-claro:
+    radial-gradient(90% 75% at 50% 130%, rgb(0 169 255 / 0.55) 0%, rgb(0 169 255 / 0.18) 35%, transparent 70%),
+    var(--fersa-titanium);
+
+  --tinta: var(--fersa-origin);
+  --texto: var(--fersa-preto);
+  --texto-suave: var(--fersa-steel);
+  --aco: var(--fersa-chrome);
+  --aco-claro: color-mix(in srgb, var(--fersa-chrome) 55%, var(--fersa-branco));
+  --fundo: var(--fersa-branco);
+  --branco: var(--fersa-branco);
+  --nevoa: var(--fersa-titanium);
+  --superficie: var(--fersa-branco);
+  --linha: color-mix(in srgb, var(--fersa-chrome) 28%, var(--fersa-branco));
+  --linha-forte: color-mix(in srgb, var(--fersa-chrome) 70%, var(--fersa-branco));
+  --veu: rgb(var(--fersa-origin-rgb) / 0.55);
+  --anel-foco: 0 0 0 3px rgb(var(--fersa-origin-rgb) / 0.2);
+
+  /* Estados funcionais: o manual não define verde de texto, erro nem alerta. Ok e info vêm da paleta;
+     erro (vermelho) e atenção (âmbar) ficam fora dela porque precisam ser reconhecíveis e acessíveis. */
+  --ok: color-mix(in srgb, var(--fersa-power) 42%, var(--fersa-preto));
+  --ok-cor: var(--fersa-power);
+  --ok-fundo: color-mix(in srgb, var(--fersa-power) 14%, var(--fersa-branco));
+  --ok-borda: color-mix(in srgb, var(--fersa-power) 45%, var(--fersa-branco));
+  --info: var(--fersa-origin);
+  --info-fundo: color-mix(in srgb, var(--fersa-electric) 10%, var(--fersa-branco));
+  --info-borda: color-mix(in srgb, var(--fersa-electric) 38%, var(--fersa-branco));
+  --erro: #b3261e;
+  --erro-forte: #7d1a14;
+  --erro-fundo: #fbe9e7;
+  --erro-borda: #eab7b1;
+  --erro-claro: #ff9d94; /* ícone de erro sobre fundo Origin */
   /* Âmbar só para o que pede atenção (pendências, restritos); nunca como cor de ação. */
   --atencao: #8a5a00;
+  --atencao-texto: #5c3c00;
   --atencao-forte: #d38f12;
   --atencao-fundo: #fff4dc;
   --atencao-borda: #efd29a;
 
-  --lateral-fundo: var(--marca-escura);
-  --lateral-texto: #c6d1e1;
-  --lateral-texto-suave: #8d9bb1;
-  --lateral-texto-forte: #ffffff;
-  --lateral-destaque: #9cc0f0; /* página atual: texto, ícone e marcador */
+  --lateral-fundo: var(--fersa-origin);
+  --lateral-texto: rgb(255 255 255 / 0.78);
+  --lateral-texto-suave: rgb(255 255 255 / 0.55);
+  --lateral-texto-forte: var(--fersa-branco);
+  --lateral-destaque: var(--fersa-electric);
   --lateral-hover: rgb(255 255 255 / 0.06);
   --lateral-selecionado: rgb(255 255 255 / 0.1);
   --lateral-linha: rgb(255 255 255 / 0.12);
 
-  --ok: #1d6f46;
-  --ok-fundo: #e3f3ea;
-  --erro: #b3261e;
-  --erro-fundo: #fbe9e7;
-  --info: #1b365d;
-  --info-fundo: #e9eef6;
-
-  --fonte-texto: 'Plus Jakarta Sans Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* TT Hoves Pro é a fonte do manual (pág. 32); Albert Sans entra enquanto os arquivos licenciados não estiverem no projeto. */
+  --fonte-texto: 'TT Hoves Pro', 'Albert Sans Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --fonte-titulo: var(--fonte-texto);
+  --peso-titulo-grande: 300; /* títulos grandes em Light, como no manual */
+  --peso-titulo: 400;
+  --peso-destaque: 500;
+  --peso-forte: 700;
 
   --texto-xs: 0.8125rem;
   --texto-sm: 0.9375rem;
@@ -65,7 +104,8 @@
   --raio-painel: 12px;
   --raio-pilula: 999px;
 
-  --sombra-cartao: 0 1px 2px rgb(16 35 63 / 0.06), 0 4px 16px rgb(16 35 63 / 0.06);
+  --sombra-cartao: 0 1px 2px rgb(var(--fersa-origin-rgb) / 0.06), 0 4px 16px rgb(var(--fersa-origin-rgb) / 0.06);
+  --sombra-flutuante: 0 24px 60px rgb(var(--fersa-origin-rgb) / 0.3);
 
   --largura-max: 76rem;
   --largura-texto: 42rem;
