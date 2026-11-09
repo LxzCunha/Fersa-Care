@@ -35,17 +35,17 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@napi-rs/canvas": "^1.0.13",
+    "@napi-rs/canvas": "^1.1.0",
     "bcryptjs": "^3.0.3",
     "content-disposition": "^3.0.0",
     "cookie-parser": "^1.4.7",
     "drizzle-orm": "^0.45.4",
     "express": "^5.3.0",
-    "express-rate-limit": "^8.7.1",
+    "express-rate-limit": "^8.7.3",
     "helmet": "^8.3.0",
-    "jose": "^6.2.12",
+    "jose": "^6.2.15",
     "multer": "^2.4.0",
-    "pdfjs-dist": "^6.4.299",
+    "pdfjs-dist": "^6.5.438",
     "pg": "^8.23.1",
     "pino": "^10.4.0",
     "swagger-ui-express": "^5.0.1",
@@ -64,13 +64,13 @@
     "@typescript/native": "npm:typescript@^7.0.2",
     "drizzle-kit": "^0.31.11",
     "eslint": "^9.39.5",
-    "globals": "^17.13.0",
+    "globals": "^17.14.0",
     "pino-pretty": "^13.2.0",
     "supertest": "^7.3.1",
     "tsx": "^4.23.15",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
-    "typescript-eslint": "^8.71.2",
-    "vitest": "^5.0.5"
+    "typescript-eslint": "^8.72.1",
+    "vitest": "^5.1.0"
   },
   "overrides": {
     "@esbuild-kit/core-utils": {
